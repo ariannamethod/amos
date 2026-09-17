@@ -1,0 +1,82 @@
+[
+  {
+    "trace": "examples/sequence-learning.jsonl",
+    "argv": [
+      "./amos",
+      "demo",
+      "--world",
+      "sequence",
+      "--seed",
+      "7",
+      "--steps",
+      "1920",
+      "--explore",
+      "1",
+      "--state",
+      "examples/sequence-trained.state"
+    ]
+  },
+  {
+    "trace": "examples/sequence-transfer.jsonl",
+    "argv": [
+      "./amos",
+      "resume",
+      "examples/sequence-trained.state",
+      "--steps",
+      "576",
+      "--appearance",
+      "shifted",
+      "--explore",
+      "0",
+      "--frozen",
+      "--state",
+      "examples/sequence-transfer.state"
+    ]
+  },
+  {
+    "trace": "examples/sequence-wrong.jsonl",
+    "argv": [
+      "./amos",
+      "resume",
+      "examples/sequence-trained.state",
+      "--steps",
+      "576",
+      "--reverse-body",
+      "--explore",
+      "0",
+      "--frozen",
+      "--state",
+      "examples/sequence-wrong.state"
+    ]
+  },
+  {
+    "trace": "examples/sequence-adapting.jsonl",
+    "argv": [
+      "./amos",
+      "resume",
+      "examples/sequence-trained.state",
+      "--steps",
+      "720",
+      "--reverse-body",
+      "--explore",
+      "1",
+      "--state",
+      "examples/sequence-adapted.state"
+    ]
+  },
+  {
+    "trace": "examples/sequence-repaired.jsonl",
+    "argv": [
+      "./amos",
+      "resume",
+      "examples/sequence-adapted.state",
+      "--steps",
+      "576",
+      "--explore",
+      "0",
+      "--frozen",
+      "--state",
+      "examples/sequence-repaired.state"
+    ]
+  }
+]

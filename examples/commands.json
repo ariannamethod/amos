@@ -1,0 +1,12 @@
+{
+  "seed": 7,
+  "description": "Literal past continuation demonstration, separate from the frozen fresh-world numerical assay.",
+  "commands": [
+    "./amos demo --seed 7 --steps 1600 --explore 1 --state examples/past.state > examples/first-life.jsonl",
+    "./amos resume examples/past.state --steps 0 --reverse-body --state examples/changed.state",
+    "./amos resume examples/changed.state --steps 800 --explore 1 --state examples/future.state > examples/future.jsonl",
+    "./amos scar examples/changed.state examples/future.state examples/scar.state > examples/scar-event.json",
+    "./amos resume examples/changed.state --steps 400 --frozen --explore 0 --state examples/clean-next.state > examples/clean.jsonl",
+    "./amos resume examples/scar.state --steps 400 --frozen --explore 0 --state examples/scar-next.state > examples/scar.jsonl"
+  ]
+}

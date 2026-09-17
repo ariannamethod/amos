@@ -1,0 +1,20 @@
+{
+  "sequence-transfer": {
+    "correct": 96,
+    "decisions": 96,
+    "mean_similarity": 0.9831104513125001,
+    "mean_uncertainty": 0.17553607613541666
+  },
+  "sequence-wrong": {
+    "correct": 0,
+    "decisions": 96,
+    "mean_similarity": 0.9986792436979166,
+    "mean_uncertainty": 0.17419669291666665
+  },
+  "sequence-repaired": {
+    "correct": 96,
+    "decisions": 96,
+    "mean_similarity": 0.9983254660104167,
+    "mean_uncertainty": 0.27764166761458337
+  }
+}
