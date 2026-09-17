@@ -25,7 +25,7 @@ So, **AMOS** starts there. The question we ask isn't whether a system knows the 
 ---
 
 <p align="center">
-  <img src="logo.jpg" alt="molequla" width="400">
+  <img src="assets/amos.png" alt="AMOS" width="400">
 </p>
 
 ---
