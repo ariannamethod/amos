@@ -24,6 +24,12 @@ So, **AMOS** starts there. The question we ask isn't whether a system knows the 
 
 ---
 
+<p align="center">
+  <img src="logo.jpg" alt="molequla" width="400">
+</p>
+
+---
+  
 ## What AMOS is
 
 **AMOS** is a recurrent neural system and a tiny universe living inside the same C program. The world has hidden state. **AMOS** doesn't get to read it. **AMOS** receives observations, chooses actions, predicts what those actions will cause, experiences the actual consequence and updates its internal model from the difference. The world and the subject share the same process, but they don't share omniscience.
@@ -60,11 +66,11 @@ Everything's simpler: **history changes what the same present means.** That hist
 
 ## Familiarity can be wrong too
 
-AMOS-1 adds another problem. A subject doesn't only remember trajectories. It can recognize situations.
+**AMOS** adds another problem. A subject doesn't only remember trajectories. It can recognize situations.
 
 In the sequence world, two anonymous landmarks appear before a neutral choice. Their order determines which action avoids a bodily cost. The same landmarks can arrive in the opposite order, their appearance can change while the law stays the same, or the law itself can change while everything still looks familiar.
 
-AMOS doesn't receive symbolic labels for any of this. Its glyphs are acquired from neural responses to observations and bodily load. There are no tokens called `SELF`, `DANGER`, `LEFT` or `RIGHT`. Similar internal responses settle into a small acquired alphabet, while short ordered sequences of those glyphs become predictive through consequences.
+**AMOS** doesn't receive symbolic labels for any of this. Its glyphs are acquired from neural responses to observations and bodily load. There are no tokens called `SELF`, `DANGER`, `LEFT` or `RIGHT`. Similar internal responses settle into a small acquired alphabet, while short ordered sequences of those glyphs become predictive through consequences.
 
 Across 32 new births, AMOS made **3,072 out of 3,072** correct choices after an appearance shift. Under a stronger perturbation it made **3,069 out of 3,072**. Remove order and keep only the same glyphs as a bag, and the score falls to **1,519 out of 3,072**. Keep the recurrent predictor but disconnect the associative field, and it falls to **2,638 out of 3,072**.
 
@@ -72,7 +78,7 @@ Swap only the two remembered landmark positions during retrieval while preservin
 
 The present didn't change. The remembered relation did.
 
-Then we change the world's law while leaving the familiar situation intact. AMOS recognizes it and gets every choice wrong. New consequences raise uncertainty, and after 120 further random-probe trials per birth it returns to **3,072 out of 3,072** correct choices.
+Then we change the world's law while leaving the familiar situation intact. **AMOS** recognizes it and gets every choice wrong. New consequences raise uncertainty, and after 120 further random-probe trials per birth it returns to **3,072 out of 3,072** correct choices.
 
 Recognition doesn't have to disappear for an expectation to change.
 
@@ -88,7 +94,7 @@ What matters is whether something resembling a self/world distinction can emerge
 
 The boundary isn't declared philosophically, but it's enforced by access.
 
-AMOS-1 makes that boundary slightly stranger. It can now recognize approximate states, preserve their order, carry acquired associations across restart and update what a familiar sequence means when consequences change. The glyph alphabet itself is bounded statistical memory over neural responses, not a hand-written ontology.
+**AMOS** makes that boundary slightly stranger. It can now recognize approximate states, preserve their order, carry acquired associations across restart and update what a familiar sequence means when consequences change. The glyph alphabet itself is bounded statistical memory over neural responses, not a hand-written ontology.
 
 ---
 
@@ -104,11 +110,11 @@ The external situation is the same, but the subject isn't. The retained future a
 
 That's a damn sight more interesting temporal-identity experiment than teaching a model the phrase “I remember the future.”
 
-Original AMOS-ZERO snapshots still load and reproduce their old continuations. The original inertial world also remains the default.
+Original **AMOS-ZERO** snapshots still load and reproduce their old continuations. The original inertial world also remains the default.
 
 ---
 
-## Build it
+## Build  
 
 ```bash
 cc -O2 -std=c99 amos.c -lm -o amos
