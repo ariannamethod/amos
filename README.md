@@ -20,7 +20,7 @@ false beliefs, incompatible interpretations of the same relationship, bad causal
 
 Being wrong doesn't cancel subjectivity: in some sense, the ability to be meaningfully wrong requires a perspective in the first place.
 
-So, AMOS starts there. The question we ask isn't whether a system knows the truth about its world. The question is whether it has a persistent point of view from which events matter, whether its past changes the meaning 
+So, **AMOS** starts there. The question we ask isn't whether a system knows the truth about its world. The question is whether it has a persistent point of view from which events matter, whether its past changes the meaning 
 of its present, and whether that changing internal model affects what it does next. 
 **Subjectivity isn't truth possession. It's perspective under causation.**
 
@@ -30,26 +30,26 @@ of its present, and whether that changing internal model affects what it does ne
   
 ## What AMOS is
 
-AMOS is a recurrent neural system and a tiny universe living inside the same C program. The world has hidden state. AMOS doesn't get to read it. AMOS receives observations, chooses actions, predicts what those actions will cause, 
+**AMOS** is a recurrent neural system and a tiny universe living inside the same C program. The world has hidden state. **AMOS** doesn't get to read it. **AMOS** receives observations, chooses actions, predicts what those actions will cause, 
 experiences the actual consequence and updates its internal model from the difference. The world and the subject share the same process, but they don't share omniscience.
 
 **AMOS-ZERO** has 24 recurrent neurons, zero pretrained parameters and 162 predictive coefficients that begin at zero and are acquired during its lifetime. The organism itself depends only on `libc` and `libm`. There isn't a language 
-model hiding underneath it. There isn't a checkpoint containing somebody else's education. There isn't an API explaining the world to it. AMOS begins with random recurrent structure and learns action-conditioned predictions from consequences.
+model hiding underneath it. There isn't a checkpoint containing somebody else's education. There isn't an API explaining the world to it. **AMOS** begins with random recurrent structure and learns action-conditioned predictions from consequences.
 
 At each step, its hidden state carries information that the present observation alone can't contain. Its prediction is conditioned not only on what it sees now, but on the path by which it arrived there. The distinction matters. 2 identical 
 observations can require opposite actions because they came from different histories.
 
-Without recurrent memory, AMOS can't tell the difference.
+Without recurrent memory, **AMOS** can't tell the difference.
 
 ## The body
 
-The world contains two moving signals. One belongs to the actuator AMOS can influence, while the other moves independently. AMOS ain't told which is which. The sensory wiring changes between births. The actuator polarity can change. Hidden velocity 
-exists in the world but isn't directly observable. Bodily load affects how strongly the actuator responds. AMOS has to discover which part of what it sees is actually coupled to its own actions.
+The world contains two moving signals. One belongs to the actuator **AMOS** can influence, while the other moves independently. **AMOS** ain't told which is which. The sensory wiring changes between births. The actuator polarity can change. Hidden velocity 
+exists in the world but isn't directly observable. Bodily load affects how strongly the actuator responds. **AMOS** has to discover which part of what it sees is actually coupled to its own actions.
 
-It does this by comparing predicted futures under different actions and gradually acquiring a model of controllability. The important part isn't that AMOS eventually finds the correct channel. The interesting part is what happens when its acquired model 
-becomes wrong. Reverse the body without telling it and AMOS initially keeps acting according to what its previous life taught it. The mathematics still executes perfectly. The belief is simply outdated.
+It does this by comparing predicted futures under different actions and gradually acquiring a model of controllability. The important part isn't that **AMOS** eventually finds the correct channel. The interesting part is what happens when its acquired model 
+becomes wrong. Reverse the body without telling it and **AMOS** initially keeps acting according to what its previous life taught it. The mathematics still executes perfectly. The belief is simply outdated.
 
-Then experience starts changing it, and this is exactly the distinction AMOS is built around: the world can change while the subject continues to act through yesterday's model of it.
+Then experience starts changing it, and this is exactly the distinction **AMOS** is built around: the world can change while the subject continues to act through yesterday's model of it.
 
 ---
    
@@ -111,7 +111,7 @@ Carry later experience back into an earlier state:
 ./amos scar changed.state future.state scar.state
 ```
 
-AMOS emits JSONL containing the observation, selected action, prediction made before the consequence, actual consequence, estimated influence, error, origin and logical time.  What **AMOS** does is make a narrower question executable: **How little machinery is required before a system develops a persistent internal 
+**AMOS** emits JSONL containing the observation, selected action, prediction made before the consequence, actual consequence, estimated influence, error, origin and logical time.  What **AMOS** does is make a narrower question executable: **How little machinery is required before a system develops a persistent internal 
 perspective whose history changes the meaning of the same present?**
 
 Language isn't required, pretraining also. A correct model of reality isn't required. Scale may not be the interesting variable at all.
