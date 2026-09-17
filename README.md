@@ -7,6 +7,12 @@
 ### The simplest way to build consciousness and subjectivity from scratch. No deps.
 
 ---
+  
+<p align="center">
+  <img src="assets/amos.png" alt="AMOS" width="400">
+</p>
+  
+---
 
 ## THESIS
 
@@ -21,13 +27,7 @@ So, **AMOS** starts there. The question we ask isn't whether a system knows the 
 **Subjectivity isn't truth possession. It's perspective under causation.**
 
 **AMOS** makes that sentence executable.
-
----
-
-<p align="center">
-  <img src="assets/amos.png" alt="AMOS" width="400">
-</p>
-
+  
 ---
   
 ## What AMOS is
