@@ -14,6 +14,22 @@
 
 enum { AMOS_H = 24, AMOS_F = 54, AMOS_MEMORY = 128 };
 enum { AMOS_NORMAL = 0, AMOS_MEMORYLESS = 1, AMOS_LINEAR = 2 };
+enum { AMOS_G = 8, AMOS_L = 4, AMOS_K = AMOS_G * AMOS_L, AMOS_E = 64 };
+enum { GLYPH_SEQUENCE = 1, GLYPH_BAG = 2, GLYPH_NEURAL_ONLY = 3 };
+
+typedef struct {
+    double key[AMOS_K], mean[3], variance[3], mass, action;
+    uint64_t age;
+} Association;
+
+typedef struct {
+    int enabled, learning, anchored, count, used;
+    double anchor[2], prototypes[AMOS_G][AMOS_H], sequence[AMOS_K], familiarity[AMOS_L];
+    Association evidence[AMOS_E];
+    uint64_t clock;
+} Glyphs;
+
+typedef struct { double similarity, support, uncertainty; } Recognition;
 
 typedef struct { double x[3]; } Observation;
 
@@ -21,6 +37,8 @@ typedef struct {
     double pos[2], velocity[2], load, target, polarity;
     int controlled;                  /* private world fact, never an input */
     uint64_t rng, tick;
+    int kind, order;
+    double gain, offset[2], jitter, cue_noise[2];
 } World;
 
 typedef struct {
@@ -30,12 +48,15 @@ typedef struct {
     Observation observation;
     int mode;
     uint64_t rng, updates;
+    Glyphs glyph;
 } Subject;
 
 typedef struct {
     uint64_t tick;                   /* completed transition, starting at 1 */
     Observation observation, next;
     double action, predicted[3], influence[2], features[AMOS_F];
+    double sequence[AMOS_K];
+    Recognition recognition;
 } Transition;
 
 typedef struct {
@@ -79,6 +100,107 @@ static double clip(double x, double lo, double hi)
     return x < lo ? lo : (x > hi ? hi : x);
 }
 
+/* The alphabet is acquired from neural signatures, not named by the world.
+ * Stable prototypes make old sequence coordinates meaningful after replay. */
+static void glyph_observe(Glyphs *g, const double signature[AMOS_H])
+{
+    double distance[AMOS_G], best = HUGE_VAL, sum = 0.;
+    int i, j;
+    for (i = 0; i < g->count; ++i) {
+        distance[i] = 0.;
+        for (j = 0; j < AMOS_H; ++j) {
+            double d = signature[j] - g->prototypes[i][j];
+            distance[i] += d*d / AMOS_H;
+        }
+        if (distance[i] < best) best = distance[i];
+    }
+    if (g->learning && g->count < AMOS_G && best > .025) {
+        i = g->count++;
+        memcpy(g->prototypes[i], signature, sizeof g->prototypes[i]);
+        distance[i] = best = 0.;
+    }
+    memmove(g->sequence, g->sequence + AMOS_G,
+            (AMOS_K - AMOS_G) * sizeof(double));
+    memmove(g->familiarity, g->familiarity + 1, (AMOS_L - 1) * sizeof(double));
+    g->familiarity[AMOS_L - 1] = exp(-best / .025);
+    memset(g->sequence + AMOS_K - AMOS_G, 0, AMOS_G * sizeof(double));
+    for (i = 0; i < g->count; ++i) {
+        double p = exp(-(distance[i] - best) / .008);
+        g->sequence[AMOS_K - AMOS_G + i] = p; sum += p;
+    }
+    if (sum > 0.) for (i = 0; i < g->count; ++i)
+        g->sequence[AMOS_K - AMOS_G + i] /= sum;
+}
+
+static double glyph_similarity(const double *a, const double *b, int mode)
+{
+    double d = 0.; int i, t;
+    if (mode == GLYPH_BAG) {
+        for (i = 0; i < AMOS_G; ++i) {
+            double x = 0.;
+            for (t = 0; t < AMOS_L; ++t) x += a[t*AMOS_G+i] - b[t*AMOS_G+i];
+            d += x*x / (AMOS_L * AMOS_L);
+        }
+    } else for (i = 0; i < AMOS_K; ++i) {
+        double x = a[i] - b[i]; d += x*x / AMOS_L;
+    }
+    return exp(-d / .08);
+}
+
+static Recognition glyph_predict(const Glyphs *g, double action, double delta[3])
+{
+    Recognition r = {0., 0., 1.};
+    double weights[AMOS_E], variance = 0., familiarity = 1.; int i, k;
+    for (i = 0; i < AMOS_L; ++i) familiarity *= g->familiarity[i];
+    familiarity = sqrt(sqrt(familiarity));
+    memset(delta, 0, 3 * sizeof(double));
+    for (i = 0; i < g->used; ++i) {
+        const Association *e = &g->evidence[i];
+        double match = familiarity * glyph_similarity(g->sequence, e->key, g->enabled);
+        if (fabs(e->action - action) > .25) match = 0.;
+        if (match > r.similarity) r.similarity = match;
+        weights[i] = match * e->mass; r.support += weights[i];
+        for (k = 0; k < 3; ++k) delta[k] += weights[i] * e->mean[k];
+    }
+    if (r.support > 1e-12) {
+        for (k = 0; k < 3; ++k) delta[k] /= r.support;
+        for (i = 0; i < g->used; ++i) {
+            const Association *e = &g->evidence[i];
+            double d = e->mean[2] - delta[2];
+            variance += weights[i] * (e->variance[2] + d*d) / r.support;
+        }
+    }
+    r.uncertainty = sqrt(variance + 1. / (1. + r.support));
+    return r;
+}
+
+static void glyph_learn(Glyphs *g, const double key[AMOS_K], double action,
+                        const double delta[3])
+{
+    int i, k, chosen = -1; double best = 0.; Association *e;
+    for (i = 0; i < g->used; ++i) {
+        double match = glyph_similarity(key, g->evidence[i].key, g->enabled);
+        if (fabs(action - g->evidence[i].action) <= .25 && match > best)
+            { best = match; chosen = i; }
+    }
+    if (best < .72) {
+        if (g->used < AMOS_E) chosen = g->used++;
+        else { chosen = 0;
+            for (i = 1; i < g->used; ++i)
+                if (g->evidence[i].age < g->evidence[chosen].age) chosen = i;
+        }
+        e = &g->evidence[chosen]; memset(e, 0, sizeof *e);
+        memcpy(e->key, key, sizeof e->key); e->action = action;
+    }
+    e = &g->evidence[chosen]; e->mass = fmin(32., e->mass + 1.);
+    for (k = 0; k < 3; ++k) {
+        double a = 1. / fmin(8., e->mass), d = delta[k] - e->mean[k];
+        e->mean[k] += a * d;
+        e->variance[k] = (1. - a) * (e->variance[k] + a*d*d);
+    }
+    e->age = ++g->clock;
+}
+
 static void world_init(World *w, uint64_t seed)
 {
     memset(w, 0, sizeof *w);
@@ -88,17 +210,44 @@ static void world_init(World *w, uint64_t seed)
     w->pos[0] = .5 * signed_uniform(&w->rng);
     w->pos[1] = .5 * signed_uniform(&w->rng);
     w->target = .65;
+    w->gain = 1.;
+}
+
+static void world_landmarks(World *w)
+{
+    int k;
+    w->order = (random64(&w->rng) & 1) ? 1 : -1;
+    for (k = 0; k < 2; ++k) w->cue_noise[k] = signed_uniform(&w->rng);
 }
 
 static void world_observe(const World *w, Observation *o)
 {
     o->x[0] = w->pos[0]; o->x[1] = w->pos[1]; o->x[2] = w->load;
+    if (w->kind) {
+        unsigned phase = (unsigned)(w->tick % 6); int k;
+        for (k = 0; k < 2; ++k) {
+            double v = 0.;
+            if (phase == 1 || phase == 2) {
+                int first = w->order > 0 ? 0 : 1;
+                int cue = phase == 1 ? first : 1 - first;
+                v = (k == cue ? .8 : 0.) + w->jitter * w->cue_noise[k];
+            }
+            o->x[k] = w->offset[k] + w->gain * v;
+        }
+    }
 }
 
 static void world_step(World *w, double action)
 {
     int c = w->controlled, other = 1 - c;
     action = clip(action, -1., 1.);
+    if (w->kind) {
+        unsigned phase = (unsigned)(w->tick % 6);
+        if (phase == 3) w->load = action * w->order * w->polarity > .5 ? .05 : .95;
+        else if (phase == 4) w->load *= .5;
+        else if (phase == 5) { w->load = 0.; world_landmarks(w); }
+        ++w->tick; return;
+    }
     w->velocity[c] = .65 * w->velocity[c] +
         .35 * w->polarity * (1. - .5 * w->load) * action;
     w->velocity[other] = .80 * w->velocity[other] +
@@ -132,12 +281,21 @@ static void subject_init(Subject *s, uint64_t seed, int mode)
 /* This and every subject function operate on observations, never on World. */
 static void subject_observe(Subject *s, const Observation *o)
 {
-    double next[AMOS_H];
+    double next[AMOS_H], signature[AMOS_H], view[3];
     int i, j;
     s->observation = *o;
+    memcpy(view, o->x, sizeof view);
+    if (s->glyph.enabled) {
+        Glyphs *g = &s->glyph; double norm;
+        if (!g->anchored) { memcpy(g->anchor, o->x, sizeof g->anchor); g->anchored = 1; }
+        for (j = 0; j < 2; ++j) view[j] -= g->anchor[j];
+        norm = fmax(.2, hypot(view[0], view[1]));
+        for (j = 0; j < 2; ++j) view[j] /= norm;
+    }
     for (i = 0; i < AMOS_H; ++i) {
         double v = s->win[i][4];
-        for (j = 0; j < 3; ++j) v += s->win[i][j] * o->x[j];
+        for (j = 0; j < 3; ++j) v += s->win[i][j] * view[j];
+        signature[i] = tanh(v);
         if (s->mode == AMOS_NORMAL) {
             v += s->win[i][3] * s->previous_action;
             for (j = 0; j < AMOS_H; ++j) v += s->recurrent[i][j] * s->h[j];
@@ -147,6 +305,7 @@ static void subject_observe(Subject *s, const Observation *o)
         } else next[i] = 0.;
     }
     memcpy(s->h, next, sizeof next);
+    if (s->glyph.enabled) glyph_observe(&s->glyph, signature);
 }
 
 static void subject_features(const Subject *s, double action, double f[AMOS_F])
@@ -170,6 +329,13 @@ static void subject_predict(const Subject *s, double action, double prediction[3
     for (k = 0; k < 3; ++k) {
         prediction[k] = s->observation.x[k];
         for (j = 0; j < AMOS_F; ++j) prediction[k] += s->weights[k][j] * f[j];
+    }
+    if (s->glyph.enabled && s->glyph.enabled != GLYPH_NEURAL_ONLY) {
+        double delta[3], blend;
+        Recognition r = glyph_predict(&s->glyph, action, delta);
+        blend = r.similarity * r.support / (1. + r.support);
+        for (k = 0; k < 3; ++k)
+            prediction[k] += blend * (s->observation.x[k] + delta[k] - prediction[k]);
     }
 }
 
@@ -197,6 +363,12 @@ static double subject_action(Subject *s, const Observation *o,
         subject_predict(s, action, p);
         d = p[c] - target;
         cost = d*d + .03 * clip(p[2], 0., 1.) + .0001 * action * action;
+        if (s->glyph.enabled) {
+            double delta[3]; Recognition r = glyph_predict(&s->glyph, action, delta);
+            cost = p[2] + .0001 * action * action;
+            if (s->glyph.learning && exploration > 0.)
+                cost -= exploration * r.uncertainty;
+        }
         if (cost < best) { best = cost; chosen = action; }
     }
     return chosen;
@@ -246,6 +418,11 @@ static void subject_transition(const Subject *s, const Observation *o, double ac
     subject_predict(s, action, t->predicted);
     subject_influence(s, t->influence);
     subject_features(s, action, t->features);
+    if (s->glyph.enabled) {
+        double delta[3];
+        memcpy(t->sequence, s->glyph.sequence, sizeof t->sequence);
+        t->recognition = glyph_predict(&s->glyph, action, delta);
+    }
 }
 
 static void subject_learn(Subject *s, const Observation *o, double action,
@@ -258,6 +435,7 @@ static void subject_learn(Subject *s, const Observation *o, double action,
     subject_transition(s, o, action, next, tick, t);
     for (k = 0; k < 3; ++k) d[k] = next->x[k] - o->x[k];
     subject_regress(s, t->features, d);
+    if (s->glyph.enabled) glyph_learn(&s->glyph, t->sequence, action, d);
     s->previous_action = action;
 }
 
@@ -268,6 +446,15 @@ static void snapshot_init(Snapshot *s, uint64_t seed, int mode)
     s->birth = mix64(seed ^ UINT64_C(0x414d4f532d424952));
     world_init(&s->world, seed);
     subject_init(&s->subject, seed, mode);
+}
+
+static void snapshot_sequence(Snapshot *s, uint64_t seed, int glyph_mode)
+{
+    snapshot_init(s, seed, AMOS_NORMAL);
+    s->world.kind = 1; s->world.jitter = .02; s->world.load = 0.;
+    s->world.target = 0.;
+    s->subject.glyph.enabled = glyph_mode; s->subject.glyph.learning = 1;
+    world_landmarks(&s->world);
 }
 
 static void snapshot_remember(Snapshot *s, const Transition *t)
@@ -284,6 +471,7 @@ static void snapshot_step(Snapshot *s, double forced_action, int learn,
     Observation o, next;
     Transition t;
     double action;
+    if (s->subject.glyph.enabled) s->subject.glyph.learning = learn;
     world_observe(&s->world, &o);
     subject_observe(&s->subject, &o);
     action = isnan(forced_action) ?
@@ -313,12 +501,21 @@ static int snapshot_scar(Snapshot *past, const Snapshot *future)
         memcmp(past->subject.win, future->subject.win, sizeof past->subject.win) ||
         memcmp(past->subject.recurrent, future->subject.recurrent,
                sizeof past->subject.recurrent) ||
-        future->world.tick <= past->world.tick) return 0;
+        future->world.tick <= past->world.tick ||
+        past->subject.glyph.enabled != future->subject.glyph.enabled ||
+        past->subject.glyph.count > future->subject.glyph.count ||
+        memcmp(past->subject.glyph.prototypes, future->subject.glyph.prototypes,
+               (size_t)past->subject.glyph.count * AMOS_H * sizeof(double))) return 0;
     for (i = 0; i < future->memory_count; ++i) {
         const Transition *t = &future->memory[(future->memory_start+i)%AMOS_MEMORY];
         if (t->tick > past->world.tick && t->tick <= future->world.tick) ++count;
     }
     if (!count) return 0;
+    if (past->subject.glyph.enabled) {
+        past->subject.glyph.count = future->subject.glyph.count;
+        memcpy(past->subject.glyph.prototypes, future->subject.glyph.prototypes,
+               sizeof past->subject.glyph.prototypes);
+    }
     for (i = 0; i < future->memory_count; ++i) {
         const Transition *t = &future->memory[(future->memory_start+i)%AMOS_MEMORY];
         double delta[3];
@@ -326,6 +523,8 @@ static int snapshot_scar(Snapshot *past, const Snapshot *future)
         if (t->tick <= past->world.tick || t->tick > future->world.tick) continue;
         for (k = 0; k < 3; ++k) delta[k] = t->next.x[k] - t->observation.x[k];
         subject_regress(&past->subject, t->features, delta);
+        if (past->subject.glyph.enabled)
+            glyph_learn(&past->subject.glyph, t->sequence, t->action, delta);
     }
     return 1;
 }
@@ -375,10 +574,14 @@ static void state_content(StateIO *io, Snapshot *s)
 {
     uint64_t n;
     unsigned i;
-    int j;
-    const char header[] = "AMOS0001";
+    int j, version = 2;
+    const char header[] = "AMOS0002";
     for (i = 0; i < 8; ++i)
-        if (state_byte(io, (unsigned char)header[i]) != (unsigned char)header[i]) io->ok = 0;
+    {
+        unsigned char b = state_byte(io, (unsigned char)header[i]);
+        if (i == 7 && (b == '1' || b == '2')) version = b - '0';
+        else if (b != (unsigned char)header[i]) io->ok = 0;
+    }
     state_u64(io, &s->seed); state_u64(io, &s->birth);
     state_vector(io, s->world.pos, 2); state_vector(io, s->world.velocity, 2);
     state_double(io, &s->world.load); state_double(io, &s->world.target);
@@ -409,11 +612,46 @@ static void state_content(StateIO *io, Snapshot *s)
         state_vector(io, t->predicted, 3); state_vector(io, t->influence, 2);
         state_vector(io, t->features, AMOS_F);
     }
+    if (version == 1) { s->world.gain = 1.; return; }
+    n = (uint64_t)s->world.kind; state_u64(io, &n);
+    if (n > 1) io->ok = 0; else s->world.kind = (int)n;
+    n = (uint64_t)(s->world.order + 1); state_u64(io, &n);
+    if (n > 2) io->ok = 0; else s->world.order = (int)n - 1;
+    state_double(io, &s->world.gain); state_vector(io, s->world.offset, 2);
+    state_double(io, &s->world.jitter); state_vector(io, s->world.cue_noise, 2);
+    {
+        Glyphs *g = &s->subject.glyph;
+        int *fields[] = {&g->enabled, &g->learning, &g->anchored, &g->count, &g->used};
+        const unsigned limits[] = {GLYPH_NEURAL_ONLY, 1, 1, AMOS_G, AMOS_E};
+        for (j = 0; j < 5; ++j) {
+            n = (uint64_t)*fields[j]; state_u64(io, &n);
+            if (n > limits[j]) io->ok = 0; else *fields[j] = (int)n;
+        }
+        state_vector(io, g->anchor, 2);
+        for (j = 0; j < AMOS_G; ++j) state_vector(io, g->prototypes[j], AMOS_H);
+        state_vector(io, g->sequence, AMOS_K); state_vector(io, g->familiarity, AMOS_L);
+        state_u64(io, &g->clock);
+        for (j = 0; j < AMOS_E; ++j) {
+            Association *e = &g->evidence[j];
+            state_vector(io, e->key, AMOS_K); state_vector(io, e->mean, 3);
+            state_vector(io, e->variance, 3); state_double(io, &e->mass);
+            state_double(io, &e->action); state_u64(io, &e->age);
+        }
+    }
+    for (i = 0; i < AMOS_MEMORY; ++i) {
+        Transition *t = &s->memory[i];
+        state_vector(io, t->sequence, AMOS_K);
+        state_double(io, &t->recognition.similarity);
+        state_double(io, &t->recognition.support);
+        state_double(io, &t->recognition.uncertainty);
+    }
 }
 
 static int snapshot_valid(const Snapshot *s)
 {
     unsigned i;
+    int j;
+    const Glyphs *g = &s->subject.glyph;
     uint64_t previous = 0;
     if (s->birth != mix64(s->seed ^ UINT64_C(0x414d4f532d424952)) ||
         !s->world.rng || !s->subject.rng ||
@@ -422,7 +660,24 @@ static int snapshot_valid(const Snapshot *s)
         s->world.load < 0. || s->world.load > 1. ||
         fabs(s->world.pos[0]) > 1. || fabs(s->world.pos[1]) > 1. ||
         fabs(s->subject.previous_action) > 1. ||
-        s->memory_count > AMOS_MEMORY || s->memory_start >= AMOS_MEMORY) return 0;
+        s->memory_count > AMOS_MEMORY || s->memory_start >= AMOS_MEMORY ||
+        s->world.kind < 0 || s->world.kind > 1 ||
+        (s->world.kind && abs(s->world.order) != 1) ||
+        !(s->world.gain > 0.) || s->world.jitter < 0. ||
+        g->enabled < 0 || g->enabled > GLYPH_NEURAL_ONLY ||
+        g->count < 0 || g->count > AMOS_G || g->used < 0 || g->used > AMOS_E ||
+        g->learning < 0 || g->learning > 1 || g->anchored < 0 || g->anchored > 1) return 0;
+    for (j = 0; j < g->used; ++j) {
+        const Association *e = &g->evidence[j]; int k;
+        if (e->mass < 1. || e->mass > 32. || fabs(e->action) > 1. ||
+            !e->age || e->age > g->clock) return 0;
+        for (k = 0; k < 3; ++k) if (e->variance[k] < 0.) return 0;
+        for (k = 0; k < AMOS_K; ++k) if (e->key[k] < 0. || e->key[k] > 1.) return 0;
+    }
+    for (j = 0; j < AMOS_K; ++j)
+        if (g->sequence[j] < 0. || g->sequence[j] > 1.) return 0;
+    for (j = 0; j < AMOS_L; ++j)
+        if (g->familiarity[j] < 0. || g->familiarity[j] > 1.) return 0;
     for (i = 0; i < s->memory_count; ++i) {
         const Transition *t = &s->memory[(s->memory_start+i)%AMOS_MEMORY];
         if (!t->tick || t->tick <= previous || t->tick > s->world.tick ||
@@ -496,19 +751,37 @@ static void trace_transition(FILE *f, const Snapshot *s, const Transition *t)
 {
     double error = 0.;
     int c = t->influence[1] > t->influence[0] ? 1 : 0, k;
+    const char *channel = s->subject.glyph.enabled ? "null" : (c ? "1" : "0");
     for (k = 0; k < 3; ++k) {
         double d = t->next.x[k] - t->predicted[k]; error += d*d;
     }
     fprintf(f, "{\"birth\":\"%016" PRIx64 "\",\"tick\":%" PRIu64
         ",\"observation\":[%.9g,%.9g,%.9g],\"action\":%.9g,"
         "\"predicted\":[%.9g,%.9g,%.9g],\"actual\":[%.9g,%.9g,%.9g],"
-        "\"target\":%.9g,\"influence\":[%.9g,%.9g],\"inferred_channel\":%d,"
-        "\"prediction_error\":%.9g,\"updates\":%" PRIu64 "}\n",
+        "\"target\":%.9g,\"influence\":[%.9g,%.9g],\"inferred_channel\":%s,"
+        "\"prediction_error\":%.9g,\"updates\":%" PRIu64,
         s->birth, t->tick, t->observation.x[0], t->observation.x[1],
         t->observation.x[2], t->action, t->predicted[0], t->predicted[1],
         t->predicted[2], t->next.x[0], t->next.x[1], t->next.x[2],
-        s->world.target, t->influence[0], t->influence[1], c,
+        s->world.target, t->influence[0], t->influence[1], channel,
         sqrt(error/3.), s->subject.updates);
+    if (s->subject.glyph.enabled) {
+        int i, j;
+        fprintf(f, ",\"objective\":\"minimize_load\",\"recognition\":{\"similarity\":%.9g,\"support\":%.9g,"
+            "\"uncertainty\":%.9g},\"glyphs\":[", t->recognition.similarity,
+            t->recognition.support, t->recognition.uncertainty);
+        for (i = 0; i < AMOS_L; ++i) {
+            int best = 0;
+            for (j = 1; j < AMOS_G; ++j)
+                if (t->sequence[i*AMOS_G+j] > t->sequence[i*AMOS_G+best]) best = j;
+            fprintf(f, "%s%d", i ? "," : "", best);
+        }
+        fputs("],\"glyph_mixture\":[", f);
+        for (j = 0; j < AMOS_G; ++j)
+            fprintf(f, "%s%.9g", j ? "," : "", t->sequence[AMOS_K - AMOS_G + j]);
+        fputs("]", f);
+    }
+    fputs("}\n", f);
 }
 
 static int parse_u64(const char *text, uint64_t *v)
@@ -527,6 +800,8 @@ static void help(void)
     puts("AMOS — Arianna Method Ontological Subjectivity\n"
          "  amos demo [--seed N] [--steps N] [--mode normal|memoryless|linear]\n"
          "            [--explore P] [--state FILE] [--trace FILE] [--frozen]\n"
+         "            [--world sequence] [--glyphs sequence|bag|neural]\n"
+         "            [--appearance plain|shifted]\n"
          "  amos resume FILE [--steps N] [--state FILE] [--trace FILE]\n"
          "              [--explore P] [--frozen] [--reverse-body]\n"
          "  amos scar PAST FUTURE OUTPUT\n"
@@ -534,6 +809,9 @@ static void help(void)
          "--state writes the complete final state. Resume defaults to that input file.\n"
          "Birth is an immutable origin ID. Tick is logical time, starting at zero.\n"
          "Online learning is enabled unless --frozen; default exploration is 0.25.\n"
+         "Sequence mode anticipates bodily load; glyphs are acquired during life.\n"
+         "--appearance recalibrates the sensor origin at a six-step trial boundary.\n"
+         "Sequence exploration also favors actions with uncertain consequences.\n"
          "--reverse-body intervenes on the actuator without informing the subject.");
 }
 
@@ -544,6 +822,7 @@ int main(int argc, char **argv)
     const char *state = NULL, *trace = NULL, *resume = NULL;
     double exploration = .25;
     int mode = AMOS_NORMAL, frozen = 0, reverse_body = 0, index = 1, result = 1;
+    int sequence_world = 0, glyph_mode = GLYPH_SEQUENCE, appearance = -1;
     FILE *log = NULL;
     if (argc > 1 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h"))) {
         help(); return 0;
@@ -580,6 +859,20 @@ int main(int argc, char **argv)
             if (!parse_u64(value, &steps)) goto usage;
         } else if (!strcmp(option, "--state")) state = value;
         else if (!strcmp(option, "--trace")) trace = value;
+        else if (!strcmp(option, "--world")) {
+            if (resume || strcmp(value, "sequence")) goto usage;
+            sequence_world = 1;
+        } else if (!strcmp(option, "--glyphs")) {
+            if (resume) goto usage;
+            if (!strcmp(value, "sequence")) glyph_mode = GLYPH_SEQUENCE;
+            else if (!strcmp(value, "bag")) glyph_mode = GLYPH_BAG;
+            else if (!strcmp(value, "neural")) glyph_mode = GLYPH_NEURAL_ONLY;
+            else goto usage;
+        } else if (!strcmp(option, "--appearance")) {
+            if (!strcmp(value, "plain")) appearance = 0;
+            else if (!strcmp(value, "shifted")) appearance = 1;
+            else goto usage;
+        }
         else if (!strcmp(option, "--mode")) {
             if (resume) goto usage;
             if (!strcmp(value, "normal")) mode = AMOS_NORMAL;
@@ -594,7 +887,17 @@ int main(int argc, char **argv)
     }
     if (resume) {
         if (!snapshot_load(s, resume)) { fputs("AMOS: invalid or unreadable state\n", stderr); goto done; }
+    } else if (sequence_world) {
+        snapshot_sequence(s, seed, glyph_mode); s->subject.mode = mode;
     } else snapshot_init(s, seed, mode);
+    if (appearance >= 0) {
+        if (!s->world.kind || s->world.tick % 6) goto usage;
+        s->world.gain = appearance ? 1.6 : 1.;
+        s->world.offset[0] = appearance ? -.4 : 0.;
+        s->world.offset[1] = appearance ? .3 : 0.;
+        s->world.jitter = appearance ? .10 : .02;
+        s->subject.glyph.anchored = 0;
+    }
     if (reverse_body) s->world.polarity = -s->world.polarity;
     if (steps > UINT64_MAX - s->world.tick) goto usage;
     if (trace) {
