@@ -36,7 +36,7 @@ So, **AMOS** starts there. The question we ask isn't whether a system knows the 
 
 **AMOS** has 24 recurrent neurons, zero pretrained parameters and 162 predictive coefficients that begin at zero and are acquired during its lifetime. The organism itself depends only on `libc` and `libm`. There isn't a language model hiding underneath it. There isn't a checkpoint containing somebody else's education. There isn't an API explaining the world to it. **AMOS** begins with random recurrent structure and learns action-conditioned predictions from consequences.
 
-AMOS adds a bounded associative field on top of the recurrent predictor: up to 8 acquired neural glyph prototypes, an ordered context of 4 soft glyph distributions and up to 64 action/consequence associations. The whole world, subject and history occupy about 158 KB in memory on the measured build. A portable snapshot is about 158 KB too.
+**AMOS** adds a bounded associative field on top of the recurrent predictor: up to 8 acquired neural glyph prototypes, an ordered context of 4 soft glyph distributions and up to 64 action/consequence associations. The whole world, subject and history occupy about 158 KB in memory on the measured build. A portable snapshot is about 158 KB too.
 
 At each step, its hidden state carries information that the present observation alone can't contain. Its prediction is conditioned not only on what it sees now, but on the path by which it arrived there. The distinction matters. Two identical observations can require opposite actions because they came from different histories.
 
