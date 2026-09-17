@@ -1,0 +1,9 @@
+/amos
+/evaluate
+/evaluate_glyphs
+__pycache__/
+*.tmp
+/lab/node_modules/
+/dist/
+/node_modules/
+/package-lock.json

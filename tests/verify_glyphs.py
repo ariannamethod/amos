@@ -9,7 +9,7 @@ import subprocess
 import tempfile
 from statistics import mean
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[1]
 CC = shlex.split(os.environ.get("CC", "cc"))
 FLAGS = ["-O2", "-std=c99", "-Wall", "-Wextra", "-Wpedantic", "-Werror", "-Wno-unused-function"]
 
@@ -73,7 +73,7 @@ def contracts():
     with tempfile.TemporaryDirectory(prefix="amos-glyph-contracts-") as tmp:
         p = Path(tmp)
         for name in ("amos.c", "test_glyphs.c"):
-            (p / name).write_bytes((ROOT / name).read_bytes())
+            (p / name).write_bytes((ROOT / ("tests/" + name if name == "test_glyphs.c" else name)).read_bytes())
         binary = compile_c(p, "test_glyphs")
         result["checks"] = subprocess.check_output([binary], cwd=p, text=True).splitlines()
         binary = compile_c(p, "test_glyphs", ["-DMUTATE_GLYPH_RESTORE"])
@@ -92,6 +92,12 @@ def contracts():
         if out != (ROOT/"examples/clean.jsonl").read_text():
             raise RuntimeError("Version-1 continuation changed")
         result["legacy"] = "Original AMOS0001 fixture reproduces all 400 JSON records exactly."
+        out = subprocess.check_output([binary,"resume",str(ROOT/"examples/sequence-trained.state"),
+            "--steps","576","--appearance","shifted","--frozen","--explore","0",
+            "--state",str(p/"v2-upgraded.state")],text=True)
+        if out != (ROOT/"examples/sequence-transfer.jsonl").read_text():
+            raise RuntimeError("Version-2 glyph continuation changed")
+        result["legacy_v2"] = "Original AMOS0002 fixture reproduces all 576 shifted-view records exactly."
         # CLI uses the same decision-time metadata as the in-process interface.
         full = subprocess.check_output([binary,"demo","--world","sequence","--seed","29",
             "--steps","199","--state",str(p/"full.state")], text=True)
@@ -133,7 +139,7 @@ def main():
     report = {"status": "pass" if all(normal["gates"].values()) and all(red.values()) else "fail",
               "numerical_gates": normal["gates"], "red_controls_detected": red,
               "contracts": contract_report, "source_sha256": normal["core_sha256"],
-              "protocol_sha256": hashlib.sha256((ROOT/"GLYPH_PROTOCOL.md").read_bytes()).hexdigest()}
+              "protocol_sha256": hashlib.sha256((ROOT/"docs/GLYPH_PROTOCOL.md").read_bytes()).hexdigest()}
     (ROOT/"reports/glyph-verification.json").write_text(json.dumps(report, indent=2)+"\n")
     print(json.dumps(report, indent=2))
     if report["status"] != "pass":

@@ -130,6 +130,7 @@ Reverse the body without informing the subject:
 Carry later experience back into an earlier state:
 
 ```bash
+./amos resume changed.state --steps 800 --explore 1 --state future.state
 ./amos scar changed.state future.state scar.state
 ```
 
@@ -143,7 +144,7 @@ The original inertial world remains the default. The AMOS-1 sequence experiment 
 ./amos resume adapted.state --steps 576 --frozen --explore 0 --state repaired.state > repaired.jsonl
 ```
 
-`--appearance` changes the sensor origin at a sequence trial boundary. The subject receives the transformed observation, not the transformation or the hidden law. `--glyphs bag` keeps the glyphs but removes order. `--glyphs neural` uses the ordered neural representation. `--mode memoryless` remains available as a recurrent ablation.
+`--appearance` changes the sensor origin at a sequence trial boundary. The subject receives the transformed observation, not the transformation or the hidden law. `--glyphs bag` keeps the glyphs but removes order. `--glyphs neural` uses only the recurrent predictor for forecasting and action selection; associative statistics cannot steer its exploration. `--mode memoryless` remains available as a recurrent ablation.
 
 Sequence traces also expose the acquired glyphs, their current mixture, recognition similarity, evidence support and uncertainty.
 
@@ -158,6 +159,71 @@ Language isn't required, and neither is pretraining. A correct model of reality 
 The interesting variable may be how information is distributed through time, what can affect what, which states persist, which states remain hidden, and how past consequences reshape future interpretation.
 
 **AMOS** strips that question down until there's almost nothing left to hide behind.
+
+---
+
+## A repeated glance is not a new event
+
+AMOS-2 adds `--glyphs events`. A familiar repeated observation updates the latest
+soft glyph and its duration without pushing the previous event out of memory.
+The recurrent network still processes every observation. Four events can now
+survive more than four glances.
+
+```bash
+make
+./amos demo --world sequence --glyphs events --seed 17 --steps 1920 --explore 1 --state events.state > events.jsonl
+make check
+```
+
+On 32 new births, with 96 decisions each, event memory kept **3,072 / 3,072**
+correct decisions at every tested delay: 0, 1, 2, 4 and 8 extra observations.
+The four-observation control fell to **2,168 / 3,072** at eight extra observations.
+This tests sensory cadence. It does not make four events an unlimited biography.
+Duration is retained and inspectable; this version does not yet learn laws whose
+meaning depends on the duration itself.
+
+Exploration now distinguishes **lack of evidence** from **outcome noise**. Known
+randomness no longer receives a bonus just for being random. In the small probe
+court, active exploration discovers the useful action on 32 / 32 births within
+eight probes; neutral exploitation discovers it on 0 / 32. That court isolates
+the acquisition mechanism, rather than claiming general planning superiority.
+
+A second experiment gives AMOS two controllable objects. Competing acquired
+predictors ask whose movement explains internal load. Attribution succeeds on
+32 / 32 births, survives temporary actuator interruption, and remains unresolved
+when the two channels are observationally identical. This is an embodiment
+diagnostic, separate from the action policy; its history is not imported by a scar.
+
+The complete protocol and limits are in [AMOS-2 design](docs/AMOS2_DESIGN.md),
+[protocol](docs/AMOS2_PROTOCOL.md) and [report](docs/AMOS2_REPORT.md).
+
+## Three bodies, one experiment
+
+**C remains a single runtime file:** `amos.c`. `tests/`, `docs/` and `examples/`
+are the court, its record and saved lives, not runtime dependencies.
+
+The readable Python body uses only the standard library:
+
+```bash
+python3 ports/amos.py demo --world sequence --glyphs events --steps 400 --state life.json
+python3 ports/amos.py resume life.json --steps 120
+```
+
+Open **[web/index.html](web/index.html)** directly in a browser, or serve the
+repository with `python3 -m http.server 8000` and visit `/web/`. The laboratory
+runs the actual JavaScript model locally. Pause time, inspect recurrent activity
+and acquired glyphs, reverse the law, keep a moment, then restore it with or
+without later experience. The scar view compares two frozen continuations from
+the same past. The interface does not pretend that a plotted neuron is a score
+for consciousness.
+
+Python and JavaScript exchange complete JSON checkpoints. C writes `AMOS0003`
+binary snapshots and reads the older v1/v2 formats. JSON and C binary are distinct
+formats. PRNGs match across all three implementations; forecasts and learning
+are checked with a 1e-8 numerical tolerance, and sampled decisions are checked
+exactly. `make check` requires Python 3 and Node.js for the two reference bodies.
+C itself still needs only libc and libm. `make lab` creates one portable offline HTML in `dist/`. Browser automation is a separate optional
+`make check-browser` target; see [web/README.md](web/README.md).
 
 ---
 
@@ -178,7 +244,7 @@ The interesting variable may be how information is distributed through time, wha
 | Retrieval with landmark order swapped | 0 / 3,072 |
 | Changed law after relearning | 3,072 / 3,072 |
 
-AMOS-1's measured sequence-world runtime is 33.1 microseconds per step on the x86-64 test host, excluding trace I/O.
+The table above records the AMOS-0/1 courts; they still pass with AMOS-2. The historical AMOS-1 timing was 33.1 microseconds per sequence step on its x86-64 host. Current measurements, compiler and scope are in [reports/performance.json](reports/performance.json).
 
 The subject itself needs no Python. The repository's verification layer does. `make check` runs the C evaluation and Python court, including deliberate breakage of recurrence, scar transfer, restored randomness, glyph order, uncertainty and sequence-state restoration. The point of the court is simple: if the mechanism we claim matters is broken, the corresponding gate has to fail.
 

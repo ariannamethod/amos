@@ -1,0 +1,55 @@
+{
+  "status": "pass",
+  "seeds": "5001\u20135032",
+  "decisions_per_delay": 3072,
+  "extra_samples": [
+    0,
+    1,
+    2,
+    4,
+    8
+  ],
+  "totals": {
+    "events": [
+      3072,
+      3072,
+      3072,
+      3072,
+      3072
+    ],
+    "frames": [
+      3072,
+      2446,
+      2247,
+      2132,
+      2168
+    ],
+    "events_variable": 3072,
+    "frames_variable": 2627,
+    "body": 32,
+    "body_interrupted": 32,
+    "ambiguous": 32
+  },
+  "gates": {
+    "events_all_delays": true,
+    "events_variable": true,
+    "body_attribution": true,
+    "body_interruption": true,
+    "observational_ambiguity": true
+  },
+  "red_controls": {
+    "neural_field_leak": true,
+    "noise_seeking": true,
+    "removed_event_boundary": true,
+    "lost_body_distinction": true
+  },
+  "contracts": [
+    "PASS event duration restoration, continuation and scar boundary",
+    "PASS neural-only actions isolated from associative state",
+    "PASS support-driven probe ignores known outcome noise",
+    "PROBES active=32 passive=0 births=32 budget=8"
+  ],
+  "scope": "Cadence changes repeat sensor samples; no claim of arbitrary event-rate or timing generalization. Body identification is a separate diagnostic with a specified load law.",
+  "source_sha256": "47b2bf0a34e4010f239b12f55fab3439e6e5285207d7117bd640be11ae333f5d",
+  "protocol_sha256": "d177df3eac8a1b629ee16efde4927a1a7bf74495962982851be7c971c89e5329"
+}

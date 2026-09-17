@@ -1,0 +1,139 @@
+{
+  "plain": {
+    "correct": 48.375,
+    "decisions": 96,
+    "load_mse": 0.418409077692,
+    "similarity": 0.998767713801,
+    "uncertainty": 0.45009924785287503,
+    "support": 64.0184200353375,
+    "accuracy": 0.50390625,
+    "correct_total": 387,
+    "decisions_total": 768
+  },
+  "transfer": {
+    "correct": 48.5,
+    "decisions": 96,
+    "load_mse": 0.409937566835625,
+    "similarity": 0.98394960415175,
+    "uncertainty": 0.450360103722,
+    "support": 63.0684670420625,
+    "accuracy": 0.5052083333333334,
+    "correct_total": 388,
+    "decisions_total": 768
+  },
+  "perturbed": {
+    "correct": 58.125,
+    "decisions": 96,
+    "load_mse": 0.362491798711625,
+    "similarity": 0.863994702353125,
+    "uncertainty": 0.45305854558124997,
+    "support": 55.37903318235,
+    "accuracy": 0.60546875,
+    "correct_total": 465,
+    "decisions_total": 768
+  },
+  "bag": {
+    "correct": 48.5,
+    "decisions": 96,
+    "load_mse": 0.409937566835625,
+    "similarity": 0.98394960415175,
+    "uncertainty": 0.450360103722,
+    "support": 63.0684670420625,
+    "accuracy": 0.5052083333333334,
+    "correct_total": 388,
+    "decisions_total": 768
+  },
+  "neural_only": {
+    "correct": 67.125,
+    "decisions": 96,
+    "load_mse": 0.15563638695775,
+    "similarity": 0.983956107265,
+    "uncertainty": 0.175484834256,
+    "support": 31.487149653875,
+    "accuracy": 0.69921875,
+    "correct_total": 537,
+    "decisions_total": 768
+  },
+  "shuffled": {
+    "correct": 48.5,
+    "decisions": 96,
+    "load_mse": 0.409937566835625,
+    "similarity": 0.98394960415175,
+    "uncertainty": 0.450360103722,
+    "support": 63.0684670420625,
+    "accuracy": 0.5052083333333334,
+    "correct_total": 388,
+    "decisions_total": 768
+  },
+  "reversed_frozen": {
+    "correct": 42.125,
+    "decisions": 96,
+    "load_mse": 0.41941087962475,
+    "similarity": 0.9987696806025,
+    "uncertainty": 0.45009915448425,
+    "support": 64.0185700181375,
+    "accuracy": 0.4388020833333333,
+    "correct_total": 337,
+    "decisions_total": 768
+  },
+  "reversed_early": {
+    "correct": 44.75,
+    "decisions": 96,
+    "load_mse": 0.397696729971375,
+    "similarity": 0.9987696806025,
+    "uncertainty": 0.47247882759875,
+    "support": 64.32788600845001,
+    "accuracy": 0.4661458333333333,
+    "correct_total": 358,
+    "decisions_total": 768
+  },
+  "reversed_repaired": {
+    "correct": 50.625,
+    "decisions": 96,
+    "load_mse": 0.44179466282775004,
+    "similarity": 0.9987696806025,
+    "uncertainty": 0.432346839582625,
+    "support": 64.53654286215,
+    "accuracy": 0.52734375,
+    "correct_total": 405,
+    "decisions_total": 768
+  },
+  "conflicting": {
+    "correct": 50.375,
+    "decisions": 96,
+    "load_mse": 0.40695562266637497,
+    "similarity": 0.9987423758225,
+    "uncertainty": 0.462906522682375,
+    "support": 64.278924578575,
+    "accuracy": 0.5247395833333334,
+    "correct_total": 403,
+    "decisions_total": 768
+  },
+  "unfamiliar": {
+    "similarity": 0.0341939683580375,
+    "uncertainty": 0.5999489360032499,
+    "support": 2.0902112651475
+  },
+  "births": 8,
+  "polarity_counts": [
+    4,
+    4
+  ],
+  "glyph_range": [
+    5,
+    5
+  ],
+  "association_range": [
+    30,
+    30
+  ],
+  "gates": {
+    "appearance_transfer": false,
+    "sequence_consequence_prediction": false,
+    "order_changes_decisions": false,
+    "mistaken_recognition_and_repair": false,
+    "familiar_but_uncertain": false,
+    "unfamiliar_is_distinct": false
+  },
+  "core_sha256": "66a9f67631914f1fd939fb3f11870200e5fe6f539f8371841d6adcd2584569b0"
+}

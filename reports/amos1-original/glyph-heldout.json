@@ -1,0 +1,139 @@
+{
+  "plain": {
+    "correct": 96,
+    "decisions": 96,
+    "load_mse": 0.000153446572969,
+    "similarity": 0.99859237841125,
+    "uncertainty": 0.17422814501815626,
+    "support": 31.955575640859376,
+    "accuracy": 1.0,
+    "correct_total": 3072,
+    "decisions_total": 3072
+  },
+  "transfer": {
+    "correct": 96,
+    "decisions": 96,
+    "load_mse": 0.0003391297645043125,
+    "similarity": 0.983482089254625,
+    "uncertainty": 0.1755282684035625,
+    "support": 31.472036998859377,
+    "accuracy": 1.0,
+    "correct_total": 3072,
+    "decisions_total": 3072
+  },
+  "perturbed": {
+    "correct": 95.90625,
+    "decisions": 96,
+    "load_mse": 0.00840508396019875,
+    "similarity": 0.8609088540035,
+    "uncertainty": 0.18825944438421874,
+    "support": 27.549617310646877,
+    "accuracy": 0.9990234375,
+    "correct_total": 3069,
+    "decisions_total": 3072
+  },
+  "bag": {
+    "correct": 47.46875,
+    "decisions": 96,
+    "load_mse": 0.4048530591723125,
+    "similarity": 0.9834595175076251,
+    "uncertainty": 0.448430384801625,
+    "support": 62.3879894594625,
+    "accuracy": 0.4944661458333333,
+    "correct_total": 1519,
+    "decisions_total": 3072
+  },
+  "neural_only": {
+    "correct": 82.4375,
+    "decisions": 96,
+    "load_mse": 0.14440777677503125,
+    "similarity": 0.983482089254625,
+    "uncertainty": 0.1755282684035625,
+    "support": 31.472036998859377,
+    "accuracy": 0.8587239583333334,
+    "correct_total": 2638,
+    "decisions_total": 3072
+  },
+  "shuffled": {
+    "correct": 0,
+    "decisions": 96,
+    "load_mse": 0.509826071867625,
+    "similarity": 0.98349099976625,
+    "uncertainty": 0.17552751844975,
+    "support": 31.47232226904375,
+    "accuracy": 0.0,
+    "correct_total": 0,
+    "decisions_total": 3072
+  },
+  "reversed_frozen": {
+    "correct": 0,
+    "decisions": 96,
+    "load_mse": 0.5265561746903438,
+    "similarity": 0.998641344750125,
+    "uncertainty": 0.174223988118625,
+    "support": 31.957142760156252,
+    "accuracy": 0.0,
+    "correct_total": 0,
+    "decisions_total": 3072
+  },
+  "reversed_early": {
+    "correct": 0,
+    "decisions": 96,
+    "load_mse": 0.325372408003875,
+    "similarity": 0.998641344750125,
+    "uncertainty": 0.3186701883872187,
+    "support": 31.957158853040625,
+    "accuracy": 0.0,
+    "correct_total": 0,
+    "decisions_total": 3072
+  },
+  "reversed_repaired": {
+    "correct": 96,
+    "decisions": 96,
+    "load_mse": 0.005644791973563438,
+    "similarity": 0.998641344750125,
+    "uncertainty": 0.25174199919384377,
+    "support": 31.957207819128126,
+    "accuracy": 1.0,
+    "correct_total": 3072,
+    "decisions_total": 3072
+  },
+  "conflicting": {
+    "correct": 50.8125,
+    "decisions": 96,
+    "load_mse": 0.13731003830014687,
+    "similarity": 0.9986173056395,
+    "uncertainty": 0.36949731956075,
+    "support": 31.956457892259376,
+    "accuracy": 0.529296875,
+    "correct_total": 1626,
+    "decisions_total": 3072
+  },
+  "unfamiliar": {
+    "similarity": 0.02592743061422552,
+    "uncertainty": 0.7762705583022187,
+    "support": 0.8104417845038797
+  },
+  "births": 32,
+  "polarity_counts": [
+    18,
+    14
+  ],
+  "glyph_range": [
+    4,
+    5
+  ],
+  "association_range": [
+    63,
+    63
+  ],
+  "gates": {
+    "appearance_transfer": true,
+    "sequence_consequence_prediction": true,
+    "order_changes_decisions": true,
+    "mistaken_recognition_and_repair": true,
+    "familiar_but_uncertain": true,
+    "unfamiliar_is_distinct": true
+  },
+  "core_sha256": "833901c4d3ccdcebe4081dd00b930fcba0f493615a0b4ff0a1ee1a90325b929b"
+}

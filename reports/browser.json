@@ -1,0 +1,17 @@
+{
+  "status": "pass",
+  "browser": "153.0.8010.0",
+  "checks": [
+    "step/run/pause",
+    "exact restore continuation",
+    "scar preserves past world",
+    "actuator intervention isolates subject",
+    "frozen learning",
+    "JSON export/import",
+    "invalid import atomic",
+    "390px mobile layout",
+    "no runtime network requests",
+    "no browser exceptions"
+  ],
+  "screenshots": "/tmp/amos-browser-shots"
+}

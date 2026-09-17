@@ -1,0 +1,35 @@
+{
+  "worlds": {
+    "inertial": {
+      "steps": 20000,
+      "initialization_us": 67.0,
+      "step_cpu_us": 8.35265,
+      "subject_bytes": 53304,
+      "snapshot_memory_bytes": 157912,
+      "peak_rss_kib": 1024,
+      "snapshot_file_bytes": 157960
+    },
+    "sequence": {
+      "steps": 20000,
+      "initialization_us": 55.0,
+      "step_cpu_us": 33.06295,
+      "subject_bytes": 53304,
+      "snapshot_memory_bytes": 157912,
+      "peak_rss_kib": 1024,
+      "snapshot_file_bytes": 157960
+    }
+  },
+  "source_lines": 932,
+  "source_bytes": 36769,
+  "executable_bytes": 38648,
+  "platform": "Linux-6.18.44-x86_64-with-glibc2.39",
+  "compiler": "cc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0",
+  "flags": [
+    "-O2",
+    "-std=c99",
+    "-Wall",
+    "-Wextra",
+    "-Wpedantic"
+  ],
+  "scope": "One process, online RLS+planning+world step+ring memory; excludes trace I/O and state serialization from step timing."
+}

@@ -9,7 +9,7 @@ import subprocess
 import tempfile
 import time
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def gates(r):
@@ -80,7 +80,7 @@ def main():
            ("recurrent_body_prediction", "history_changes_action")}
     report = {"numerical_gates": normal["gates"], "red_controls_detected": red,
               "source_sha256": normal["core_sha256"],
-              "protocol_sha256": hashlib.sha256((ROOT / "PROTOCOL.md").read_bytes()).hexdigest(),
+              "protocol_sha256": hashlib.sha256((ROOT / "docs/PROTOCOL.md").read_bytes()).hexdigest(),
               "status": "pass" if not failed and all(red.values()) else "fail"}
     (ROOT / "reports" / "verification.json").write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps(report, indent=2))

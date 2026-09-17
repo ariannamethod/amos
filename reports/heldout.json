@@ -1,0 +1,93 @@
+{
+  "protocol": "AMOS-0-v1",
+  "first_seed": 1001,
+  "seeds": 32,
+  "training_steps": 1600,
+  "prediction_steps": 400,
+  "control_steps": 400,
+  "adaptation_steps": 800,
+  "wiring_counts": [
+    14,
+    18
+  ],
+  "polarity_counts": [
+    19,
+    13
+  ],
+  "prediction": {
+    "recurrent": {
+      "body_mse": 8.02972917707e-07,
+      "external_mse": 0.000338772833756,
+      "load_mse": 6.35459585684e-06,
+      "n": 12800
+    },
+    "memoryless": {
+      "body_mse": 0.000869423692786,
+      "external_mse": 0.000656831549709,
+      "load_mse": 0.00015774824526,
+      "n": 12800
+    },
+    "linear": {
+      "body_mse": 0.000841244185111,
+      "external_mse": 0.000589916119324,
+      "load_mse": 0.000178377989836,
+      "n": 12800
+    },
+    "persistence": {
+      "body_mse": 0.0022432846355,
+      "external_mse": 0.000584573044933,
+      "load_mse": 0.000206177021915,
+      "n": 12800
+    }
+  },
+  "identified": 32,
+  "belief_intervention_changed_actions": 3094,
+  "belief_intervention_total": 3200,
+  "control_mse": {
+    "recurrent": 0.0442100203953,
+    "memoryless": 0.0919948856713,
+    "linear": 0.0410772159812
+  },
+  "aliased_observation": {
+    "pairs": 32,
+    "distinct_actions": [
+      32,
+      0,
+      0
+    ],
+    "braking_actions": [
+      64,
+      0,
+      0
+    ],
+    "first_step_mse": [
+      0.000747519436409,
+      0.0052950737515,
+      0.0052950737515
+    ]
+  },
+  "body_reversal_mse": {
+    "adapted": 0.154203948624,
+    "frozen": 1.47530773629,
+    "unchanged": 0.0423075716989
+  },
+  "scar": {
+    "accepted": 32,
+    "clean_mse": 1.47520703316,
+    "useful_mse": 1.1441835406,
+    "mislabeled_mse": 1.4640668492
+  },
+  "sizeof_subject": 53552,
+  "sizeof_snapshot": 158160,
+  "gates": {
+    "learned_controllability": true,
+    "recurrent_body_prediction": true,
+    "bodily_self_prediction": true,
+    "history_changes_action": true,
+    "acquired_belief_is_causal": true,
+    "body_reversal_adaptation": true,
+    "retained_future_experience": true
+  },
+  "elapsed_seconds": 1.874584902998322,
+  "core_sha256": "47b2bf0a34e4010f239b12f55fab3439e6e5285207d7117bd640be11ae333f5d"
+}

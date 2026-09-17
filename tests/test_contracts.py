@@ -190,7 +190,7 @@ def command(args, cwd, *, expect=0, env=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--source", type=Path, default=Path(__file__).with_name("amos.c"))
+    parser.add_argument("--source", type=Path, default=Path(__file__).resolve().parents[1] / "amos.c")
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--no-sanitize", action="store_true")
     args = parser.parse_args()

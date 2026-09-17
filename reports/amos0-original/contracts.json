@@ -1,0 +1,40 @@
+{
+  "source": "/workspace/scratch/efb57d77040f/amos/amos.c",
+  "source_sha256": "4c599ec37a4f11a7f5710e93348fc98232125ce8de1e138cd38744f2e5ca0903",
+  "compiler": [
+    "cc"
+  ],
+  "checks": [
+    "standalone strict C99 build",
+    "replay",
+    "scar",
+    "CLI exact split continuation and JSONL chronology",
+    "CLI scar parity and unrelated-origin rejection",
+    "CLI invalid inputs and frozen-learning switch",
+    "CLI body reversal changes only actuator polarity; double reversal exact",
+    "empty rejected atomically",
+    "truncated-header rejected atomically",
+    "truncated-payload rejected atomically",
+    "appended-data rejected atomically",
+    "tampered-header rejected atomically",
+    "tampered-payload rejected atomically",
+    "AddressSanitizer + UndefinedBehaviorSanitizer"
+  ],
+  "red_controls": [
+    {
+      "mutation": "reset-restored-rng",
+      "detected": "CONTRACT FAILURE: complete state restoration"
+    },
+    {
+      "mutation": "scar-noop",
+      "detected": "CONTRACT FAILURE: future experience changes acquired predictor"
+    },
+    {
+      "mutation": "scar-future-world-leak",
+      "detected": "CONTRACT FAILURE: scar changes only predictor weights/covariance/update count"
+    }
+  ],
+  "sanitizer_limit": "LeakSanitizer unavailable: runtime executes under ptrace",
+  "snapshot_bytes": 99176,
+  "status": "pass"
+}

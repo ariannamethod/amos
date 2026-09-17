@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Measure AMOS without JSON trace I/O; only Python's standard library is used."""
 import json
+import hashlib
 import os
 from pathlib import Path
 import platform
@@ -21,7 +22,7 @@ int main(int argc, char **argv) {
     if(!s) return 1;
     (void)argv;
     start=clock();
-    if(argc>1) snapshot_sequence(s,2026,GLYPH_SEQUENCE);
+    if(argc>1) snapshot_sequence(s,2026,!strcmp(argv[1],"events")?GLYPH_EVENTS:GLYPH_SEQUENCE);
     else snapshot_init(s,2026,AMOS_NORMAL);
     init_end=clock();
     for(i=0;i<steps;i++) snapshot_step(s,NAN,1,.25,NULL);
@@ -52,8 +53,8 @@ def main():
         (work/"bench.c").write_text(HARNESS)
         subprocess.run(compiler+flags+["-Wno-unused-function","-I",str(ROOT),
                        str(work/"bench.c"),"-lm","-o",str(work/"bench")],check=True)
-        for name in ("inertial", "sequence"):
-            cmd=[str(work/"bench")]+(["sequence"] if name=="sequence" else [])
+        for name in ("inertial", "sequence", "events"):
+            cmd=[str(work/"bench")]+([name] if name!="inertial" else [])
             rss_file=work/"rss.txt"
             if platform.system()=="Linux" and Path("/usr/bin/time").exists():
                 cmd=["/usr/bin/time","-f","%M","-o",str(rss_file)]+cmd
@@ -63,6 +64,7 @@ def main():
             result["snapshot_file_bytes"]=(work/"measure.state").stat().st_size
             measurements[name]=result
     result={"worlds":measurements}
+    result["source_sha256"]=hashlib.sha256((ROOT/"amos.c").read_bytes()).hexdigest()
     result["source_lines"]=len((ROOT/"amos.c").read_text().splitlines())
     result["source_bytes"]=(ROOT/"amos.c").stat().st_size
     result["executable_bytes"]=(ROOT/"amos").stat().st_size

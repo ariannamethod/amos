@@ -1,0 +1,18 @@
+{
+  "numerical_gates": {
+    "learned_controllability": true,
+    "recurrent_body_prediction": true,
+    "bodily_self_prediction": true,
+    "history_changes_action": true,
+    "acquired_belief_is_causal": true,
+    "body_reversal_adaptation": true,
+    "retained_future_experience": true
+  },
+  "red_controls_detected": {
+    "recurrent_body_prediction": true,
+    "history_changes_action": true
+  },
+  "source_sha256": "47b2bf0a34e4010f239b12f55fab3439e6e5285207d7117bd640be11ae333f5d",
+  "protocol_sha256": "ea5a15436ddf99c9547ccf872cf2d8399f3d8925bc1d66820051c9eb0641ccb1",
+  "status": "pass"
+}

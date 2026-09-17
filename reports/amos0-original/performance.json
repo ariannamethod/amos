@@ -1,0 +1,22 @@
+{
+  "steps": 20000,
+  "initialization_us": 3.0,
+  "step_cpu_us": 7.55535,
+  "subject_bytes": 30440,
+  "snapshot_memory_bytes": 99152,
+  "peak_rss_kib": 976,
+  "snapshot_file_bytes": 99176,
+  "source_lines": 629,
+  "source_bytes": 23472,
+  "executable_bytes": 25920,
+  "platform": "Linux-6.18.44-x86_64-with-glibc2.39",
+  "compiler": "cc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0",
+  "flags": [
+    "-O2",
+    "-std=c99",
+    "-Wall",
+    "-Wextra",
+    "-Wpedantic"
+  ],
+  "scope": "One process, online RLS+planning+world step+ring memory; excludes trace I/O and state serialization from step timing."
+}

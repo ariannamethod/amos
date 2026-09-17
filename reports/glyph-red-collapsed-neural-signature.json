@@ -1,0 +1,139 @@
+{
+  "plain": {
+    "correct": 42.5,
+    "decisions": 96,
+    "load_mse": 0.5804415165346251,
+    "similarity": 1,
+    "uncertainty": 0.40400871628725,
+    "support": 32.015317402,
+    "accuracy": 0.4427083333333333,
+    "correct_total": 340,
+    "decisions_total": 768
+  },
+  "transfer": {
+    "correct": 42.5,
+    "decisions": 96,
+    "load_mse": 0.57708303526925,
+    "similarity": 1,
+    "uncertainty": 0.40400871628725,
+    "support": 32.015317402,
+    "accuracy": 0.4427083333333333,
+    "correct_total": 340,
+    "decisions_total": 768
+  },
+  "perturbed": {
+    "correct": 42.5,
+    "decisions": 96,
+    "load_mse": 0.577534896522625,
+    "similarity": 1,
+    "uncertainty": 0.40400871628725,
+    "support": 32.015317402,
+    "accuracy": 0.4427083333333333,
+    "correct_total": 340,
+    "decisions_total": 768
+  },
+  "bag": {
+    "correct": 42.5,
+    "decisions": 96,
+    "load_mse": 0.577175301788375,
+    "similarity": 1,
+    "uncertainty": 0.40311176021024997,
+    "support": 32.1675513739,
+    "accuracy": 0.4427083333333333,
+    "correct_total": 340,
+    "decisions_total": 768
+  },
+  "neural_only": {
+    "correct": 67.125,
+    "decisions": 96,
+    "load_mse": 0.15563638695775,
+    "similarity": 1,
+    "uncertainty": 0.40400871628725,
+    "support": 32.015317402,
+    "accuracy": 0.69921875,
+    "correct_total": 537,
+    "decisions_total": 768
+  },
+  "shuffled": {
+    "correct": 42.5,
+    "decisions": 96,
+    "load_mse": 0.57708303526925,
+    "similarity": 1,
+    "uncertainty": 0.40400871628725,
+    "support": 32.015317402,
+    "accuracy": 0.4427083333333333,
+    "correct_total": 340,
+    "decisions_total": 768
+  },
+  "reversed_frozen": {
+    "correct": 41.625,
+    "decisions": 96,
+    "load_mse": 0.584971610242875,
+    "similarity": 1,
+    "uncertainty": 0.40400871628725,
+    "support": 32.015317402,
+    "accuracy": 0.43359375,
+    "correct_total": 333,
+    "decisions_total": 768
+  },
+  "reversed_early": {
+    "correct": 31.75,
+    "decisions": 96,
+    "load_mse": 0.589189526899875,
+    "similarity": 1,
+    "uncertainty": 0.434780188334,
+    "support": 32.030634804,
+    "accuracy": 0.3307291666666667,
+    "correct_total": 254,
+    "decisions_total": 768
+  },
+  "reversed_repaired": {
+    "correct": 42.75,
+    "decisions": 96,
+    "load_mse": 0.57964909143325,
+    "similarity": 1,
+    "uncertainty": 0.393280685155625,
+    "support": 32.030634804,
+    "accuracy": 0.4453125,
+    "correct_total": 342,
+    "decisions_total": 768
+  },
+  "conflicting": {
+    "correct": 29.875,
+    "decisions": 96,
+    "load_mse": 0.580688688606625,
+    "similarity": 1,
+    "uncertainty": 0.410806372657125,
+    "support": 32.015317402,
+    "accuracy": 0.3111979166666667,
+    "correct_total": 239,
+    "decisions_total": 768
+  },
+  "unfamiliar": {
+    "similarity": 1,
+    "uncertainty": 0.349048423533875,
+    "support": 32.0169907704875
+  },
+  "births": 8,
+  "polarity_counts": [
+    4,
+    4
+  ],
+  "glyph_range": [
+    1,
+    1
+  ],
+  "association_range": [
+    6,
+    6
+  ],
+  "gates": {
+    "appearance_transfer": false,
+    "sequence_consequence_prediction": false,
+    "order_changes_decisions": false,
+    "mistaken_recognition_and_repair": false,
+    "familiar_but_uncertain": false,
+    "unfamiliar_is_distinct": false
+  },
+  "core_sha256": "12f314390fb39ab584e4a5333b419f18ce652452d469abaeb3782eb739aa4a29"
+}

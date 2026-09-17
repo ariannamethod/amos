@@ -1,0 +1,107 @@
+{
+  "status": "pass",
+  "cases": [
+    {
+      "seed": "1",
+      "mode": 0,
+      "steps": 240,
+      "records": 20
+    },
+    {
+      "seed": "1",
+      "mode": 1,
+      "steps": 240,
+      "records": 20
+    },
+    {
+      "seed": "1",
+      "mode": 2,
+      "steps": 240,
+      "records": 20
+    },
+    {
+      "seed": "1",
+      "mode": 3,
+      "steps": 240,
+      "records": 20
+    },
+    {
+      "seed": "1",
+      "mode": 4,
+      "steps": 240,
+      "records": 20
+    },
+    {
+      "seed": "5007",
+      "mode": 0,
+      "steps": 240,
+      "records": 20
+    },
+    {
+      "seed": "5007",
+      "mode": 1,
+      "steps": 240,
+      "records": 20
+    },
+    {
+      "seed": "5007",
+      "mode": 2,
+      "steps": 240,
+      "records": 20
+    },
+    {
+      "seed": "5007",
+      "mode": 3,
+      "steps": 240,
+      "records": 20
+    },
+    {
+      "seed": "5007",
+      "mode": 4,
+      "steps": 1920,
+      "records": 149
+    },
+    {
+      "seed": "18446744073709551615",
+      "mode": 0,
+      "steps": 240,
+      "records": 20
+    },
+    {
+      "seed": "18446744073709551615",
+      "mode": 1,
+      "steps": 240,
+      "records": 20
+    },
+    {
+      "seed": "18446744073709551615",
+      "mode": 2,
+      "steps": 240,
+      "records": 20
+    },
+    {
+      "seed": "18446744073709551615",
+      "mode": 3,
+      "steps": 240,
+      "records": 20
+    },
+    {
+      "seed": "18446744073709551615",
+      "mode": 4,
+      "steps": 240,
+      "records": 20
+    }
+  ],
+  "maximum_absolute_difference": 2.411200128449309e-10,
+  "tolerance": {
+    "absolute": 1e-08,
+    "relative": 1e-08
+  },
+  "persistence": "Exact per-runtime continuation; Python/JS checkpoint and scar interchange",
+  "decision_comparison": "Exact on sampled forced-trajectory states",
+  "source_sha256": {
+    "amos.c": "47b2bf0a34e4010f239b12f55fab3439e6e5285207d7117bd640be11ae333f5d",
+    "ports/amos.py": "12c0ebce4ba4010cc3626585c857c8ac771f2ebed9e63636770ad813fbdcb5d7",
+    "web/amos.js": "a6c59fd3ffb175b74c6f504b25b06bfd7f8402ef88db5486ab0af296f2229312"
+  }
+}

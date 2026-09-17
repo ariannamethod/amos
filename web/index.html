@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AMOS — Laboratory</title><link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+<header><div class="brand">AMOS <span>Laboratory</span></div><div class="runtime"><span id="status">Paused</span><span class="divider"></span>Tick <b id="tick">0</b></div></header>
+<section class="toolbar" aria-label="Experiment controls">
+<div class="controls"><button id="play" class="primary">Run</button><button id="step">Step</button><button id="advance">+120 steps</button></div>
+<div class="controls"><label class="sr-only" for="speed">Speed</label><select id="speed"><option value="2">2 steps / sec</option><option value="12" selected>12 steps / sec</option><option value="60">60 steps / sec</option></select><label class="switch"><input id="learning" type="checkbox" checked> Learn</label></div>
+</section>
+<section class="workspace">
+<article class="panel environment">
+<div class="panel-heading"><div><p class="eyebrow">01 / Environment</p><h1>A world with hidden rules.</h1></div><span class="tag" id="worldName">Sequence</span></div>
+<div class="world-view"><svg id="world" viewBox="0 0 600 310" role="img" aria-label="Current world observation"></svg><div class="world-caption"><span id="phase">Rest</span><span id="action">No action yet</span></div></div>
+<div class="metrics"><div><span>Channel A</span><strong id="obsA">0.000</strong></div><div><span>Channel B</span><strong id="obsB">0.000</strong></div><div><span>Internal load</span><strong id="load">0.000</strong></div></div>
+<div class="intervention"><div><h3>Change the rule</h3><p>Reverse the actuator. The subject is not told.</p></div><button id="reverse">Reverse</button></div>
+<details class="physics"><summary>Observer’s access</summary><p id="hidden"></p><p>These hidden variables are visible to you. The subject receives only the three observations above and the consequences of its actions.</p></details>
+</article>
+<article class="panel subject">
+<div class="panel-heading"><div><p class="eyebrow">02 / Subject</p><h2>A point of view, in motion.</h2></div><span class="tag" id="updates">0 updates</span></div>
+<div class="neural-label"><span>Recurrent state</span><span>24 neurons</span></div><div id="neurons" class="neurons" aria-label="24 recurrent neuron activations"></div>
+<div class="section-label"><span>Remembered events</span><span id="alphabet">0 acquired glyphs</span></div><div class="events" id="events"></div>
+<div class="forecast"><div class="section-label"><span>Last decision’s forecast</span><span id="decisionTick">—</span></div><div class="forecast-row"><span></span><span>Expected</span><span>Observed</span></div><div class="forecast-row"><span>Internal load</span><strong id="expected">—</strong><strong id="actual">—</strong></div><div class="forecast-row"><span>Prediction error</span><strong id="error">—</strong><span>RMS / 3 channels</span></div></div>
+<div class="uncertainty"><div><div class="section-label"><span>Lack of evidence</span><b id="ignorance">1.00</b></div><meter id="ignoranceMeter" min="0" max="1" value="1"></meter></div><div><div class="section-label"><span>Outcome noise</span><b id="noise">0.00</b></div><meter id="noiseMeter" min="0" max="1" value="0"></meter></div></div>
+<p class="note">Glyphs are acquired from neural responses. No names, meanings or world labels are supplied.</p>
+</article>
+</section>
+<section class="panel timeline">
+<div class="timeline-heading"><div><p class="eyebrow">03 / Biography</p><h2>Experience leaves a trace.</h2></div><div class="legend"><span class="actual-dot">Observed load</span><span class="predicted-dot">Expected load</span></div></div>
+<svg id="history" viewBox="0 0 1100 130" role="img" aria-label="Last 128 observed and predicted internal loads"></svg>
+<div class="time-controls"><div class="controls"><button id="checkpoint">Keep this moment</button><button id="restore" disabled>Restore</button><button id="scar" disabled>Restore with a scar</button></div><span id="checkpointLabel">No moment retained</span></div>
+<p id="message" class="message" role="status" aria-live="polite">Start with a birth. There is no pretrained model.</p>
+<div id="branches" class="branches" hidden></div>
+</section>
+<footer><div><strong>Arianna Method Ontological Subjectivity</strong><span>Local computation. No server, checkpoint download or API.</span></div><button id="settingsToggle" aria-expanded="false" aria-controls="settings">Experiment settings</button></footer>
+<section id="settings" class="panel settings" hidden>
+<label>World<select id="kind"><option value="1">Landmark sequence</option><option value="0">Inertial world</option></select></label>
+<label>Representation<select id="glyphMode"><option value="4">Events + duration</option><option value="1">Four observations</option><option value="2">Unordered glyphs</option><option value="3">Neural only</option></select></label>
+<label>Birth seed<input id="seed" type="text" inputmode="numeric" value="17"></label>
+<label>Exploration<input id="explore" type="number" min="0" max="1" step="0.05" value="0.25"></label>
+<div class="controls"><button id="birth">New birth</button><button id="download">Export state</button><button id="upload">Import state</button><input type="file" id="file" accept="application/json,.json" hidden></div>
+</section>
+</main>
+<script src="amos.js"></script><script src="lab.js"></script>
+</body></html>

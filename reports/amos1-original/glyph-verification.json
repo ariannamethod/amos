@@ -1,0 +1,32 @@
+{
+  "status": "pass",
+  "numerical_gates": {
+    "appearance_transfer": true,
+    "sequence_consequence_prediction": true,
+    "order_changes_decisions": true,
+    "mistaken_recognition_and_repair": true,
+    "familiar_but_uncertain": true,
+    "unfamiliar_is_distinct": true
+  },
+  "red_controls_detected": {
+    "collapsed-neural-signature": true,
+    "unordered-retrieval": true,
+    "disconnected-field": true,
+    "ignored-outcome-dispersion": true,
+    "ignored-prototype-distance": true
+  },
+  "contracts": {
+    "checks": [
+      "PASS glyph state and 149-step exact continuation through ring wrap",
+      "PASS frozen acquisition with live neural and sequence state",
+      "PASS acquired-field scar with stable live history and prototype compatibility",
+      "PASS predictions and recognition precede consequences"
+    ],
+    "red_restore": "FAIL restore every glyph, statistic and sequence",
+    "sanitizers": "AddressSanitizer and UBSan pass; LeakSanitizer disabled in this execution environment.",
+    "legacy": "Original AMOS0001 fixture reproduces all 400 JSON records exactly.",
+    "cli": "199-step exact JSONL and snapshot continuation; observable glyph mixtures."
+  },
+  "source_sha256": "833901c4d3ccdcebe4081dd00b930fcba0f493615a0b4ff0a1ee1a90325b929b",
+  "protocol_sha256": "f99b6630e6dc99e39eac6db54366f75bf3e2e6a45a37b0c66f590a644cc6ef2f"
+}
