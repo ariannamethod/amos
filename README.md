@@ -4,7 +4,7 @@
 
 **Arianna Method Ontological Subjectivity**
 
-### The simplest way to build consciousness and subjectivity from scratch. No deps.
+The simplest way to build consciousness and subjectivity from scratch. No deps.
 
 ---
 
