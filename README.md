@@ -8,6 +8,10 @@
 
 The simplest way to build consciousness and subjectivity from scratch. No deps.
 
+[![AMOS laboratory — recurrent activity, acquired glyphs and history](assets/amos-laboratory.jpg)](web/index.html)
+
+*AMOS in the browser: sequence world, seed 17, tick 961.*
+
 ---
 
 ## THESIS
