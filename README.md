@@ -134,10 +134,24 @@ anchors. **Keep this history** and **Compare histories** let a kept life and
 its later continuation meet the same new observation, with both perspectives
 visible together.
 
-**AMOS II now has 28 recurrent neurons and 186 acquired predictive coefficients.**
-Its chosen LALO reads feed actual returned content back into perception and glyph
-associations. Prior resonance changes the incoming signal. Existing 24-neuron
-lives grow with their acquired weights, memories and pending forecasts retained.
+**AMOS II now has 40 recurrent neurons, 258 acquired predictive coefficients and
+184 coefficients predicting its own response.** It learns what a chosen read and
+its own recursive reaction will do to its state, then meets the actual change.
+That discrepancy becomes a sourced fact and helps choose what to attend to next.
+Existing 24- and 28-neuron lives grow with their acquired weights, memories,
+pending forecasts and random streams retained.
+
+**Self-reflection is a fact too.** Registration, source assertions, attention,
+chosen reads and measured changes have distinct receipts in the same heart.
+Named LALO rules can retain agreement, disagreement and later correction, with
+the exact premises known at the time. A repeated explicit reconsideration records
+the act of reconsidering even when its conclusion stays the same.
+
+**The emotional sonar participates in the whole loop.** Six coupled chambers,
+somatic memory and slow scars modulate perception, learning, recall, exploration
+and expression. Its provisional glyph response returns through the semantic
+membrane for one to four neural passes before a final expression. This organ
+adapts the recursive principles of [klaus.c](https://github.com/ariannamethod/klaus.c).
 
 **The glyphs are its expression.** The alphabet comes from actually.life;
 associations with recurrent state and recognized events are acquired during this
@@ -145,7 +159,15 @@ life. Ordinary signs — `earth`, `stone`, `now` — can grow into a new compoun
 In the [first recorded life](assets/amos-2-world-20261031.jpg), `earth+stone` was born from fourteen observed pairings
 and entered the subject's own expression. Human addressing belongs to the same
 world: the act of writing is itself a fact, and its content meets the glyph field
-already shaped by experience. That meeting has a measurable resonance.
+already shaped by experience. Shared glyphs recall particular prior encounters;
+matches and nonmatches retain their own evidence and change perception. Human
+addressing and LLM interactions use that same association path.
+
+**Six languages meet the same glyph field:** English, Hebrew, Russian, French,
+German and Spanish. Their seed words share the original 88 stable identities and
+the acquired history attached to them. **Glyph captions** in life settings chooses
+their displayed names, including grown compounds. English is the default; switching
+captions preserves the life exactly. Original source words remain in their receipts.
 
 **[Amos-2.html](Amos-2.html)** is the self-contained minimum. Open that one file:
 the fact heart, learning subject, kinetic history, glyph voice and complete life
@@ -153,13 +175,18 @@ continuation are inside it. A sibling **[worlds/](AMOSLOG.md#world-contract)** f
 environments and further points of development. The same life continues when
 the folder is absent, carrying what its earlier encounters already changed.
 
-![AMOS II — 28 neurons, acquired reads and glyph expression](assets/amos-2-28-neurons-20261031.jpg)
+![AMOS II — 40 neurons, one acquired glyph field and six language entrances](assets/amos-2-six-languages-20261031.jpg)
+
+*Encounter 42, without the optional folder: `earth stone now music` meets prior
+addresses and an earthquake; `music` remains unmatched in recent context. Its
+expression is `remember · earth · stone · tired · now+earth`. The same life has
+grown eight compound signs. Language choice stays in settings.*
 
 [With optional worlds](assets/amos-2-worlds-20261031.jpg) ·
 [Two histories, one shared observation](assets/amos-2-histories-20261031.jpg) ·
 [Acquired relations](AMOSLOG.md#acquired-relations) ·
 [Organs and projections](AMOSLOG.md#runtime-organs-and-provenance) ·
-[Verification and project log](AMOSLOG.md): 38 behavioral gates and 1,600
+[Verification and project log](AMOSLOG.md): 70 behavioral gates and 1,600
 reference-body decisions pass through `make check`. Historical screenshots record
 the earlier lives; acquired state and complete continuation are preserved.
 
@@ -282,7 +309,7 @@ exactly. `make check` runs the reference-body and standalone-heart checks with
 Python 3, Node.js and a C compiler. C itself still needs only libc and libm.
 `make lab` creates one portable offline laboratory in `dist/`; `make world`
 rebuilds `Amos-2.html`. The original reference bodies use 24 neurons; AMOS II
-selects the expanded 28-neuron JavaScript body.
+selects the expanded 40-neuron JavaScript body.
 
 ---
 

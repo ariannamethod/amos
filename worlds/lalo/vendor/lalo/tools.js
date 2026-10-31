@@ -60,10 +60,18 @@ function argumentsFor(tool, input) {
 }
 
 // Each host owns a fixed snapshot, so pagination and repeated calls cannot drift.
-export function createToolHost(world, { maxResultBytes = TOOL_BUDGET.maxResultBytes } = {}) {
+// AMOS extension: explicit session budgets; upstream defaults remain unchanged.
+export function createToolHost(world, { maxResultBytes = TOOL_BUDGET.maxResultBytes,
+  capacity = TOOL_BUDGET.capacity, maxBytes = TOOL_BUDGET.maxBytes } = {}) {
+  if (!Number.isSafeInteger(capacity) || capacity < 1 || capacity > 16384 ||
+    !Number.isSafeInteger(maxBytes) || maxBytes < 1 || maxBytes > 32_000_000)
+    throw new RangeError('invalid session journal budget');
+  const sessionDefinitions = listTools();
+  for (const tool of sessionDefinitions) if (tool.parameters.properties.offset)
+    tool.parameters.properties.offset.maximum = capacity;
   if (!Number.isSafeInteger(maxResultBytes) || maxResultBytes < 1024 || maxResultBytes > TOOL_BUDGET.maxResultBytes)
     throw new RangeError('result byte budget must be between 1024 and 65536');
-  const ledger = decodeJournal(encodeJournal(world, TOOL_BUDGET), TOOL_BUDGET), all = ledger.entries();
+  const ledger = decodeJournal(encodeJournal(world, { maxBytes }), { capacity, maxBytes }), all = ledger.entries();
   const known = at => all.filter(f => f.recordedAt <= at);
   const match = (f, a) => ['subject', 'predicate', 'source'].every(k => a[k] === undefined || f[k] === a[k]);
   function page(rows, args, extra = {}) {
@@ -73,7 +81,7 @@ export function createToolHost(world, { maxResultBytes = TOOL_BUDGET.maxResultBy
     for (let i = args.offset; i < Math.min(rows.length, args.offset + args.limit); i++) {
       data.items.push(rows[i]);
       // Reserve the actual continuation fields when measuring the whole envelope.
-      data.nextOffset = TOOL_BUDGET.capacity; data.complete = false;
+      data.nextOffset = capacity; data.complete = false;
       if (bytes(result) > maxResultBytes) { data.items.pop(); break; }
     }
     const end = args.offset + data.items.length;
@@ -84,7 +92,7 @@ export function createToolHost(world, { maxResultBytes = TOOL_BUDGET.maxResultBy
   function execute(tool, a) {
     if (tool === 'lalo_status') return { ok: true, data: { snapshot: 'fixed for this host session', records: all.length,
       firstReceipt: all[0]?.recordedAt ?? null, latestReceipt: all.at(-1)?.recordedAt ?? null,
-      limits: { ...TOOL_BUDGET, maxResultBytes } } };
+      limits: { ...TOOL_BUDGET, capacity, maxBytes, maxResultBytes } } };
     if (tool === 'lalo_subjects') {
       const subjects = new Map();
       for (const f of known(a.knownAt)) {
@@ -116,9 +124,9 @@ export function createToolHost(world, { maxResultBytes = TOOL_BUDGET.maxResultBy
     return page(premises.map(id => ({ role: roles.get(id), fact: byID.get(id) })), a,
       { reading: { ...summary, premiseCount: premises.length, counts: { supporting: supporting.length, opposing: opposing.length, unknown: unknown.length } } });
   }
-  return Object.freeze({ list: listTools, call(name, input = {}) {
+  return Object.freeze({ list: () => JSON.parse(JSON.stringify(sessionDefinitions)), call(name, input = {}) {
     try {
-      const tool = definitions.find(t => t.name === name);
+      const tool = sessionDefinitions.find(t => t.name === name);
       if (!tool) throw new ToolError('UNKNOWN_TOOL', 'Tool is not registered');
       const args = argumentsFor(tool, input), result = execute(name, args);
       if (bytes(result) > maxResultBytes) throw new ToolError('RESULT_BUDGET', 'Result exceeds the host byte budget');

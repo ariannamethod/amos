@@ -57,7 +57,7 @@ export function validateUSGSJournal(ledger) {
 }
 
 // A whole poll is staged on a new ledger. On failure the caller retains its prior journal.
-export function ingestUSGS(ledger, feed, { receivedAt, capacity = 1024, maxEvents = 500 } = {}) {
+export function ingestUSGS(ledger, feed, { receivedAt, capacity = 1024, maxBytes = 2_000_000, maxEvents = 500 } = {}) {
   integer(receivedAt, 'receipt time');
   if (!Number.isSafeInteger(maxEvents) || maxEvents < 1) throw new RangeError('invalid event budget');
   if (feed?.type !== 'FeatureCollection' || !Array.isArray(feed.features))
@@ -65,7 +65,7 @@ export function ingestUSGS(ledger, feed, { receivedAt, capacity = 1024, maxEvent
   if (feed.features.length > maxEvents) throw new RangeError('USGS feed exceeds event budget');
   const events = feed.features.map(event);
   if (new Set(events.map(e => e.id)).size !== events.length) throw new Error('duplicate event in USGS feed');
-  const candidate = decodeJournal(encodeJournal(ledger), { capacity });
+  const candidate = decodeJournal(encodeJournal(ledger, { maxBytes }), { capacity, maxBytes });
   const existing = new Map(candidate.entries().map(f => [f.id, f]));
   const latest = new Map();
   for (const fact of candidate.entries()) {

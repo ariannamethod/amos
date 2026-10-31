@@ -60,4 +60,11 @@
         glyphs:[glyph('body'),glyph('earth'),glyph('now')],detail:{latitude,longitude,accuracy}}];
     },
   });
+  if(typeof document!=='undefined'){
+    const base=document.currentScript?.src??new URL('worlds/worlds.js',document.baseURI).href;
+    for(const name of ['interactions','claims']){
+      const script=document.createElement('script');script.src=new URL(`sensors/${name}.js`,base).href;script.async=true;
+      script.onerror=()=>script.remove();document.head.append(script);
+    }
+  }
 })();
