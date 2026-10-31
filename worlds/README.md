@@ -11,6 +11,9 @@ When this folder is beside the HTML, `worlds.js` registers additional worlds:
   Each keeps filename, size, modification time, fragment number and raw text.
 - **A place in the world:** one browser location reading, explicitly requested
   with its button; latitude, longitude and accuracy enter the same fact heart.
+- **An archive of facts:** a JSON file supplies dated observations, positions,
+  measurements and optional glyph names. The core derives and acquires their
+  relations; the source file keeps its own order.
 
 Neither world starts collecting on load. The folder adds its instruments when
 present. With the folder absent, the core interface continues with its built-in
@@ -39,6 +42,37 @@ its actual observation time. The host supplies receipt time on arrival.
 `values` contains 1–16 scalar facts; `sensory` contains two finite coordinates
 inside `[-1,1]`; `glyphs` contains base-alphabet IDs from `glyph(name)`.
 The complete frame carries its projection and original facts into the journal.
+Fact names use 1–64 ASCII letters, digits or underscores and start with a letter.
+
+The core [relation field](lalo/RELATIONS.md) reads coordinates, magnitude,
+document position and clock relations from these facts. It remains in the HTML
+when the supplying module is removed.
+
+## A dated world file
+
+**An archive of facts** accepts up to 32 events in a 128 kB JSON file:
+
+```json
+{
+  "format": "amos/world-facts", "version": 1,
+  "events": [
+    {"id":"a", "time":1793400000000,
+     "values":{"latitude":52,"longitude":13,"magnitude":2},
+     "glyphs":["earth","stone"]},
+    {"id":"b", "time":1793400060000,
+     "values":{"latitude":52.1,"longitude":13.1,"magnitude":2},
+     "glyphs":["earth","stone"]}
+  ]
+}
+```
+
+These are synthetic format examples. A real archive supplies its actual event
+times and facts. An optional `source` string is preserved as `original_source`;
+acquisition is recorded as `local:world-facts`. The host supplies receipt time.
+Up to 14 scalar values per event leave room for `event_time` and
+`original_source`. An optional `sensory: [x,y]` provides two bounded raw channels;
+the default `[0,0]` lets relational coordinates supply the sensory difference.
+Optional `label` sets the event title. Glyph strings name the base alphabet.
 
 The host stages and validates the whole batch before accepting it. Identical
 receipts add nothing. Changes to the same observation retain predecessor links.

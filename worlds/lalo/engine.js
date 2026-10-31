@@ -3,7 +3,7 @@
  * No presentation frame, fetch failure or repeated feed advances this life. */
 const AMOS2 = (() => {
   'use strict';
-  const CAPACITY=1024, MAX_QUEUE=128, MAX_HISTORY=128, MAX_SNAPSHOT=8_000_000;
+  const CAPACITY=1024, MAX_QUEUE=128, MAX_HISTORY=128, MAX_SNAPSHOT=8_000_000, ENCOUNTER_RECEIPTS=2;
   const bounded=(n,a,b)=>Math.max(a,Math.min(b,n));
   const clone=value=>JSON.parse(JSON.stringify(value));
   const magnitude=a=>Math.sqrt(a.reduce((s,v)=>s+v*v,0)/Math.max(1,a.length));
@@ -25,11 +25,14 @@ const AMOS2 = (() => {
       !Array.isArray(e.factIds)||e.factIds.length>16||!e.factIds.length||
       new Set(e.factIds).size!==e.factIds.length||
       !e.factIds.every(id=>ledger.entries().some(f=>f.id===id&&f.subject===e.subject&&f.source===e.source&&f.validFrom===e.observedAt&&f.recordedAt===e.receivedAt)))throw Error('Invalid encounter or missing source receipts');
+    if(e.legacyCompletion!==undefined&&e.legacyCompletion!==true)throw Error('Invalid legacy completion marker');
     if((e.kind==='message'||e.detail.tokens!==undefined)&&(!Array.isArray(e.detail.tokens)||e.detail.tokens.length>128||
       !e.detail.tokens.every(t=>t&&typeof t.word==='string'&&t.word.length<=1000&&integer(t.id)&&t.id>=0&&t.id<88&&['lexicon','orthographic','hash'].includes(t.via))||
       !Array.isArray(e.detail.contentGlyphs)||e.detail.contentGlyphs.length>128||
       !e.detail.contentGlyphs.every(id=>integer(id)&&id>=0&&id<88)||
       (e.kind==='message'&&(typeof e.detail.text!=='string'||e.detail.text.length>1000))))throw Error('Invalid text encounter');
+    if(e.detail.contentGlyphs!==undefined&&(!Array.isArray(e.detail.contentGlyphs)||e.detail.contentGlyphs.length>128||
+      !e.detail.contentGlyphs.every(id=>integer(id)&&id>=0&&id<88)))throw Error('Invalid content glyphs');
     if(e.kind==='quake'&&(!integer(e.detail.sourceUpdatedAt)||!Number.isFinite(e.detail.depth)||
       !(e.detail.magnitude===null||Number.isFinite(e.detail.magnitude))))throw Error('Invalid earthquake encounter');
     if(e.kind==='weather'&&![e.detail.temperature_c,e.detail.wind_kmh,e.detail.precipitation_mm].every(Number.isFinite))throw Error('Invalid weather encounter');
@@ -40,6 +43,7 @@ const AMOS2 = (() => {
       this.voice=new VOICE.GlyphVoice(seed);this.queue=[];this.history=[];this.pending=null;
       this.count=0;this.historyOmitted=0;this.serial=0;this.attention='message';
       this.station={latitude:52.52,longitude:13.405};this.lastWeather=null;
+      this.relations=new RELATIONS.RelationField();
     }
     _stage(at) {
       if(!integer(at)||at<latestReceipt(this.ledger))throw Error('Receipt time precedes the accepted world');
@@ -47,8 +51,12 @@ const AMOS2 = (() => {
     }
     _commit(ledger,events) {
       if(this.queue.length+events.length>MAX_QUEUE)throw Error('Encounter queue full (128); let the pending world reach AMOS first');
+      if(ledger.size+ENCOUNTER_RECEIPTS*(this.queue.length+events.length)>CAPACITY)
+        throw Error('Journal budget must reserve attention and relation receipts for every pending encounter');
       for(const event of events)eventValid(event,ledger);
-      LALO.encodeJournal(ledger);this.ledger=ledger;this.queue.push(...events);return events.length;
+      const encoded=LALO.encodeJournal(ledger);
+      if(bytes(encoded)+20000*(this.queue.length+events.length)>2_000_000)throw Error('Journal byte budget must reserve pending encounter receipts');
+      this.ledger=ledger;this.queue.push(...events);return events.length;
     }
     // Optional worlds enter through the ordinary fact contract. All projections
     // travel with the receipt, so a saved life can continue without that module.
@@ -60,7 +68,8 @@ const AMOS2 = (() => {
           typeof frame.key!=='string'||!/^[a-zA-Z0-9:_-]{1,160}$/.test(frame.key)||
           typeof frame.source!=='string'||!frame.source||!integer(frame.observedAt)||
           !frame.values||typeof frame.values!=='object'||Array.isArray(frame.values)||
-          !Object.keys(frame.values).length||Object.keys(frame.values).length>16)throw Error('Invalid world receipt');
+          !Object.keys(frame.values).length||Object.keys(frame.values).length>16||
+          !Object.keys(frame.values).every(p=>/^[a-zA-Z][a-zA-Z0-9_]{0,63}$/.test(p)))throw Error('Invalid world receipt');
         const subject=`world:${frame.kind}:${frame.key}`,fingerprint=hash(JSON.stringify(frame.values)),id=`${subject}:${fingerprint}`;
         const duplicate=ledger.entries().filter(f=>f.id.startsWith(id+':'));
         if(duplicate.length){
@@ -155,16 +164,29 @@ const AMOS2 = (() => {
       if(!this.queue.length)return null;
       const index=this.nextIndex(preferredId),event=this.queue[index];
       const ledger=this._stage(Math.max(at,latestReceipt(this.ledger))),knownAt=event.receivedAt;
+      const relationField=RELATIONS.RelationField.load(this.relations.dump(),ledger);
+      const relations=relationField.observe(event,ledger),sensory=relations.sensory;
       const s=this.model.subject,before=s.h.slice(),previous=s.observation.slice(),oldLoad=this.model.world.load;
-      const errorBefore=this.pending?magnitude(event.sensory.map((v,k)=>v-this.pending.predicted[k])):0;
+      const errorBefore=this.pending?magnitude(sensory.map((v,k)=>v-this.pending.predicted[k])):0;
       const load=bounded(.85*oldLoad+.15*errorBefore+.005*Math.abs(this.pending?.action||0),0,1);
-      const o=[...event.sensory,load],tick=this.count+1;
+      const o=[...sensory,load],tick=this.count+1;
       // Reserve the attention receipt before changing any acquired state.
       const all=ledger.entries(),previousAttention=all.findLast(f=>f.subject==='agent:amos'&&f.predicate==='attention_subject');
       const receiptAt=Math.max(at,latestReceipt(ledger));
-      ledger.add({id:`agent:amos:attention:${tick}`,subject:'agent:amos',predicate:'attention_subject',value:event.subject,
-        source:'amos:encounter',validFrom:receiptAt,validTo:null,recordedAt:receiptAt,supersedes:previousAttention?.id??null});
-      LALO.encodeJournal(ledger);
+      const additions=[{id:`agent:amos:attention:${tick}`,subject:'agent:amos',predicate:'attention_subject',value:event.subject,
+        source:'amos:encounter',validFrom:receiptAt,validTo:null,recordedAt:receiptAt,supersedes:previousAttention?.id??null},
+      {id:`agent:amos:relations:${tick}`,subject:'agent:amos',predicate:'encounter_relations',value:JSON.stringify(relations),
+        source:'amos:relations/v1',validFrom:receiptAt,validTo:receiptAt+1,recordedAt:receiptAt,supersedes:null}];
+      let completedLedger=ledger,relationReceipt=additions[1].id,receiptState='journal';
+      try{const candidate=LALO.decodeJournal(LALO.encodeJournal(ledger));for(const f of additions)candidate.add(f);LALO.encodeJournal(candidate);completedLedger=candidate;}
+      catch(error){
+        // Older files admitted arrivals without a completion reserve. Finish
+        // those already accepted encounters in the saved biography; retain
+        // their full relation evidence and every original source receipt.
+        const budget=/capacity|byte budget/.test(error.message);
+        if(!event.legacyCompletion||!budget)throw error;
+        relationReceipt=null;receiptState='legacy-full-journal';
+      }
       let completed=null;
       if(this.pending) {
         const p=this.pending,delta=o.map((v,k)=>v-p.observation[k]);
@@ -177,7 +199,7 @@ const AMOS2 = (() => {
       const mixture=s.glyph.sequence.slice(-8),recognition=s.glyph.predict(0)[1];
       const content=event.detail.contentGlyphs??event.glyphs,resonance=this.voice.resonance(content);
       const changed=s.h.map((v,i)=>({i,before:before[i],after:v,delta:v-before[i]})).sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta));
-      const action=s.action(0,.22),host=LALO.createToolHost(ledger);
+      const action=s.action(0,.22),host=LALO.createToolHost(completedLedger);
       const tool=action<0?'lalo_history':action>0?'lalo_lineage':'lalo_facts';
       const args=action<0?{subject:event.subject,knownAt,limit:32}:action>0?{id:event.factIds[0],knownAt,limit:32}
         :{subject:event.subject,validAt:event.observedAt,knownAt,limit:32};
@@ -194,27 +216,30 @@ const AMOS2 = (() => {
       s.previous_action=action;this.attention=action<0?'quake':action>0?'weather':'message';
       this.model.world.pos=o.slice(0,2);this.model.world.load=load;this.model.world.tick=tick;
       const trace={tick,event:clone(event),before,after:s.h.slice(),changed:changed.slice(0,6),mixture,
+        relations,relationReceipt,receiptState,
         prototypeCount:s.glyph.prototypes.length,symbolCount:this.voice.symbols.length,
         load,surprise:errorBefore,resonance,recognition:clone(recognition),action,nextAttention:this.attention,
         tool:{name:tool,arguments:args,result:toolResult},utterance,
         previousForecast:completed?.predicted??null,observed:o,prediction:expected,
         resolvedFromTick:completed?tick-1:null};
-      this.queue.splice(index,1);this.ledger=ledger;this.count=tick;this.history.push(trace);
+      this.queue.splice(index,1);this.ledger=completedLedger;this.relations=relationField;this.count=tick;this.history.push(trace);
       if(this.history.length>MAX_HISTORY){this.history.shift();this.historyOmitted++;}
       return trace;
     }
     dump() {
-      const text=JSON.stringify({format:'amos-2/world',version:1,model:this.model.dumps(),journal:LALO.encodeJournal(this.ledger),voice:this.voice.dump(),
+      const text=JSON.stringify({format:'amos-2/world',version:2,model:this.model.dumps(),journal:LALO.encodeJournal(this.ledger),voice:this.voice.dump(),
         queue:this.queue,history:this.history,pending:this.pending,count:this.count,serial:this.serial,historyOmitted:this.historyOmitted,
-        attention:this.attention,station:this.station,lastWeather:this.lastWeather});
+        attention:this.attention,station:this.station,lastWeather:this.lastWeather,relations:this.relations.dump(),reservedReceiptSlots:ENCOUNTER_RECEIPTS});
       if(bytes(text)>MAX_SNAPSHOT)throw Error('Complete life exceeds the 8 MB snapshot budget');return text;
     }
     static load(text) {
       if(typeof text!=='string'||bytes(text)>MAX_SNAPSHOT)throw Error('Snapshot exceeds 8 MB');
       const d=JSON.parse(text);
-      if(d?.format!=='amos-2/world'||d.version!==1)throw Error('Unsupported AMOS-2 life');
+      if(d?.format!=='amos-2/world'||![1,2].includes(d.version))throw Error('Unsupported AMOS-2 life');
+      if(d.version===2&&(!d.relations||d.reservedReceiptSlots!==ENCOUNTER_RECEIPTS))throw Error('Missing acquired relation organ or completion reserve');
       const life=new WorldLab();life.model=AMOS.Amos.loads(d.model);life.ledger=LALO.decodeJournal(d.journal,{capacity:CAPACITY});
       life.voice=VOICE.GlyphVoice.load(d.voice);
+      life.relations=d.relations?RELATIONS.RelationField.load(d.relations,life.ledger):new RELATIONS.RelationField();
       if(!integer(d.count)||d.count<0||d.count!==life.model.world.tick||!integer(d.serial)||d.serial<0||
         !integer(d.historyOmitted)||d.historyOmitted<0||!['quake','weather','message'].includes(d.attention)||
         !Array.isArray(d.queue)||d.queue.length>MAX_QUEUE||new Set(d.queue.map(e=>e.id)).size!==d.queue.length||
@@ -222,8 +247,17 @@ const AMOS2 = (() => {
         !d.station||!Number.isFinite(d.station.latitude)||Math.abs(d.station.latitude)>90||!Number.isFinite(d.station.longitude)||Math.abs(d.station.longitude)>180)throw Error('Invalid life history');
       for(const event of d.queue)eventValid(event,life.ledger);
       let tick=d.historyOmitted;
+      if(d.reservedReceiptSlots!==undefined&&d.reservedReceiptSlots!==ENCOUNTER_RECEIPTS)throw Error('Unsupported encounter reserve');
+      const needsLegacyCompletion=d.reservedReceiptSlots===undefined&&
+        (life.ledger.size+ENCOUNTER_RECEIPTS*d.queue.length>CAPACITY||bytes(d.journal)+20000*d.queue.length>2_000_000);
+      if(needsLegacyCompletion)for(const event of d.queue)event.legacyCompletion=true;
+      if(d.queue.some(e=>!e.legacyCompletion)&&(life.ledger.size+ENCOUNTER_RECEIPTS*d.queue.length>CAPACITY||bytes(d.journal)+20000*d.queue.length>2_000_000))throw Error('Pending encounters have no completion reserve');
       for(const t of d.history) {
         eventValid(t.event,life.ledger);
+        if(t.relations){const receipt=life.ledger.entries().find(f=>f.id===t.relationReceipt);
+          const legacy=t.receiptState==='legacy-full-journal'&&t.event.legacyCompletion===true&&t.relationReceipt===null;
+          if((!legacy&&(!receipt||receipt.source!=='amos:relations/v1'||receipt.value!==JSON.stringify(t.relations)))||
+            !Array.isArray(t.relations.evidence)||!t.relations.evidence.every(id=>life.ledger.entries().some(f=>f.id===id&&f.recordedAt<=(receipt?.recordedAt??latestReceipt(life.ledger)))))throw Error('Invalid relation evidence');}
         if(t.tick!==++tick||!finiteArray(t.before,24)||!finiteArray(t.after,24)||!finiteArray(t.observed,3)||
           !finiteArray(t.mixture,8)||!finiteArray(t.prediction,3)||!Number.isFinite(t.surprise)||!Number.isFinite(t.load)||
           !Number.isFinite(t.resonance)||t.load<0||t.load>1||t.resonance<0||t.resonance>1||
@@ -245,6 +279,9 @@ const AMOS2 = (() => {
         !d.pending.recognition||!Object.values(d.pending.recognition).every(v=>Number.isFinite(v)&&v>=0)))throw Error('Invalid pending forecast');
       if(!!d.pending!==(d.count>0))throw Error('Missing pending forecast');
       if(life.model.subject.updates!==Math.max(0,d.count-1)||life.voice.utterances!==d.count)throw Error('Acquired state and biography disagree');
+      if(life.relations.seen>d.count)throw Error('Relation history exceeds this life');
+      for(const c of life.relations.recent){const t=d.history.find(t=>t.event.id===c.id);
+        if(!t||JSON.stringify(c)!==JSON.stringify(RELATIONS.context(t.event,life.ledger)))throw Error('Relation context differs from its source receipts');}
       if(d.lastWeather){eventValid(d.lastWeather,life.ledger);if(d.lastWeather.kind!=='weather')throw Error('Invalid last weather sample');}
       Object.assign(life,{queue:d.queue,history:d.history,pending:d.pending,count:d.count,serial:d.serial,historyOmitted:d.historyOmitted,
         attention:d.attention,station:d.station,lastWeather:d.lastWeather});return life;
@@ -260,5 +297,14 @@ const AMOS2 = (() => {
     }else{text=await response.text();if(bytes(text)>maxBytes)throw Error('Source exceeds input budget');}
     return JSON.parse(text);
   }
-  return {WorldLab,fetchJSON,CAPACITY,MAX_QUEUE,MAX_HISTORY,MAX_SNAPSHOT,magnitude};
+  function compareLives(kept,current,text,at) {
+    const a=WorldLab.load(kept),b=WorldLab.load(current);
+    if(a.model.birth!==b.model.birth)throw Error('Choose two histories from the same birth for this experiment');
+    const before=[a.count,b.count];
+    const ea=a.ingestText(text,at),eb=b.ingestText(text,at);
+    const left=a.encounter(at,ea.id),right=b.encounter(at,eb.id);
+    return {before,left,right,activationGap:magnitude(left.after.map((v,i)=>v-right.after[i])),
+      forecastGap:magnitude(left.prediction.map((v,i)=>v-right.prediction[i]))};
+  }
+  return {WorldLab,compareLives,fetchJSON,CAPACITY,MAX_QUEUE,MAX_HISTORY,MAX_SNAPSHOT,magnitude};
 })();

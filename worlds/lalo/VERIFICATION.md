@@ -1,5 +1,58 @@
 # AMOS II — verification, 2026-10-31
 
+## Relational body after PR #6
+
+Base: `f40aaf2860d860803763566bfe1f17b6e5e40b35`. Same Linux/Node/browser
+environment as the initial body below. `python3 worlds/lalo/build.py` and
+`node --test worlds/lalo/check.mjs`: **26 passed, 0 failed**.
+
+Both connector findings were reproduced on the merged code before editing:
+
+- 254 processed messages occupied 1016 receipts. An accepted eight-receipt
+  earthquake filled the journal and remained queued after its attention write
+  failed. Admission now reserves completion slots/bytes for the whole queue.
+  The gate accepts two encounters exactly at the boundary and completes both
+  at 1024 receipts. A separate old-snapshot gate finishes the already accepted
+  earthquake at a full legacy journal while preserving every source receipt.
+- After `earth+stone` existed, seven inputs of `earth stone water sky` counted
+  `water sky` fourteen times. The corrected gate counts it seven times; only
+  compressed pairs involving a compound enter the additional counting path.
+
+Relational gates verify source-derived geography, different perception of the
+same external fact after different spatial histories, prior-only familiarity
+and transition readings, revision magnitude deltas, exact relation restart,
+rejection of source/context disagreement and old-snapshot migration. A shared
+probe changes two continuations without changing either original life. Identical
+histories return zero activation and forecast separation. The optional archive
+module supplies two synthetic dated positions; their measured separation and
+one-minute interval enter the same standalone heart.
+
+Live browser checks:
+
+- The standalone file opened over HTTP with the new relation organ and the
+  previously saved 17-encounter life. A history was kept, then the current life
+  received two further messages.
+- The shared message `earth stone now` met both histories. The panel showed
+  **RMS activation separation 0.039252**, forecast separation **0.238075**,
+  relation familiarity **0.000 / 0.983**, and different glyph expressions.
+  The live original retained **19** encounters afterward. The kept comparison
+  remained available after reload.
+- A live USGS read advanced the world to **16 events / 17 versions**. At
+  encounter **25** the retained relation reading showed **64.6 s** same-kind
+  world gap, **201.0 km** distance, prior transition **0.500 (1/2)** and
+  familiarity **0.981**. The life held **196** receipts and three grown signs.
+- The optional-folder view returned that same life and registered the written,
+  dated-fact archive and device worlds, ready and idle. The standalone directory
+  carries no `worlds/` folder. Desktop document width had no horizontal overflow.
+- `assets/amos-2-relations-20261031.jpg` and
+  `assets/amos-2-histories-20261031.jpg` record those browser readings.
+- A direct `file://` check was blocked by the cloud browser's protocol policy
+  (HTTP/HTTPS only). No alternate browser route was used. Folder independence
+  was checked through the isolated HTTP directory; runtime scripts/styles and
+  the acquired relation organ are inline.
+
+## Initial body (PR #6 lineage)
+
 Base AMOS: `fc4b603c9de3b67646501fc7f9ea3006de13d21d`.
 Linux x86_64; Node v24.22.1; Python 3 builder; Chrome cloud browser.
 

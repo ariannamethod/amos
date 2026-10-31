@@ -39,6 +39,12 @@ upstream organs; this file saves the combined life through IndexedDB and JSON.
 
 ## What the world does to AMOS
 
+[The acquired relation organ](RELATIONS.md) now joins source facts before
+perception: time gaps, spatial proximity, revisions, document progression and
+glyph overlap meet learned relation patterns and transition expectations.
+It is embedded in the standalone HTML. **Keep this history** and **Compare
+histories** let two continuations meet the same new message in the core file.
+
 Arrivals append sourced facts to the two-clock LALO journal and queue complete
 encounters. Receiving and experiencing have separate lifetimes. New USGS source
 versions and Open-Meteo model samples enter; duplicate polls leave acquired state
@@ -52,7 +58,10 @@ An encounter carries two bounded sensory coordinates:
 | Modelled weather | `tanh(temperature_c / 30)` | `-tanh(wind_kmh / 40)` |
 | Human text | order-weighted mean of glyph basis cosines | order-weighted mean of glyph basis sines |
 
-The third coordinate is internal load: `0.85 * previous_load + 0.15 * previous
+The two raw coordinates above are combined with the acquired relation projection
+as `clamp(raw + 0.35 * relation_projection, -1, 1)`. The inspector exposes both
+inputs and the resulting observation. The third coordinate is internal load:
+`0.85 * previous_load + 0.15 * previous
 forecast_gap + 0.005 * abs(previous_action)`, bounded to `[0,1]`. The forecast gap
 is RMS over the two incoming sensory coordinates. A missing earthquake magnitude
 keeps its explicit null receipt and projects to zero in the magnitude channel.
@@ -89,10 +98,14 @@ neural associations, observed co-occurrences and random stream persist together.
 
 ## Storage and continuation
 
-- 1024 source/state receipts, 2 MB journal; a full arrival fails atomically.
+- 1024 source/state receipts, 2 MB journal; an arrival reserves two slots and
+  20 kB per pending encounter, including the existing queue. A full arrival fails
+  atomically. Imported pre-reserve encounters can finish in the saved biography
+  when their old journal is already full.
 - 128 queued encounters; a full queue rejects the whole incoming batch.
 - Last 128 detailed encounter traces; the view counts earlier omitted traces.
-- The complete acquired model and expression field continue beyond that window.
+- The complete acquired model, relation patterns and expression field continue
+  beyond that window; 64 source contexts and 16 relation patterns are retained.
 - 8 MB complete export; imports validate before replacing the live world.
 - IndexedDB stores the combined JSON snapshot. A storage failure is visible;
   export remains available. A damaged saved life stays stored for inspection.

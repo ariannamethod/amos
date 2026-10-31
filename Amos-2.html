@@ -19,6 +19,7 @@
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
 
 [hidden]{display:none!important}.extra-worlds .source-detail{margin:12px 0;line-height:1.8}.extra-worlds .source-meta{font-size:8px}.extra-worlds{grid-column:1/-1}.extra-world .source-head{flex-wrap:wrap}
+.relation-reading{border-top:1px solid var(--line);padding:14px 0 4px;margin:10px 0}.relation-values{font:8px/1.8 var(--mono);color:var(--faint);margin-top:9px}.relation-values>div{display:flex;justify-content:space-between;gap:8px;margin:5px 0}.relation-values b{font-weight:400;color:var(--teal);text-align:right}.comparison-actions{display:flex;flex-direction:column;gap:7px;align-items:flex-start;margin-top:12px}.comparison-actions .text-button{font-size:8px}.comparison-form{display:grid;grid-template-columns:1fr auto;gap:10px;margin:20px 0}.comparison-form label{grid-column:1/-1;font:9px var(--mono);color:var(--muted)}.comparison-form input{margin:0;min-width:0}.comparison-form button{font:9px var(--mono)}.comparison-pair{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:24px}.comparison-pair h3{font-size:17px;font-weight:400}.comparison-pair p{font-size:17px;overflow-wrap:anywhere;line-height:1.5}.comparison-pair .quiet{font-size:9px}.comparison-neurons{height:45px;display:flex;align-items:flex-end;gap:3px;border-bottom:1px solid var(--line);margin:14px 0}.comparison-neurons i{flex:1;max-width:9px;opacity:.7}@media(max-width:850px){.relation-reading{grid-column:1/-1;display:grid;grid-template-columns:180px 1fr;gap:20px}}@media(max-width:580px){.relation-reading{grid-template-columns:1fr;gap:0}.relation-values{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px}.relation-values>div{font-size:7px}.expression-label>div{flex-wrap:wrap}.comparison-actions{width:100%;flex-direction:row;gap:20px}.comparison-pair{gap:14px}.comparison-pair p{font-size:15px}}
 </style>
 </head>
 <body>
@@ -63,6 +64,7 @@
       <div id="influenceFlow" class="influence-flow"><span>fact</span><i>↓</i><span>acquired state</span><i>↓</i><span>expression</span></div>
       <div class="imprint-metrics"><div><span>Recurrent shift <small>RMS Δh</small></span><b id="shift">—</b></div><div><span>Resonance <small>prior glyph overlap</small></span><b id="resonance">—</b></div><div><span>Internal load</span><b id="load">—</b></div></div>
       <div id="neuronChanges" class="neuron-changes"></div>
+      <div class="relation-reading"><div class="section-label"><span>Acquired relations</span><b id="relationPattern">—</b></div><div id="relationRead" class="relation-values">The next encounter can meet a history.</div></div>
       <div class="source-reading"><span class="eyebrow">THE INSTRUMENT IT CHOSE</span><p id="toolName">—</p><span id="toolDetail">A read keeps its source.</span></div>
       <details id="evidenceDetails"><summary>Read the evidence <span>↗</span></summary><div id="evidence" class="evidence"><p class="quiet">Select an encounter on the tape.</p></div></details>
     </aside>
@@ -72,7 +74,7 @@
     <canvas id="tape" aria-label="Scrollable history of encounters, forecasts and expressions" tabindex="0"></canvas>
   </section>
   <section class="expression" aria-label="Glyph expression">
-    <div class="expression-label"><span class="index">04</span><div><h2>Its expression</h2><p id="voiceMeta">88 glyphs · a voice to acquire</p></div></div>
+    <div class="expression-label"><span class="index">04</span><div><h2>Its expression</h2><p id="voiceMeta">88 glyphs · a voice to acquire</p><div class="comparison-actions"><button id="keepMoment" class="text-button">Keep this history</button><button id="compareOpen" class="text-button" disabled>Compare histories ↗</button></div></div></div>
     <div class="voice-output"><div id="glyphs" class="glyphs" aria-label="Latest generated glyph signs"></div><p id="utterance" class="utterance" aria-live="polite">The first words are still ahead.</p></div>
     <div class="symbol-birth" id="symbolBirth"><span>◊</span><p>A shared history<br>can grow a new sign.</p></div>
   </section>
@@ -80,6 +82,7 @@
 </main>
 <footer><span>AMOS · LALO · ACTUALLY.LIFE</span><span id="saveStatus" role="status">Opening this life…</span><button id="lineageOpen" class="text-button">Lineage ↗</button><span class="resonance-footer">RESONANCE UNBROKEN.</span></footer>
 <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+<dialog id="comparison"><form method="dialog"><div class="dialog-heading"><h2>One present. Two histories.</h2><button aria-label="Close comparison">×</button></div></form><p id="keptLabel">Keep a history to meet it again.</p><p>The same new message reaches the kept history and the current one. This experiment reads two continuations; the original lives retain their states.</p><form id="comparisonForm" class="comparison-form"><label for="sharedMessage">A shared encounter</label><input id="sharedMessage" maxlength="1000" value="earth stone now" required><button type="submit">Meet both ↗</button></form><div id="comparisonResult" aria-live="polite"></div></dialog>
 <dialog id="settings"><form method="dialog"><div class="dialog-heading"><h2>A life, continued.</h2><button aria-label="Close settings">×</button></div></form><p>Keep the world, acquired state and growing symbols together.</p><div class="dialog-actions"><button id="exportLife">Export this life ↗</button><button id="importLife">Import a life ↙</button><input id="importFile" type="file" accept=".json,application/json" hidden></div><label class="setting-label">Weather observation point</label><div class="coordinate-inputs"><label>Latitude<input id="latitude" type="number" min="-90" max="90" step="any" value="52.52"></label><label>Longitude<input id="longitude" type="number" min="-180" max="180" step="any" value="13.405"></label><button id="stationSave">Set point</button></div><label class="setting-label" for="motion">Motion</label><select id="motion"><option value="system">Follow system preference</option><option value="reduced">Reduced motion</option></select><div class="new-birth"><label>Birth seed<input id="birthSeed" type="text" inputmode="numeric" value="17" maxlength="18"></label><button id="newBirth">Begin another life</button></div><p id="settingsNote" class="quiet">A complete life has an 8 MB export budget. The fact journal keeps up to 1024 receipts; it stops accepting arrivals when full.</p></dialog>
 <dialog id="lineage"><form method="dialog"><div class="dialog-heading"><h2>The organs of this world.</h2><button aria-label="Close lineage">×</button></div></form><p><b>AMOS</b> — the existing 24-neuron recurrent subject, acquired predictor, event glyphs and random stream.</p><p><b>LALO</b> — pinned fact ledger, two clocks, source revisions and six world-reading tools.</p><p><b>actually.life</b> — 88-glyph alphabet and semantic membrane; the expression organ grows an online association field and recursive symbols.</p><p><b>actually.janus</b> — the visual reference: a tape passing through a slit, inertia and a past you can touch.</p><p>Expression reads acquired neural associations, event recognition and the glyph succession field. Its state and random stream continue across reloads. Rendering reads state; it advances no encounters.</p><div class="lineage-links"><a href="https://github.com/ariannamethod/amos" target="_blank" rel="noopener">AMOS ↗</a><a href="https://github.com/ariannamethod/LALO" target="_blank" rel="noopener">LALO ↗</a><a href="https://github.com/ariannamethod/actually.life" target="_blank" rel="noopener">actually.life ↗</a><a href="https://github.com/ariannamethod/actually.janus" target="_blank" rel="noopener">actually.janus ↗</a></div><p>World sources: <a href="https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php" target="_blank" rel="noopener">USGS</a> · <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (modelled weather, CC BY 4.0). Browser-local messages enter as local:human.</p><p>Oleg Ataeff / Arianna Method. Glyph lineage co-authored with Claude. AMOS-2 bridge and interface implemented by Codex. Imported LALO and actually.life material: GPL-3.0.</p><details><summary>GNU General Public License</summary><pre class="license-text">                    GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
@@ -3857,7 +3860,9 @@ const VOICE = (() => {
       }
       for(let i=1;i<ids.length;i++){this.bi[ids[i-1]][ids[i]]++;this.cooc[ids[i-1]][ids[i]]++;}
       if(compressed.some(id=>id>=BASE))for(let i=1;i<compressed.length;i++){
-        this.bi[compressed[i-1]][compressed[i]]++;this.cooc[compressed[i-1]][compressed[i]]++;
+        if(compressed[i-1]>=BASE||compressed[i]>=BASE){
+          this.bi[compressed[i-1]][compressed[i]]++;this.cooc[compressed[i-1]][compressed[i]]++;
+        }
       }
       this.recent=this.recent.concat(compressed).slice(-24);
     }
@@ -3917,12 +3922,104 @@ const VOICE = (() => {
 })();
 
 
+/* Acquired relations, carried by the standalone heart. Geometry and clocks
+ * are derived from source receipts; familiarity and transition expectation
+ * are learned from encountered relations. No timers, I/O or presentation. */
+const RELATIONS = (() => {
+  'use strict';
+  const LIMIT=16, WINDOW=64, clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+  const copy=x=>JSON.parse(JSON.stringify(x));
+  const signedLog=x=>Math.sign(x)*Math.log1p(Math.abs(x))/Math.log1p(86400000);
+  const rows=()=>Array.from({length:LIMIT},()=>Array(LIMIT).fill(0));
+  const vector=a=>Array.isArray(a)&&a.length===6&&a.every(v=>Number.isFinite(v)&&Math.abs(v)<=1);
+  function distance(a,b) {
+    const rad=Math.PI/180,dl=(b[0]-a[0])*rad,dn=(b[1]-a[1])*rad;
+    const h=Math.sin(dl/2)**2+Math.cos(a[0]*rad)*Math.cos(b[0]*rad)*Math.sin(dn/2)**2;
+    return 12742*Math.asin(Math.sqrt(clamp(h,0,1)));
+  }
+  function context(event,ledger) {
+    const facts=event.factIds.map(id=>ledger.entries().find(f=>f.id===id));
+    const values=Object.fromEntries(facts.map(f=>[f.predicate,f.value]));
+    const geo=Number.isFinite(values.latitude)&&Math.abs(values.latitude)<=90&&Number.isFinite(values.longitude)&&Math.abs(values.longitude)<=180?[values.latitude,values.longitude]:null;
+    return {id:event.id,kind:event.kind,subject:event.subject,at:event.observedAt,receivedAt:event.receivedAt,
+      anchor:event.factIds[0],geo,glyphs:[...new Set(event.detail.contentGlyphs??event.glyphs)],
+      magnitude:typeof values.magnitude==='number'?values.magnitude:null,
+      revised:facts.some(f=>f.supersedes!==null),part:Number.isSafeInteger(values.part)?values.part:null,
+      document:typeof values.name==='string'?`${values.name}:${values.modified_at??''}`:null};
+  }
+  class RelationField {
+    constructor(){this.patterns=[];this.transitions=rows();this.recent=[];this.lastPattern=null;this.seen=0;}
+    observe(event,ledger) {
+      const c=context(event,ledger),previous=this.recent.at(-1),same=this.recent.findLast(x=>x.kind===c.kind);
+      const priorVersion=this.recent.findLast(x=>x.subject===c.subject);
+      const device=this.recent.findLast(x=>x.kind==='device'&&x.geo);
+      const spatial=(c.geo&&same?.geo)?distance(same.geo,c.geo):null;
+      const deviceDistance=c.geo&&device?.geo?distance(device.geo,c.geo):null;
+      const gap=same?c.at-same.at:null;
+      const oldGlyphs=new Set(previous?.glyphs??[]),all=new Set([...oldGlyphs,...c.glyphs]);
+      const overlap=previous&&all.size?c.glyphs.filter(g=>oldGlyphs.has(g)).length/all.size:0;
+      const revisionDelta=c.revised&&c.magnitude!==null&&priorVersion?.magnitude!==null&&priorVersion?.magnitude!==undefined?c.magnitude-priorVersion.magnitude:null;
+      const fragmentGap=c.document&&same?.document===c.document&&c.part!==null&&same.part!==null?c.part-same.part:null;
+      const features=[gap===null?0:clamp(signedLog(gap),-1,1),spatial===null?0:Math.exp(-spatial/500),
+        previous?(previous.kind===c.kind?1:-1):0,overlap,
+        revisionDelta!==null?Math.tanh(revisionDelta):fragmentGap!==null?Math.tanh(fragmentGap/2):0,
+        deviceDistance===null?0:Math.exp(-deviceDistance/500)];
+      const d=this.patterns.map(p=>p.center.reduce((s,v,i)=>s+(v-features[i])**2,0)/6);
+      const nearest=d.length?d.indexOf(Math.min(...d)):-1;
+      const familiarity=nearest<0?0:Math.exp(-d[nearest]/.08);
+      const known=nearest>=0&&d[nearest]<=.08;
+      const transitionRow=this.lastPattern===null?null:this.transitions[this.lastPattern];
+      const transitionMass=transitionRow?transitionRow.reduce((s,n)=>s+n,0):0;
+      const transitionSupport=known&&transitionRow?transitionRow[nearest]:0;
+      const expectation=transitionMass?transitionSupport/transitionMass:0;
+      const priorSupport=known?this.patterns[nearest].mass:0;
+      // The acquired channel reads the state BEFORE the current relation is learned.
+      const drive=[features[0],features[1],features[2],features[3],features[4],features[5],familiarity,expectation];
+      const active=!!previous,projection=[0,0];
+      if(active)for(let i=0;i<drive.length;i++){
+        projection[0]+=drive[i]*Math.cos((i+1)*2.3999632297)/drive.length;
+        projection[1]+=drive[i]*Math.sin((i+1)*2.3999632297)/drive.length;
+      }
+      let chosen=nearest;
+      if(!known&&this.patterns.length<LIMIT){chosen=this.patterns.length;this.patterns.push({center:features.slice(),mass:0});}
+      const pattern=this.patterns[chosen];pattern.mass++;
+      const alpha=1/Math.min(64,pattern.mass);
+      pattern.center=pattern.center.map((v,i)=>v+alpha*(features[i]-v));
+      if(this.lastPattern!==null)this.transitions[this.lastPattern][chosen]++;
+      this.lastPattern=chosen;this.seen++;this.recent.push(c);if(this.recent.length>WINDOW)this.recent.shift();
+      const anchors=[c.anchor,same?.anchor,device?.anchor,previous?.anchor,priorVersion?.anchor].filter(Boolean);
+      const evidence=[...new Set(anchors)];
+      return {policy:'amos/relations-v1',pattern:chosen,priorSupport,familiarity,expectation,transitionSupport,transitionMass,
+        gapMs:gap,spatialKm:spatial,deviceKm:deviceDistance,glyphOverlap:overlap,revisionDelta,fragmentGap,
+        features,projection,rawSensory:event.sensory.slice(),
+        sensory:event.sensory.map((v,i)=>clamp(v+.35*projection[i],-1,1)),
+        evidence,context:c.id,previous:previous?.id??null,patterns:this.patterns.length};
+    }
+    dump(){return copy(this);}
+    static load(d,ledger){
+      if(!d||!Number.isSafeInteger(d.seen)||d.seen<0||!Array.isArray(d.patterns)||d.patterns.length>LIMIT||
+        !d.patterns.every(p=>p&&vector(p.center)&&Number.isSafeInteger(p.mass)&&p.mass>0)||
+        !Array.isArray(d.transitions)||d.transitions.length!==LIMIT||!d.transitions.every(r=>Array.isArray(r)&&r.length===LIMIT&&r.every(n=>Number.isSafeInteger(n)&&n>=0))||
+        !Array.isArray(d.recent)||d.recent.length>WINDOW||d.recent.length!==Math.min(WINDOW,d.seen)||
+        !d.recent.every(c=>c&&typeof c.id==='string'&&typeof c.kind==='string'&&typeof c.subject==='string'&&Number.isSafeInteger(c.at)&&Number.isSafeInteger(c.receivedAt)&&
+          ledger.entries().some(f=>f.id===c.anchor&&f.subject===c.subject&&f.recordedAt===c.receivedAt)&&
+          (c.geo===null||Array.isArray(c.geo)&&c.geo.length===2&&c.geo.every(Number.isFinite)&&Math.abs(c.geo[0])<=90&&Math.abs(c.geo[1])<=180)&&
+          Array.isArray(c.glyphs)&&c.glyphs.length<=132&&c.glyphs.every(g=>Number.isSafeInteger(g)&&g>=0&&g<88))||
+        (d.seen===0?d.lastPattern!==null:!Number.isSafeInteger(d.lastPattern)||d.lastPattern<0||d.lastPattern>=d.patterns.length)||
+        d.patterns.reduce((s,p)=>s+p.mass,0)!==d.seen||d.transitions.flat().reduce((s,n)=>s+n,0)!==Math.max(0,d.seen-1))throw Error('Invalid acquired relation field');
+      return Object.assign(new RelationField(),copy(d));
+    }
+  }
+  return {RelationField,distance,context,LIMIT,WINDOW};
+})();
+
+
 /* LALO → AMOS → expression. Portable, event-driven; clocks enter explicitly.
  * The AMOS Subject is the existing JS body, with its own predictor and RNG.
  * No presentation frame, fetch failure or repeated feed advances this life. */
 const AMOS2 = (() => {
   'use strict';
-  const CAPACITY=1024, MAX_QUEUE=128, MAX_HISTORY=128, MAX_SNAPSHOT=8_000_000;
+  const CAPACITY=1024, MAX_QUEUE=128, MAX_HISTORY=128, MAX_SNAPSHOT=8_000_000, ENCOUNTER_RECEIPTS=2;
   const bounded=(n,a,b)=>Math.max(a,Math.min(b,n));
   const clone=value=>JSON.parse(JSON.stringify(value));
   const magnitude=a=>Math.sqrt(a.reduce((s,v)=>s+v*v,0)/Math.max(1,a.length));
@@ -3944,11 +4041,14 @@ const AMOS2 = (() => {
       !Array.isArray(e.factIds)||e.factIds.length>16||!e.factIds.length||
       new Set(e.factIds).size!==e.factIds.length||
       !e.factIds.every(id=>ledger.entries().some(f=>f.id===id&&f.subject===e.subject&&f.source===e.source&&f.validFrom===e.observedAt&&f.recordedAt===e.receivedAt)))throw Error('Invalid encounter or missing source receipts');
+    if(e.legacyCompletion!==undefined&&e.legacyCompletion!==true)throw Error('Invalid legacy completion marker');
     if((e.kind==='message'||e.detail.tokens!==undefined)&&(!Array.isArray(e.detail.tokens)||e.detail.tokens.length>128||
       !e.detail.tokens.every(t=>t&&typeof t.word==='string'&&t.word.length<=1000&&integer(t.id)&&t.id>=0&&t.id<88&&['lexicon','orthographic','hash'].includes(t.via))||
       !Array.isArray(e.detail.contentGlyphs)||e.detail.contentGlyphs.length>128||
       !e.detail.contentGlyphs.every(id=>integer(id)&&id>=0&&id<88)||
       (e.kind==='message'&&(typeof e.detail.text!=='string'||e.detail.text.length>1000))))throw Error('Invalid text encounter');
+    if(e.detail.contentGlyphs!==undefined&&(!Array.isArray(e.detail.contentGlyphs)||e.detail.contentGlyphs.length>128||
+      !e.detail.contentGlyphs.every(id=>integer(id)&&id>=0&&id<88)))throw Error('Invalid content glyphs');
     if(e.kind==='quake'&&(!integer(e.detail.sourceUpdatedAt)||!Number.isFinite(e.detail.depth)||
       !(e.detail.magnitude===null||Number.isFinite(e.detail.magnitude))))throw Error('Invalid earthquake encounter');
     if(e.kind==='weather'&&![e.detail.temperature_c,e.detail.wind_kmh,e.detail.precipitation_mm].every(Number.isFinite))throw Error('Invalid weather encounter');
@@ -3959,6 +4059,7 @@ const AMOS2 = (() => {
       this.voice=new VOICE.GlyphVoice(seed);this.queue=[];this.history=[];this.pending=null;
       this.count=0;this.historyOmitted=0;this.serial=0;this.attention='message';
       this.station={latitude:52.52,longitude:13.405};this.lastWeather=null;
+      this.relations=new RELATIONS.RelationField();
     }
     _stage(at) {
       if(!integer(at)||at<latestReceipt(this.ledger))throw Error('Receipt time precedes the accepted world');
@@ -3966,8 +4067,12 @@ const AMOS2 = (() => {
     }
     _commit(ledger,events) {
       if(this.queue.length+events.length>MAX_QUEUE)throw Error('Encounter queue full (128); let the pending world reach AMOS first');
+      if(ledger.size+ENCOUNTER_RECEIPTS*(this.queue.length+events.length)>CAPACITY)
+        throw Error('Journal budget must reserve attention and relation receipts for every pending encounter');
       for(const event of events)eventValid(event,ledger);
-      LALO.encodeJournal(ledger);this.ledger=ledger;this.queue.push(...events);return events.length;
+      const encoded=LALO.encodeJournal(ledger);
+      if(bytes(encoded)+20000*(this.queue.length+events.length)>2_000_000)throw Error('Journal byte budget must reserve pending encounter receipts');
+      this.ledger=ledger;this.queue.push(...events);return events.length;
     }
     // Optional worlds enter through the ordinary fact contract. All projections
     // travel with the receipt, so a saved life can continue without that module.
@@ -3979,7 +4084,8 @@ const AMOS2 = (() => {
           typeof frame.key!=='string'||!/^[a-zA-Z0-9:_-]{1,160}$/.test(frame.key)||
           typeof frame.source!=='string'||!frame.source||!integer(frame.observedAt)||
           !frame.values||typeof frame.values!=='object'||Array.isArray(frame.values)||
-          !Object.keys(frame.values).length||Object.keys(frame.values).length>16)throw Error('Invalid world receipt');
+          !Object.keys(frame.values).length||Object.keys(frame.values).length>16||
+          !Object.keys(frame.values).every(p=>/^[a-zA-Z][a-zA-Z0-9_]{0,63}$/.test(p)))throw Error('Invalid world receipt');
         const subject=`world:${frame.kind}:${frame.key}`,fingerprint=hash(JSON.stringify(frame.values)),id=`${subject}:${fingerprint}`;
         const duplicate=ledger.entries().filter(f=>f.id.startsWith(id+':'));
         if(duplicate.length){
@@ -4074,16 +4180,29 @@ const AMOS2 = (() => {
       if(!this.queue.length)return null;
       const index=this.nextIndex(preferredId),event=this.queue[index];
       const ledger=this._stage(Math.max(at,latestReceipt(this.ledger))),knownAt=event.receivedAt;
+      const relationField=RELATIONS.RelationField.load(this.relations.dump(),ledger);
+      const relations=relationField.observe(event,ledger),sensory=relations.sensory;
       const s=this.model.subject,before=s.h.slice(),previous=s.observation.slice(),oldLoad=this.model.world.load;
-      const errorBefore=this.pending?magnitude(event.sensory.map((v,k)=>v-this.pending.predicted[k])):0;
+      const errorBefore=this.pending?magnitude(sensory.map((v,k)=>v-this.pending.predicted[k])):0;
       const load=bounded(.85*oldLoad+.15*errorBefore+.005*Math.abs(this.pending?.action||0),0,1);
-      const o=[...event.sensory,load],tick=this.count+1;
+      const o=[...sensory,load],tick=this.count+1;
       // Reserve the attention receipt before changing any acquired state.
       const all=ledger.entries(),previousAttention=all.findLast(f=>f.subject==='agent:amos'&&f.predicate==='attention_subject');
       const receiptAt=Math.max(at,latestReceipt(ledger));
-      ledger.add({id:`agent:amos:attention:${tick}`,subject:'agent:amos',predicate:'attention_subject',value:event.subject,
-        source:'amos:encounter',validFrom:receiptAt,validTo:null,recordedAt:receiptAt,supersedes:previousAttention?.id??null});
-      LALO.encodeJournal(ledger);
+      const additions=[{id:`agent:amos:attention:${tick}`,subject:'agent:amos',predicate:'attention_subject',value:event.subject,
+        source:'amos:encounter',validFrom:receiptAt,validTo:null,recordedAt:receiptAt,supersedes:previousAttention?.id??null},
+      {id:`agent:amos:relations:${tick}`,subject:'agent:amos',predicate:'encounter_relations',value:JSON.stringify(relations),
+        source:'amos:relations/v1',validFrom:receiptAt,validTo:receiptAt+1,recordedAt:receiptAt,supersedes:null}];
+      let completedLedger=ledger,relationReceipt=additions[1].id,receiptState='journal';
+      try{const candidate=LALO.decodeJournal(LALO.encodeJournal(ledger));for(const f of additions)candidate.add(f);LALO.encodeJournal(candidate);completedLedger=candidate;}
+      catch(error){
+        // Older files admitted arrivals without a completion reserve. Finish
+        // those already accepted encounters in the saved biography; retain
+        // their full relation evidence and every original source receipt.
+        const budget=/capacity|byte budget/.test(error.message);
+        if(!event.legacyCompletion||!budget)throw error;
+        relationReceipt=null;receiptState='legacy-full-journal';
+      }
       let completed=null;
       if(this.pending) {
         const p=this.pending,delta=o.map((v,k)=>v-p.observation[k]);
@@ -4096,7 +4215,7 @@ const AMOS2 = (() => {
       const mixture=s.glyph.sequence.slice(-8),recognition=s.glyph.predict(0)[1];
       const content=event.detail.contentGlyphs??event.glyphs,resonance=this.voice.resonance(content);
       const changed=s.h.map((v,i)=>({i,before:before[i],after:v,delta:v-before[i]})).sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta));
-      const action=s.action(0,.22),host=LALO.createToolHost(ledger);
+      const action=s.action(0,.22),host=LALO.createToolHost(completedLedger);
       const tool=action<0?'lalo_history':action>0?'lalo_lineage':'lalo_facts';
       const args=action<0?{subject:event.subject,knownAt,limit:32}:action>0?{id:event.factIds[0],knownAt,limit:32}
         :{subject:event.subject,validAt:event.observedAt,knownAt,limit:32};
@@ -4113,27 +4232,30 @@ const AMOS2 = (() => {
       s.previous_action=action;this.attention=action<0?'quake':action>0?'weather':'message';
       this.model.world.pos=o.slice(0,2);this.model.world.load=load;this.model.world.tick=tick;
       const trace={tick,event:clone(event),before,after:s.h.slice(),changed:changed.slice(0,6),mixture,
+        relations,relationReceipt,receiptState,
         prototypeCount:s.glyph.prototypes.length,symbolCount:this.voice.symbols.length,
         load,surprise:errorBefore,resonance,recognition:clone(recognition),action,nextAttention:this.attention,
         tool:{name:tool,arguments:args,result:toolResult},utterance,
         previousForecast:completed?.predicted??null,observed:o,prediction:expected,
         resolvedFromTick:completed?tick-1:null};
-      this.queue.splice(index,1);this.ledger=ledger;this.count=tick;this.history.push(trace);
+      this.queue.splice(index,1);this.ledger=completedLedger;this.relations=relationField;this.count=tick;this.history.push(trace);
       if(this.history.length>MAX_HISTORY){this.history.shift();this.historyOmitted++;}
       return trace;
     }
     dump() {
-      const text=JSON.stringify({format:'amos-2/world',version:1,model:this.model.dumps(),journal:LALO.encodeJournal(this.ledger),voice:this.voice.dump(),
+      const text=JSON.stringify({format:'amos-2/world',version:2,model:this.model.dumps(),journal:LALO.encodeJournal(this.ledger),voice:this.voice.dump(),
         queue:this.queue,history:this.history,pending:this.pending,count:this.count,serial:this.serial,historyOmitted:this.historyOmitted,
-        attention:this.attention,station:this.station,lastWeather:this.lastWeather});
+        attention:this.attention,station:this.station,lastWeather:this.lastWeather,relations:this.relations.dump(),reservedReceiptSlots:ENCOUNTER_RECEIPTS});
       if(bytes(text)>MAX_SNAPSHOT)throw Error('Complete life exceeds the 8 MB snapshot budget');return text;
     }
     static load(text) {
       if(typeof text!=='string'||bytes(text)>MAX_SNAPSHOT)throw Error('Snapshot exceeds 8 MB');
       const d=JSON.parse(text);
-      if(d?.format!=='amos-2/world'||d.version!==1)throw Error('Unsupported AMOS-2 life');
+      if(d?.format!=='amos-2/world'||![1,2].includes(d.version))throw Error('Unsupported AMOS-2 life');
+      if(d.version===2&&(!d.relations||d.reservedReceiptSlots!==ENCOUNTER_RECEIPTS))throw Error('Missing acquired relation organ or completion reserve');
       const life=new WorldLab();life.model=AMOS.Amos.loads(d.model);life.ledger=LALO.decodeJournal(d.journal,{capacity:CAPACITY});
       life.voice=VOICE.GlyphVoice.load(d.voice);
+      life.relations=d.relations?RELATIONS.RelationField.load(d.relations,life.ledger):new RELATIONS.RelationField();
       if(!integer(d.count)||d.count<0||d.count!==life.model.world.tick||!integer(d.serial)||d.serial<0||
         !integer(d.historyOmitted)||d.historyOmitted<0||!['quake','weather','message'].includes(d.attention)||
         !Array.isArray(d.queue)||d.queue.length>MAX_QUEUE||new Set(d.queue.map(e=>e.id)).size!==d.queue.length||
@@ -4141,8 +4263,17 @@ const AMOS2 = (() => {
         !d.station||!Number.isFinite(d.station.latitude)||Math.abs(d.station.latitude)>90||!Number.isFinite(d.station.longitude)||Math.abs(d.station.longitude)>180)throw Error('Invalid life history');
       for(const event of d.queue)eventValid(event,life.ledger);
       let tick=d.historyOmitted;
+      if(d.reservedReceiptSlots!==undefined&&d.reservedReceiptSlots!==ENCOUNTER_RECEIPTS)throw Error('Unsupported encounter reserve');
+      const needsLegacyCompletion=d.reservedReceiptSlots===undefined&&
+        (life.ledger.size+ENCOUNTER_RECEIPTS*d.queue.length>CAPACITY||bytes(d.journal)+20000*d.queue.length>2_000_000);
+      if(needsLegacyCompletion)for(const event of d.queue)event.legacyCompletion=true;
+      if(d.queue.some(e=>!e.legacyCompletion)&&(life.ledger.size+ENCOUNTER_RECEIPTS*d.queue.length>CAPACITY||bytes(d.journal)+20000*d.queue.length>2_000_000))throw Error('Pending encounters have no completion reserve');
       for(const t of d.history) {
         eventValid(t.event,life.ledger);
+        if(t.relations){const receipt=life.ledger.entries().find(f=>f.id===t.relationReceipt);
+          const legacy=t.receiptState==='legacy-full-journal'&&t.event.legacyCompletion===true&&t.relationReceipt===null;
+          if((!legacy&&(!receipt||receipt.source!=='amos:relations/v1'||receipt.value!==JSON.stringify(t.relations)))||
+            !Array.isArray(t.relations.evidence)||!t.relations.evidence.every(id=>life.ledger.entries().some(f=>f.id===id&&f.recordedAt<=(receipt?.recordedAt??latestReceipt(life.ledger)))))throw Error('Invalid relation evidence');}
         if(t.tick!==++tick||!finiteArray(t.before,24)||!finiteArray(t.after,24)||!finiteArray(t.observed,3)||
           !finiteArray(t.mixture,8)||!finiteArray(t.prediction,3)||!Number.isFinite(t.surprise)||!Number.isFinite(t.load)||
           !Number.isFinite(t.resonance)||t.load<0||t.load>1||t.resonance<0||t.resonance>1||
@@ -4164,6 +4295,9 @@ const AMOS2 = (() => {
         !d.pending.recognition||!Object.values(d.pending.recognition).every(v=>Number.isFinite(v)&&v>=0)))throw Error('Invalid pending forecast');
       if(!!d.pending!==(d.count>0))throw Error('Missing pending forecast');
       if(life.model.subject.updates!==Math.max(0,d.count-1)||life.voice.utterances!==d.count)throw Error('Acquired state and biography disagree');
+      if(life.relations.seen>d.count)throw Error('Relation history exceeds this life');
+      for(const c of life.relations.recent){const t=d.history.find(t=>t.event.id===c.id);
+        if(!t||JSON.stringify(c)!==JSON.stringify(RELATIONS.context(t.event,life.ledger)))throw Error('Relation context differs from its source receipts');}
       if(d.lastWeather){eventValid(d.lastWeather,life.ledger);if(d.lastWeather.kind!=='weather')throw Error('Invalid last weather sample');}
       Object.assign(life,{queue:d.queue,history:d.history,pending:d.pending,count:d.count,serial:d.serial,historyOmitted:d.historyOmitted,
         attention:d.attention,station:d.station,lastWeather:d.lastWeather});return life;
@@ -4179,7 +4313,16 @@ const AMOS2 = (() => {
     }else{text=await response.text();if(bytes(text)>maxBytes)throw Error('Source exceeds input budget');}
     return JSON.parse(text);
   }
-  return {WorldLab,fetchJSON,CAPACITY,MAX_QUEUE,MAX_HISTORY,MAX_SNAPSHOT,magnitude};
+  function compareLives(kept,current,text,at) {
+    const a=WorldLab.load(kept),b=WorldLab.load(current);
+    if(a.model.birth!==b.model.birth)throw Error('Choose two histories from the same birth for this experiment');
+    const before=[a.count,b.count];
+    const ea=a.ingestText(text,at),eb=b.ingestText(text,at);
+    const left=a.encounter(at,ea.id),right=b.encounter(at,eb.id);
+    return {before,left,right,activationGap:magnitude(left.after.map((v,i)=>v-right.after[i])),
+      forecastGap:magnitude(left.prediction.map((v,i)=>v-right.prediction[i]))};
+  }
+  return {WorldLab,compareLives,fetchJSON,CAPACITY,MAX_QUEUE,MAX_HISTORY,MAX_SNAPSHOT,magnitude};
 })();
 
 
@@ -4198,6 +4341,7 @@ const AMOS2 = (() => {
   let life=new AMOS2.WorldLab(17),running=true,connected=false,ready=false,selected=null,generation=0;
   let database=null,storageBlocked=false,saving=Promise.resolve(),noticeTimer,networkTimers=[];
   const controllers=new Set(),busy=new Set(),sourceErrors={};
+  let keptLife=null;
   let fieldFrame=0,renderTime=0,pulseAt=0,targetH=Array(24).fill(0),shownH=targetH.slice(),positions=[];
   let tapePosition=0,tapeTarget=0,tapeDrag=null,tapeVelocity=0,tapeMovedAt=0;
   const reducedMedia=matchMedia('(prefers-reduced-motion: reduce)');let motionChoice='system';
@@ -4287,6 +4431,7 @@ const AMOS2 = (() => {
     $('lifeStatus').textContent=!running?'Time paused':life.queue.length?'Meeting the world':life.count?'Listening for another encounter':'Awaiting a first encounter';
     $('pause').replaceChildren(document.createTextNode(running?'Ⅱ ':'▷ '),el('span',running?'Pause':'Continue'));
     $('queueCount').textContent=life.queue.length;$('factCount').textContent=life.ledger.size;
+    document.querySelector('.world-storage').title=`${life.queue.length*2} receipt slots reserved for pending attention and relations`;
     $('queue').replaceChildren();
     if(!life.queue.length)$('queue').append(el('p',life.count?'The world can arrive again.':'Facts arrive here. Your words can arrive, too.','quiet'));
     for(const event of life.queue.slice(0,8)) {
@@ -4317,6 +4462,16 @@ const AMOS2 = (() => {
     else{$('receiptKind').textContent='FIRST ENCOUNTER AHEAD';$('receiptTitle').textContent='What reaches it will remain in it.';
       for(const id of ['shift','resonance','load','toolName'])$(id).textContent='—';$('toolDetail').textContent='A read keeps its source.';
       $('neuronChanges').replaceChildren();$('evidence').replaceChildren(el('p','Select an encounter on the tape.','quiet'));}
+    $('relationPattern').textContent=trace?.relations?`R${trace.relations.pattern+1} · ${trace.relations.priorSupport} prior`:'—';
+    $('relationRead').replaceChildren();
+    if(trace?.relations){const r=trace.relations;
+      for(const [label,value] of [['World gap',r.gapMs===null?'—':`${r.gapMs>=0?'+':''}${fmt(r.gapMs/1000,1)} s`],
+        ['Spatial distance',r.spatialKm===null?'—':`${fmt(r.spatialKm,1)} km`],
+        ['Prior transition',`${fmt(r.expectation)} · ${r.transitionSupport}/${r.transitionMass}`],
+        ['Familiarity',fmt(r.familiarity)]]){
+        const row=el('div');row.append(el('span',label),el('b',value));$('relationRead').append(row);
+      }
+    }else $('relationRead').textContent='The next encounter can meet a history.';
     $('utterance').classList.toggle('empty',!trace);
     $('voiceMeta').textContent=`88 glyphs · ${trace?.symbolCount??life.voice.symbols.length} grown signs`;
     $('utterance').textContent=trace?trace.utterance.ids.map(id=>life.voice.name(id)).join(' · '):'The first words are still ahead.';
@@ -4342,6 +4497,14 @@ const AMOS2 = (() => {
     }
     if(event.kind==='quake')pair(dl,'Source revised',time(event.detail.sourceUpdatedAt));
     pair(dl,'Sensory projection',event.projection);pair(dl,'Observed [x, y, load]',trace.observed.map(n=>fmt(n)).join(' · '));
+    if(trace.relations){const r=trace.relations;
+      pair(dl,'Raw world coordinates',r.rawSensory.map(n=>fmt(n)).join(' · '));
+      pair(dl,'Acquired relation projection',r.projection.map(n=>fmt(n)).join(' · '));
+      pair(dl,'Perception rule','clamp(raw + 0.35 × relation projection, −1, 1)');
+      pair(dl,'Relation receipt',trace.relationReceipt??'Kept in this biography: the imported journal had no reserved completion space');
+      pair(dl,'Relation premises',r.evidence.join(' · '));
+      const record=el('details');record.append(el('summary','Relation reading and source anchors'),el('pre',JSON.stringify(r,null,2)));dl.append(record);
+    }
     if(trace.previousForecast)pair(dl,`Forecast made at encounter ${trace.resolvedFromTick}`,trace.previousForecast.map(n=>fmt(n)).join(' · '));
     pair(dl,'Expected next observation',trace.prediction.map(n=>fmt(n)).join(' · '));
     pair(dl,'Glyphs entering',event.glyphs.map(id=>life.voice.name(id)).join(' · '));
@@ -4470,6 +4633,32 @@ const AMOS2 = (() => {
     }catch(error){notice(error.message,true);}
   });
   $('settingsOpen').onclick=()=>{$('latitude').value=life.station.latitude;$('longitude').value=life.station.longitude;$('settings').showModal();};
+  $('keepMoment').onclick=()=>{
+    if(!ready)return;
+    try{keptLife=life.dump();$('compareOpen').disabled=false;
+      if(database){const text=keptLife;saving=saving.catch(()=>{}).then(()=>new Promise((resolve,reject)=>{
+        const tx=database.transaction('lives','readwrite');tx.objectStore('lives').put(text,'comparison');tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||Error('Comparison save aborted'));
+      })).catch(()=>notice('The kept comparison is in this session; browser saving failed.',true));}
+      notice(`History kept at encounter ${life.count}. Let the current life meet something, then compare them.`);
+    }catch(error){notice(error.message,true);}
+  };
+  $('compareOpen').onclick=()=>{
+    if(!keptLife)return;const kept=AMOS2.WorldLab.load(keptLife);
+    $('keptLabel').textContent=`Kept history: ${kept.count} encounters. Current history: ${life.count} encounters.`;
+    $('comparisonResult').replaceChildren();$('comparison').showModal();
+  };
+  $('comparisonForm').onsubmit=e=>{
+    e.preventDefault();try{
+      const result=AMOS2.compareLives(keptLife,life.dump(),$('sharedMessage').value,Date.now());
+      const box=el('div',undefined,'comparison-pair');
+      for(const [label,trace,count] of [['Kept',result.left,result.before[0]],['Current',result.right,result.before[1]]]){
+        const side=el('section');side.append(el('h3',`${label} · ${count} encounters`),el('p',trace.utterance.words.join(' · ')));
+        const bars=el('div',undefined,'comparison-neurons');for(const v of trace.after){const bar=el('i');bar.style.height=(3+Math.abs(v)*40)+'px';bar.style.background=v<0?'var(--teal)':'var(--gold)';bars.append(bar);}side.append(bars);
+        side.append(el('p',`Expectation ${fmt(trace.relations.expectation)} · relation familiarity ${fmt(trace.relations.familiarity)}`,'quiet'));box.append(side);
+      }
+      $('comparisonResult').replaceChildren(box,el('p',`State separation RMS Δh: ${fmt(result.activationGap,6)} · forecast separation: ${fmt(result.forecastGap,6)}`,'quiet'));
+    }catch(error){notice(error.message,true);}
+  };
   $('lineageOpen').onclick=()=>$('lineage').showModal();
   $('stationSave').onclick=()=>{const latitude=Number($('latitude').value),longitude=Number($('longitude').value);
     if(!$('latitude').value.trim()||!$('longitude').value.trim()||!Number.isFinite(latitude)||Math.abs(latitude)>90||!Number.isFinite(longitude)||Math.abs(longitude)>180){notice('Enter a latitude between −90 and 90 and longitude between −180 and 180.',true);return;}
@@ -4492,7 +4681,7 @@ const AMOS2 = (() => {
       birthConfirm=0;$('newBirth').textContent='Begin another life';$('settings').close();update();persist();notice('Another life begins.');
     }catch(error){notice(error.message,true);}
   };
-  for(const dialog of [$('settings'),$('lineage')])dialog.addEventListener('click',e=>{if(e.target===dialog){const b=dialog.getBoundingClientRect();if(e.clientX<b.left||e.clientX>b.right||e.clientY<b.top||e.clientY>b.bottom)dialog.close();}});
+  for(const dialog of [$('settings'),$('lineage'),$('comparison')])dialog.addEventListener('click',e=>{if(e.target===dialog){const b=dialog.getBoundingClientRect();if(e.clientX<b.left||e.clientX>b.right||e.clientY<b.top||e.clientY>b.bottom)dialog.close();}});
   const resize=new ResizeObserver(()=>{drawEarth();schedule();});resize.observe(document.querySelector('.field-layout'));resize.observe(tape);
   reducedMedia.addEventListener('change',schedule);document.addEventListener('visibilitychange',()=>{if(!document.hidden)schedule();});
   setInterval(()=>{if(ready&&running&&!document.hidden&&life.queue.length)takeEncounter();},2400);
@@ -4500,6 +4689,8 @@ const AMOS2 = (() => {
     $('resonate').disabled=true;
     try{database=await openDatabase();const saved=await readSaved();if(saved){try{life=AMOS2.WorldLab.load(saved);}catch(error){storageBlocked=true;running=false;notice('The saved life could not be read: '+error.message+'. It remains stored; import a verified life or begin another.',true);}}
       $('saveStatus').textContent=storageBlocked?'Saved life preserved · read failed':saved?'This life returns with its history':'This life stays in this browser';
+      const kept=await new Promise((resolve,reject)=>{const request=database.transaction('lives','readonly').objectStore('lives').get('comparison');request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});
+      if(kept){try{AMOS2.WorldLab.load(kept);keptLife=kept;$('compareOpen').disabled=false;}catch{notice('A stored comparison could not be opened. The current life is retained.',true);}}
     }catch(error){$('saveStatus').textContent='Session only · export to keep';notice('Local storage is unavailable. You can export and import this life.',true);}
     ready=true;$('resonate').disabled=false;shownH=life.model.subject.h.slice();update();
   }
