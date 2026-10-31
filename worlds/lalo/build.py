@@ -2,6 +2,7 @@
 """Build the single-file AMOS-2 world from pinned, inspectable source organs."""
 from pathlib import Path
 import re
+import sys
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
@@ -29,9 +30,14 @@ def lalo_bundle():
 html = (HERE / 'shell.html').read_text()
 html = html.replace('/* AMOS2_STYLE */', (HERE / 'style.css').read_text())
 html = html.replace('/* AMOS2_LICENSE */', (HERE / 'vendor/lalo/LICENSE').read_text().replace('&', '&amp;').replace('<', '&lt;'))
-sources = [ROOT/'web/amos.js', HERE/'vendor/life-semantic.js', HERE/'voice.js', HERE/'relations.js', HERE/'engine.js', HERE/'ui.js']
+sources = [ROOT/'web/amos.js', HERE/'vendor/life-semantic.js', HERE/'voice.js', HERE/'relations.js', HERE/'perception.js', HERE/'engine.js', HERE/'ui.js']
 scripts = [sources[0].read_text(), lalo_bundle()] + [p.read_text() for p in sources[1:]]
 html = html.replace('/* AMOS2_SCRIPTS */', '\n\n'.join(scripts).replace('</script', '<\\/script'))
 target = ROOT/'Amos-2.html'
-target.write_text(html)
-print(f'{target}: {target.stat().st_size:,} bytes')
+if '--check' in sys.argv:
+    if not target.exists() or target.read_text()!=html:
+        raise SystemExit('Amos-2.html is stale; run make world')
+    print(f'{target}: reproducible ({target.stat().st_size:,} bytes)')
+else:
+    target.write_text(html)
+    print(f'{target}: {target.stat().st_size:,} bytes')

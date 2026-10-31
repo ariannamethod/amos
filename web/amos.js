@@ -3,8 +3,9 @@
  * Usable as a browser global or a Node module. Never reads DOM or host time.
  */
 'use strict';
-const AMOS = (() => {
-const H=24, F=54, G=8, L=4, K=32, E=64, MASK=(1n<<64n)-1n;
+function createAMOS(H=24) {
+if(![24,28].includes(H))throw Error('Supported neural widths are 24 and 28');
+const F=2*H+6, G=8, L=4, K=32, E=64, MASK=(1n<<64n)-1n;
 const zeros=n=>Array(n).fill(0), matrix=(n,m)=>Array.from({length:n},()=>zeros(m));
 const clip=(x,lo,hi)=>Math.max(lo,Math.min(hi,x));
 const sum=a=>a.reduce((s,x)=>s+x,0);
@@ -283,6 +284,8 @@ class Amos {
   static loads(text) {
     const d=JSON.parse(text);
     if(d.format!=='AMOS-JSON-1') throw Error('Unsupported snapshot format');
+    const width=d.amos?.subject?.h?.length;
+    if([24,28].includes(width)&&width!==H)return createAMOS(width).Amos.loads(text);
     const keys=(x,names)=>{if(!x || typeof x!=='object' || Array.isArray(x) || Object.keys(x).sort().join('|')!==[...names].sort().join('|')) throw Error('Unexpected snapshot fields');};
     keys(d,['format','amos']);const data=d.amos;
     keys(data,['seed','birth','world','subject','memory']);
@@ -326,6 +329,7 @@ function validate(a) {
   }
   for(const e of g.evidence) if(!(Object.keys(e).sort().join('|')==='action|age|key|mass|mean|variance' && counter(e.age) && shape(e.mass) && shape(e.action) && e.key.every(x=>x>=0&&x<=1) && shape(e.key,K) && shape(e.mean,3) && shape(e.variance,3) && e.variance.every(x=>x>=0) && e.mass>=1 && e.mass<=32 && Math.abs(e.action)<=1 && e.age>0 && e.age<=g.clock)) throw Error('Invalid association');
 }
-return {Amos,World,Subject,Glyphs,Embodiment,Random,mix64,validate,H,F,G,L,K,E};
-})();
+return {Amos,World,Subject,Glyphs,Embodiment,Random,mix64,validate,H,F,G,L,K,E,withWidth:createAMOS};
+}
+const AMOS=createAMOS();
 if(typeof module!=='undefined') module.exports=AMOS;

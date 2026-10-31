@@ -3,14 +3,37 @@
  * No presentation frame, fetch failure or repeated feed advances this life. */
 const AMOS2 = (() => {
   'use strict';
-  const CAPACITY=1024, MAX_QUEUE=128, MAX_HISTORY=128, MAX_SNAPSHOT=8_000_000, ENCOUNTER_RECEIPTS=2;
+  const CAPACITY=1024, MAX_QUEUE=128, MAX_HISTORY=128, MAX_SNAPSHOT=8_000_000, ENCOUNTER_RECEIPTS=3;
   const bounded=(n,a,b)=>Math.max(a,Math.min(b,n));
   const clone=value=>JSON.parse(JSON.stringify(value));
   const magnitude=a=>Math.sqrt(a.reduce((s,v)=>s+v*v,0)/Math.max(1,a.length));
   const integer=n=>Number.isSafeInteger(n);
   const bytes=s=>new TextEncoder().encode(s).length;
   const finiteArray=(a,n)=>Array.isArray(a)&&a.length===n&&a.every(v=>typeof v==='number'&&Number.isFinite(v)&&Math.abs(v)<1e12);
-  const hash=s=>{let n=2166136261;for(const c of s)n=Math.imul(n^c.codePointAt(0),16777619);return(n>>>0).toString(16);};
+  const BODY=AMOS.withWidth(28);
+  const featureMap=i=>i<29?i:i<53?i+4:61;
+  const growFeatures=a=>{const next=Array(BODY.F).fill(0);a.forEach((v,i)=>next[featureMap(i)]=v);return next;};
+  function growModel(text) {
+    const old=AMOS.Amos.loads(text);if(old.subject.h.length===BODY.H)return old;
+    const d=JSON.parse(old.dumps()),a=d.amos,s=a.subject;
+    const fresh=JSON.parse(new BODY.Amos(BigInt('0x'+a.seed),a.world.kind,s.glyph.enabled,s.mode).dumps()).amos.subject;
+    const weights=Array.from({length:3},(_,k)=>growFeatures(s.weights[k]));
+    const covariance=Array.from({length:BODY.F},(_,i)=>Array.from({length:BODY.F},(_,j)=>i===j?100:0));
+    for(let i=0;i<54;i++)for(let j=0;j<54;j++)covariance[featureMap(i)][featureMap(j)]=s.covariance[i][j];
+    s.h=s.h.concat([0,0,0,0]);s.win=s.win.concat(fresh.win.slice(24));
+    s.recurrent=s.recurrent.map(row=>row.concat([0,0,0,0])).concat(fresh.recurrent.slice(24));
+    s.weights=weights;s.covariance=covariance;s.glyph.prototypes=s.glyph.prototypes.map(row=>row.concat([0,0,0,0]));
+    a.memory=a.memory.map(t=>({...t,features:growFeatures(t.features)}));
+    return BODY.Amos.loads(JSON.stringify(d));
+  }
+  // Only a current head from the same source can be an unchanged observation.
+  function currentVersion(ledger,subject,source) {
+    const all=ledger.entries(),last=all.findLast(f=>f.subject===subject&&f.source===source);
+    if(!last)return [];
+    const prefix=last.id.slice(0,last.id.lastIndexOf(':')+1),replaced=new Set(all.map(f=>f.supersedes));
+    return all.filter(f=>f.subject===subject&&f.source===source&&f.id.startsWith(prefix)&&!replaced.has(f.id));
+  }
+  const unchanged=(facts,values,from,to)=>facts.length===Object.keys(values).length&&facts.every(f=>Object.hasOwn(values,f.predicate)&&f.value===values[f.predicate]&&f.validFrom===from&&f.validTo===to);
   const gid=name=>VOICE.names.indexOf(name);
   const ids=names=>names.map(gid);
   const latestReceipt=ledger=>ledger.entries().at(-1)?.recordedAt??0;
@@ -39,8 +62,8 @@ const AMOS2 = (() => {
   }
   class WorldLab {
     constructor(seed=17) {
-      this.model=new AMOS.Amos(seed,1,4);this.ledger=new LALO.FactLedger({capacity:CAPACITY});
-      this.voice=new VOICE.GlyphVoice(seed);this.queue=[];this.history=[];this.pending=null;
+      this.model=new BODY.Amos(seed,1,4);this.ledger=new LALO.FactLedger({capacity:CAPACITY});
+      this.voice=new VOICE.GlyphVoice(seed,BODY.H);this.queue=[];this.history=[];this.pending=null;
       this.count=0;this.historyOmitted=0;this.serial=0;this.attention='message';
       this.station={latitude:52.52,longitude:13.405};this.lastWeather=null;
       this.relations=new RELATIONS.RelationField();
@@ -52,7 +75,7 @@ const AMOS2 = (() => {
     _commit(ledger,events) {
       if(this.queue.length+events.length>MAX_QUEUE)throw Error('Encounter queue full (128); let the pending world reach AMOS first');
       if(ledger.size+ENCOUNTER_RECEIPTS*(this.queue.length+events.length)>CAPACITY)
-        throw Error('Journal budget must reserve attention and relation receipts for every pending encounter');
+        throw Error('Journal budget must reserve attention, relation and read receipts for every pending encounter');
       for(const event of events)eventValid(event,ledger);
       const encoded=LALO.encodeJournal(ledger);
       if(bytes(encoded)+20000*(this.queue.length+events.length)>2_000_000)throw Error('Journal byte budget must reserve pending encounter receipts');
@@ -70,13 +93,10 @@ const AMOS2 = (() => {
           !frame.values||typeof frame.values!=='object'||Array.isArray(frame.values)||
           !Object.keys(frame.values).length||Object.keys(frame.values).length>16||
           !Object.keys(frame.values).every(p=>/^[a-zA-Z][a-zA-Z0-9_]{0,63}$/.test(p)))throw Error('Invalid world receipt');
-        const subject=`world:${frame.kind}:${frame.key}`,fingerprint=hash(JSON.stringify(frame.values)),id=`${subject}:${fingerprint}`;
-        const duplicate=ledger.entries().filter(f=>f.id.startsWith(id+':'));
-        if(duplicate.length){
-          if(duplicate.length!==Object.keys(frame.values).length||duplicate.some(f=>f.value!==frame.values[f.predicate]||f.validFrom!==frame.observedAt||f.source!==frame.source))throw Error('World receipt identity collision');
-          continue;
-        }
-        const previous=ledger.entries().filter(f=>f.subject===subject),replaced=new Set(previous.map(f=>f.supersedes)),factIds=[];
+        const subject=`world:${frame.kind}:${frame.key}`;
+        if(unchanged(currentVersion(ledger,subject,frame.source),frame.values,frame.observedAt,frame.observedAt+1))continue;
+        const id=`${subject}:r${ledger.size+1}`;
+        const all=ledger.entries(),previous=all.filter(f=>f.subject===subject&&f.source===frame.source),replaced=new Set(all.map(f=>f.supersedes)),factIds=[];
         for(const [predicate,value] of Object.entries(frame.values)){
           const old=previous.findLast(f=>f.predicate===predicate&&!replaced.has(f.id));
           const factId=`${id}:${predicate}`;ledger.add({id:factId,subject,predicate,value,source:frame.source,validFrom:frame.observedAt,
@@ -118,14 +138,11 @@ const AMOS2 = (() => {
       if(!integer(observedAt)||!integer(validTo))throw Error('Invalid weather time');
       const subject=`weather:${data.latitude.toFixed(4)}:${data.longitude.toFixed(4)}:${c.time}`;
       const values={temperature_c:c.temperature_2m,wind_kmh:c.wind_speed_10m,precipitation_mm:c.precipitation,is_day:c.is_day,latitude:data.latitude,longitude:data.longitude};
-      const fingerprint=hash(JSON.stringify(values)),id=`${subject}:${fingerprint}`;
-      const all=ledger.entries();if(all.some(f=>f.id===`${id}:temperature_c`)){
-        if(Object.entries(values).some(([predicate,value])=>all.find(f=>f.id===`${id}:${predicate}`)?.value!==value))throw Error('Weather receipt identity collision');
-        return 0;
-      }
+      if(unchanged(currentVersion(ledger,subject,source),values,observedAt,validTo))return 0;
+      const id=`${subject}:r${ledger.size+1}`,all=ledger.entries();
       const replaced=new Set(all.map(f=>f.supersedes)),factIds=[];
       for(const [predicate,value] of Object.entries(values)) {
-        const previous=all.findLast(f=>f.subject===subject&&f.predicate===predicate&&!replaced.has(f.id));
+        const previous=all.findLast(f=>f.subject===subject&&f.source===source&&f.predicate===predicate&&!replaced.has(f.id));
         const factId=`${id}:${predicate}`;ledger.add({id:factId,subject,predicate,value,source,
           validFrom:observedAt,validTo,recordedAt:receivedAt,supersedes:previous?.id??null});factIds.push(factId);
       }
@@ -164,70 +181,78 @@ const AMOS2 = (() => {
       if(!this.queue.length)return null;
       const index=this.nextIndex(preferredId),event=this.queue[index];
       const ledger=this._stage(Math.max(at,latestReceipt(this.ledger))),knownAt=event.receivedAt;
+      // Work on detached organs. A failed tool, receipt or budget commits no learning.
+      const model=this.model.clone(),s=model.subject,voice=VOICE.GlyphVoice.load(clone(this.voice.dump()));
       const relationField=RELATIONS.RelationField.load(this.relations.dump(),ledger);
-      const relations=relationField.observe(event,ledger),sensory=relations.sensory;
-      const s=this.model.subject,before=s.h.slice(),previous=s.observation.slice(),oldLoad=this.model.world.load;
+      const relations=relationField.observe(event,ledger);
+      const content=event.detail.contentGlyphs??event.glyphs,resonance=voice.resonance(content);
+      if(!Number.isFinite(resonance)||resonance<0||resonance>1)throw Error('Invalid prior resonance');
+      const resonanceGain=.94+.12*resonance;
+      const sensory=relations.sensory.map(v=>bounded(v*resonanceGain,-1,1));
+      const before=s.h.slice(),oldLoad=model.world.load;
       const errorBefore=this.pending?magnitude(sensory.map((v,k)=>v-this.pending.predicted[k])):0;
       const load=bounded(.85*oldLoad+.15*errorBefore+.005*Math.abs(this.pending?.action||0),0,1);
       const o=[...sensory,load],tick=this.count+1;
-      // Reserve the attention receipt before changing any acquired state.
-      const all=ledger.entries(),previousAttention=all.findLast(f=>f.subject==='agent:amos'&&f.predicate==='attention_subject');
-      const receiptAt=Math.max(at,latestReceipt(ledger));
-      const additions=[{id:`agent:amos:attention:${tick}`,subject:'agent:amos',predicate:'attention_subject',value:event.subject,
-        source:'amos:encounter',validFrom:receiptAt,validTo:null,recordedAt:receiptAt,supersedes:previousAttention?.id??null},
-      {id:`agent:amos:relations:${tick}`,subject:'agent:amos',predicate:'encounter_relations',value:JSON.stringify(relations),
-        source:'amos:relations/v1',validFrom:receiptAt,validTo:receiptAt+1,recordedAt:receiptAt,supersedes:null}];
-      let completedLedger=ledger,relationReceipt=additions[1].id,receiptState='journal';
-      try{const candidate=LALO.decodeJournal(LALO.encodeJournal(ledger));for(const f of additions)candidate.add(f);LALO.encodeJournal(candidate);completedLedger=candidate;}
-      catch(error){
-        // Older files admitted arrivals without a completion reserve. Finish
-        // those already accepted encounters in the saved biography; retain
-        // their full relation evidence and every original source receipt.
-        const budget=/capacity|byte budget/.test(error.message);
-        if(!event.legacyCompletion||!budget)throw error;
-        relationReceipt=null;receiptState='legacy-full-journal';
-      }
       let completed=null;
       if(this.pending) {
         const p=this.pending,delta=o.map((v,k)=>v-p.observation[k]);
         s.regress(p.features,delta);s.body.learn(p.observation,o);s.glyph.learn(p.sequence,p.action,delta);
         completed={tick,observation:p.observation,next:o,action:p.action,predicted:p.predicted,influence:p.influence,
           features:p.features,sequence:p.sequence,recognition:p.recognition};
-        this.model.memory.push(completed);if(this.model.memory.length>128)this.model.memory.shift();
+        model.memory.push(completed);if(model.memory.length>128)model.memory.shift();
       }
       s.glyph.learning=1;s.observe(o);
-      const mixture=s.glyph.sequence.slice(-8),recognition=s.glyph.predict(0)[1];
-      const content=event.detail.contentGlyphs??event.glyphs,resonance=this.voice.resonance(content);
-      const changed=s.h.map((v,i)=>({i,before:before[i],after:v,delta:v-before[i]})).sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta));
-      const action=s.action(0,.22),host=LALO.createToolHost(completedLedger);
+      const worldAfter=s.h.slice(),action=s.action(0,.22),host=LALO.createToolHost(ledger);
       const tool=action<0?'lalo_history':action>0?'lalo_lineage':'lalo_facts';
       const args=action<0?{subject:event.subject,knownAt,limit:32}:action>0?{id:event.factIds[0],knownAt,limit:32}
         :{subject:event.subject,validAt:event.observedAt,knownAt,limit:32};
       const toolResult=host.call(tool,args);
       if(!toolResult.ok)throw Error(toolResult.error.message);
-      this.voice.ingest(event.glyphs,s.h,mixture);
-      // The chosen instrument also changes the material available to expression.
+      const reading=PERCEPTION.read(toolResult,ledger,tool,args);
+      const readObservation=[...o.slice(0,2).map((v,i)=>bounded(v+.15*reading.sensory[i],-1,1)),load];
+      // A second, explicit neural phase is the consequence of this chosen read.
+      // Its returned premises, rather than only its name, enter acquired state.
+      s.previous_action=action;s.observe(readObservation);
+      const mixture=s.glyph.sequence.slice(-8),recognition=s.glyph.predict(0)[1];
+      const changed=s.h.map((v,i)=>({i,before:before[i],after:v,delta:v-before[i]})).sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta));
+      voice.ingest(event.glyphs,s.h,mixture);
       const evidenceGlyphs=tool==='lalo_history'?ids(['before','remember']):tool==='lalo_lineage'?ids(['cause','change']):ids(['see','now']);
-      this.voice.ingest(evidenceGlyphs,s.h,mixture);
-      const utterance=this.voice.express(s.h,mixture,errorBefore);
+      voice.ingest(evidenceGlyphs,s.h,mixture);
+      voice.ingest(reading.glyphs,s.h,mixture);
+      const utterance=voice.express(s.h,mixture,errorBefore);
       const expected=s.predict(action),features=s.features(action),influence=s.influence();
       const predictedRecognition=s.glyph.predict(action)[1];
-      this.pending={observation:o.slice(),action,predicted:expected,features,sequence:s.glyph.sequence.slice(),recognition:predictedRecognition,influence};
-      s.previous_action=action;this.attention=action<0?'quake':action>0?'weather':'message';
-      this.model.world.pos=o.slice(0,2);this.model.world.load=load;this.model.world.tick=tick;
-      const trace={tick,event:clone(event),before,after:s.h.slice(),changed:changed.slice(0,6),mixture,
-        relations,relationReceipt,receiptState,
-        prototypeCount:s.glyph.prototypes.length,symbolCount:this.voice.symbols.length,
-        load,surprise:errorBefore,resonance,recognition:clone(recognition),action,nextAttention:this.attention,
+      const pending={observation:readObservation.slice(),action,predicted:expected,features,sequence:s.glyph.sequence.slice(),recognition:predictedRecognition,influence};
+      const attention=action<0?'quake':action>0?'weather':'message';
+      model.world.pos=readObservation.slice(0,2);model.world.load=load;model.world.tick=tick;
+      const receiptAt=Math.max(at,latestReceipt(ledger)),encounterSubject=`agent:amos:encounter:${tick}`;
+      const additions=[{id:`agent:amos:attention:${tick}`,subject:encounterSubject,predicate:'attention_subject',value:event.subject,
+        source:'amos:encounter',validFrom:receiptAt,validTo:receiptAt+1,recordedAt:receiptAt,supersedes:null},
+      {id:`agent:amos:relations:${tick}`,subject:encounterSubject,predicate:'encounter_relations',value:JSON.stringify(relations),
+        source:'amos:relations/v1',validFrom:receiptAt,validTo:receiptAt+1,recordedAt:receiptAt,supersedes:null},
+      {id:`agent:amos:read:${tick}`,subject:encounterSubject,predicate:'tool_reading',value:JSON.stringify(reading),
+        source:'amos:tool-read/v1',validFrom:receiptAt,validTo:receiptAt+1,recordedAt:receiptAt,supersedes:null}];
+      let completedLedger=ledger,relationReceipt=additions[1].id,readReceipt=additions[2].id,receiptState='journal';
+      try{const candidate=LALO.decodeJournal(LALO.encodeJournal(ledger));for(const f of additions)candidate.add(f);LALO.encodeJournal(candidate);completedLedger=candidate;}
+      catch(error){
+        const budget=/capacity|byte budget/.test(error.message);
+        if(!event.legacyCompletion||!budget)throw error;
+        relationReceipt=null;readReceipt=null;receiptState='legacy-full-journal';
+      }
+      const trace={tick,policy:'amos/world-read-v1',event:clone(event),before,worldAfter,after:s.h.slice(),changed:changed.slice(0,6),mixture,
+        relations,relationReceipt,readReceipt,receiptState,reading,readObservation,resonanceGain,
+        prototypeCount:s.glyph.prototypes.length,symbolCount:voice.symbols.length,
+        load,surprise:errorBefore,resonance,recognition:clone(recognition),action,nextAttention:attention,
         tool:{name:tool,arguments:args,result:toolResult},utterance,
         previousForecast:completed?.predicted??null,observed:o,prediction:expected,
         resolvedFromTick:completed?tick-1:null};
-      this.queue.splice(index,1);this.ledger=completedLedger;this.relations=relationField;this.count=tick;this.history.push(trace);
+      this.queue.splice(index,1);this.ledger=completedLedger;this.relations=relationField;this.model=model;this.voice=voice;
+      this.pending=pending;this.attention=attention;this.count=tick;this.history.push(trace);
       if(this.history.length>MAX_HISTORY){this.history.shift();this.historyOmitted++;}
       return trace;
     }
     dump() {
-      const text=JSON.stringify({format:'amos-2/world',version:2,model:this.model.dumps(),journal:LALO.encodeJournal(this.ledger),voice:this.voice.dump(),
+      const text=JSON.stringify({format:'amos-2/world',version:3,model:this.model.dumps(),journal:LALO.encodeJournal(this.ledger),voice:this.voice.dump(),
         queue:this.queue,history:this.history,pending:this.pending,count:this.count,serial:this.serial,historyOmitted:this.historyOmitted,
         attention:this.attention,station:this.station,lastWeather:this.lastWeather,relations:this.relations.dump(),reservedReceiptSlots:ENCOUNTER_RECEIPTS});
       if(bytes(text)>MAX_SNAPSHOT)throw Error('Complete life exceeds the 8 MB snapshot budget');return text;
@@ -235,10 +260,18 @@ const AMOS2 = (() => {
     static load(text) {
       if(typeof text!=='string'||bytes(text)>MAX_SNAPSHOT)throw Error('Snapshot exceeds 8 MB');
       const d=JSON.parse(text);
-      if(d?.format!=='amos-2/world'||![1,2].includes(d.version))throw Error('Unsupported AMOS-2 life');
-      if(d.version===2&&(!d.relations||d.reservedReceiptSlots!==ENCOUNTER_RECEIPTS))throw Error('Missing acquired relation organ or completion reserve');
-      const life=new WorldLab();life.model=AMOS.Amos.loads(d.model);life.ledger=LALO.decodeJournal(d.journal,{capacity:CAPACITY});
-      life.voice=VOICE.GlyphVoice.load(d.voice);
+      if(d?.format!=='amos-2/world'||![1,2,3].includes(d.version))throw Error('Unsupported AMOS-2 life');
+      if(d.version>=2&&(!d.relations||![2,3].includes(d.reservedReceiptSlots)))throw Error('Missing acquired relation organ or completion reserve');
+      if(d.version===3&&d.reservedReceiptSlots!==ENCOUNTER_RECEIPTS)throw Error('Missing tool-read completion reserve');
+      const width=JSON.parse(d.model)?.amos?.subject?.h?.length;
+      if(d.version===3&&width!==BODY.H)throw Error('Invalid current neural width');
+      if(d.voice?.neural?.[0]?.length!==width)throw Error('Voice and body neural widths disagree');
+      const life=new WorldLab();life.model=growModel(d.model);life.ledger=LALO.decodeJournal(d.journal,{capacity:CAPACITY});
+      life.voice=VOICE.GlyphVoice.load(d.voice).grow(BODY.H);
+      if(d.version<3&&d.pending?.features?.length===54)d.pending.features=growFeatures(d.pending.features);
+      if(d.version<3&&Array.isArray(d.relations?.recent))for(const c of d.relations.recent){
+        if(c.source===undefined)c.source=d.history?.find(t=>t.event.id===c.id)?.event.source;
+      }
       life.relations=d.relations?RELATIONS.RelationField.load(d.relations,life.ledger):new RELATIONS.RelationField();
       if(!integer(d.count)||d.count<0||d.count!==life.model.world.tick||!integer(d.serial)||d.serial<0||
         !integer(d.historyOmitted)||d.historyOmitted<0||!['quake','weather','message'].includes(d.attention)||
@@ -247,8 +280,8 @@ const AMOS2 = (() => {
         !d.station||!Number.isFinite(d.station.latitude)||Math.abs(d.station.latitude)>90||!Number.isFinite(d.station.longitude)||Math.abs(d.station.longitude)>180)throw Error('Invalid life history');
       for(const event of d.queue)eventValid(event,life.ledger);
       let tick=d.historyOmitted;
-      if(d.reservedReceiptSlots!==undefined&&d.reservedReceiptSlots!==ENCOUNTER_RECEIPTS)throw Error('Unsupported encounter reserve');
-      const needsLegacyCompletion=d.reservedReceiptSlots===undefined&&
+      if(d.reservedReceiptSlots!==undefined&&![2,3].includes(d.reservedReceiptSlots))throw Error('Unsupported encounter reserve');
+      const needsLegacyCompletion=d.reservedReceiptSlots!==ENCOUNTER_RECEIPTS&&
         (life.ledger.size+ENCOUNTER_RECEIPTS*d.queue.length>CAPACITY||bytes(d.journal)+20000*d.queue.length>2_000_000);
       if(needsLegacyCompletion)for(const event of d.queue)event.legacyCompletion=true;
       if(d.queue.some(e=>!e.legacyCompletion)&&(life.ledger.size+ENCOUNTER_RECEIPTS*d.queue.length>CAPACITY||bytes(d.journal)+20000*d.queue.length>2_000_000))throw Error('Pending encounters have no completion reserve');
@@ -258,10 +291,10 @@ const AMOS2 = (() => {
           const legacy=t.receiptState==='legacy-full-journal'&&t.event.legacyCompletion===true&&t.relationReceipt===null;
           if((!legacy&&(!receipt||receipt.source!=='amos:relations/v1'||receipt.value!==JSON.stringify(t.relations)))||
             !Array.isArray(t.relations.evidence)||!t.relations.evidence.every(id=>life.ledger.entries().some(f=>f.id===id&&f.recordedAt<=(receipt?.recordedAt??latestReceipt(life.ledger)))))throw Error('Invalid relation evidence');}
-        if(t.tick!==++tick||!finiteArray(t.before,24)||!finiteArray(t.after,24)||!finiteArray(t.observed,3)||
+        if(t.tick!==++tick||!finiteArray(t.before,t.after?.length)||![24,28].includes(t.after?.length)||!finiteArray(t.after,t.before?.length)||!finiteArray(t.observed,3)||
           !finiteArray(t.mixture,8)||!finiteArray(t.prediction,3)||!Number.isFinite(t.surprise)||!Number.isFinite(t.load)||
           !Number.isFinite(t.resonance)||t.load<0||t.load>1||t.resonance<0||t.resonance>1||
-          !Array.isArray(t.changed)||t.changed.length>6||!t.changed.every(n=>n&&integer(n.i)&&n.i>=0&&n.i<24&&[n.before,n.after,n.delta].every(Number.isFinite))||
+          !Array.isArray(t.changed)||t.changed.length>6||!t.changed.every(n=>n&&integer(n.i)&&n.i>=0&&n.i<t.after.length&&[n.before,n.after,n.delta].every(Number.isFinite))||
           !t.recognition||!['similarity','support','uncertainty','ignorance','noise'].every(k=>Number.isFinite(t.recognition[k])&&t.recognition[k]>=0)||
           !t.tool?.result?.ok||!['lalo_facts','lalo_history','lalo_lineage'].includes(t.tool.name)||!Array.isArray(t.tool.result.data?.items)||
           !Array.isArray(t.utterance?.ids)||t.utterance.ids.length!==5||
@@ -274,14 +307,22 @@ const AMOS2 = (() => {
         const born=t.utterance.born;
         if(born&&(!integer(born.id)||born.id<88||born.id>=88+life.voice.symbols.length||!integer(born.support)||born.support<14||typeof born.name!=='string'))throw Error('Invalid symbol birth');
       }
-      if(d.pending&&(!finiteArray(d.pending.observation,3)||!finiteArray(d.pending.predicted,3)||!finiteArray(d.pending.features,54)||
+      for(const t of d.history)if(t.policy==='amos/world-read-v1'){
+        const receipt=life.ledger.entries().find(f=>f.id===t.readReceipt);
+        const legacy=t.receiptState==='legacy-full-journal'&&t.event.legacyCompletion===true&&t.readReceipt===null;
+        if(!finiteArray(t.worldAfter,28)||!finiteArray(t.readObservation,3)||t.resonanceGain!==.94+.12*t.resonance||
+          JSON.stringify(PERCEPTION.read(t.tool.result,life.ledger,t.tool.name,t.tool.arguments))!==JSON.stringify(t.reading)||
+          (!legacy&&(!receipt||receipt.source!=='amos:tool-read/v1'||receipt.value!==JSON.stringify(t.reading))))throw Error('Invalid acquired tool reading');
+      }
+      if(d.pending&&(!finiteArray(d.pending.observation,3)||!finiteArray(d.pending.predicted,3)||!finiteArray(d.pending.features,BODY.F)||
         !finiteArray(d.pending.sequence,32)||!finiteArray(d.pending.influence,2)||![-1,0,1].includes(d.pending.action)||
         !d.pending.recognition||!Object.values(d.pending.recognition).every(v=>Number.isFinite(v)&&v>=0)))throw Error('Invalid pending forecast');
       if(!!d.pending!==(d.count>0))throw Error('Missing pending forecast');
       if(life.model.subject.updates!==Math.max(0,d.count-1)||life.voice.utterances!==d.count)throw Error('Acquired state and biography disagree');
       if(life.relations.seen>d.count)throw Error('Relation history exceeds this life');
       for(const c of life.relations.recent){const t=d.history.find(t=>t.event.id===c.id);
-        if(!t||JSON.stringify(c)!==JSON.stringify(RELATIONS.context(t.event,life.ledger)))throw Error('Relation context differs from its source receipts');}
+        const expected=t?RELATIONS.context(t.event,life.ledger):null;
+        if(!expected||Object.keys(c).length!==Object.keys(expected).length||Object.keys(expected).some(k=>JSON.stringify(c[k])!==JSON.stringify(expected[k])))throw Error('Relation context differs from its source receipts');}
       if(d.lastWeather){eventValid(d.lastWeather,life.ledger);if(d.lastWeather.kind!=='weather')throw Error('Invalid last weather sample');}
       Object.assign(life,{queue:d.queue,history:d.history,pending:d.pending,count:d.count,serial:d.serial,historyOmitted:d.historyOmitted,
         attention:d.attention,station:d.station,lastWeather:d.lastWeather});return life;
@@ -306,5 +347,5 @@ const AMOS2 = (() => {
     return {before,left,right,activationGap:magnitude(left.after.map((v,i)=>v-right.after[i])),
       forecastGap:magnitude(left.prediction.map((v,i)=>v-right.prediction[i]))};
   }
-  return {WorldLab,compareLives,fetchJSON,CAPACITY,MAX_QUEUE,MAX_HISTORY,MAX_SNAPSHOT,magnitude};
+  return {WorldLab,compareLives,fetchJSON,CAPACITY,MAX_QUEUE,MAX_HISTORY,MAX_SNAPSHOT,ENCOUNTER_RECEIPTS,WIDTH:BODY.H,FEATURES:BODY.F,magnitude};
 })();
