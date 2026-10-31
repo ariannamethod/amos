@@ -213,6 +213,10 @@ const AMOS2 = (() => {
           !frame.values||typeof frame.values!=='object'||Array.isArray(frame.values)||
           !Object.keys(frame.values).length||Object.keys(frame.values).length>16||
           !Object.keys(frame.values).every(p=>/^[a-zA-Z][a-zA-Z0-9_]{0,63}$/.test(p)))throw Error('Invalid world receipt');
+        // These sources carry the heart's own structured receipts. An external
+        // assertion must not be dispatched as an internal evaluation or memory.
+        if(frame.source.startsWith('amos:')&&!(frame.kind==='inference'&&frame.source==='amos:inference/v1'))
+          throw Error('The amos: source namespace is reserved for internal receipts');
         const subject=`world:${frame.kind}:${frame.key}`;
         if(unchanged(currentVersion(ledger,subject,frame.source),frame.values,frame.observedAt,frame.observedAt+1))continue;
         const id=`${subject}:r${ledger.size+1}`;

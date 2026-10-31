@@ -3,6 +3,96 @@
 Project changes and working notes. Milestones belong in README.md; implementation
 history and verification belong here. The Arianna Method Manifesto governs both.
 
+## 2026-11-01 — dependency and abstraction audit; internal-source admission fix
+
+Reviewed merged main `4c67ff4343f8b2078cfe9b59ad6916d8e219d0bb`: the standalone
+builder, world registration, adapters, scalar ledger, encounter transaction,
+perception, relation field, self/phase predictors, sonar, glyph generation and
+checkpoint validation. The existing 79 standalone gates pass before this change.
+
+### Dependencies and the calendar boundary
+
+`worlds/lalo/build.py` already embeds the AMOS body, selected pinned LALO organs,
+semantic membrane, learning organs and interface into `Amos-2.html`. The source
+folder is required for rebuilding; it is unnecessary for running the resulting
+HTML. The page's optional classic-script load of `worlds/worlds.js` already removes
+a missing script silently. Saved observations contain data/projections, not
+adapter functions. Their interpretation and acquired state remain in the HTML.
+
+JANUS.CALENDAR can use the same boundary. Consuming canonical temporal observations
+through a world adapter requires no AML interpreter inside AMOS. Computing fresh
+calendar coordinates offline would require an AML-owned portable calculator
+embedded at build time, with a pinned version and shared parity fixtures. A small
+JavaScript artifact or embedded WASM can provide that boundary; the choice belongs
+with AML's implementation and its actual exported API. Neither requires loading
+the entire language at page startup. Vendoring source for a reproducible build is
+different from linking a remote script at runtime.
+
+An absent optional adapter can stay silent. An explicit calendar request that
+cannot be fulfilled should report its unavailability and retain the current life.
+It must not substitute an approximate local calendar or fabricate an encounter.
+Previous calendar readings remain available as dated knowledge, with their model
+and evaluation instant. The AML main pin remains `b932a09` and its public open-PR
+list was empty during this audit; no unannounced future API is assumed.
+
+### Reproduced defect and narrow fix
+
+An external claim with source `amos:evaluation/v1` and ordinary text was admitted
+by `ingestWorld`. Its resulting dump could not load: the loader dispatches that
+source to the internal evaluation validator and attempted to parse the external
+text as a structured receipt. An analogous claim using `amos:transition/v1` and
+predicate `transition_world` loaded, but its encounter failed in read perception.
+Both cases were reproduced against the shipped standalone engine.
+
+World admission now reserves the `amos:` source namespace for the heart's own
+receipts. The existing `inference`/`amos:inference/v1` route remains available and
+continues through its existing premise/evaluation validation. Ordinary external
+sources remain ordinary source assertions. Rejection is transactional, including
+a batch containing a valid frame before the invalid frame. No snapshot version,
+learned computation, historical record or semantic policy changes.
+
+The regression covers five reserved source names, unchanged life after each
+rejection, reopening the saved life, a subsequent valid external observation,
+named inference, actual encounters and complete continuation. Nine targeted
+namespace, inference, optional-world and historical-migration gates pass.
+Final `make check`: **80 standalone gates pass**, plus **1,600** matching
+C/Python/JavaScript decisions with restart/checkpoint exchange at abs/rel 1e-8.
+The 302,522-byte standalone HTML regenerates exactly; `git diff --check` passes.
+
+### Places to simplify or develop next
+
+- **Keep the fact boundary.** Source assertion, acquisition, acquired interpretation
+  and self-observation have different clocks and premises. Their distinction is
+  used by actual historical reads and learning; collapsing them would lose evidence.
+- **Measure predictor overlap before removing it.** The 258 main coefficients
+  predict the next encounter. The 184 self-model coefficients forecast the final
+  response before its read; the 414 phase coefficients forecast individual world,
+  read and return transitions at their respective boundaries. Several targets
+  overlap, but the information available to each forecast differs. Their marginal
+  value needs a matched ablation before acquired heads can be consolidated.
+- **Remove the glyph-to-text-to-glyph detour in a future semantic revision.** The
+  recursive loop currently retokenizes `draft.words`. A direct audit of all 88
+  canonical seed names found `much` (65) returning `many` (64): the imported alias
+  table overwrites the canonical English dictionary entry. Compound signs also
+  return through their textual expansion. A native representation-level return
+  would retain their identities. Changing today's lexicon in place would alter
+  historical read verification, so retain the old membrane under its saved policy
+  and introduce a tested migration when this is implemented.
+- **Extend lived duration before adding another organ.** A human-message encounter
+  uses three source facts, one registration and nine completion receipts: 13 rows.
+  The 4096-row ledger therefore has a slot upper bound of 315 such encounters;
+  byte and other budgets can constrain it earlier. This bound follows from the
+  admission/receipt code, not a 315-encounter stress result. Four actual synthetic
+  encounters produced 52 receipts, a 62,810-byte journal, 93,456 bytes of retained
+  traces and a 498,093-byte complete snapshot. Working traces and journal receipts
+  duplicate some measurements deliberately; long-lived archival storage must keep
+  stable premise references and history queries while bounding the working set.
+
+No calendar engine, generic plugin framework, new language dependency or additional
+documentation file is introduced. The near-term priorities are continuity at the
+journal boundary, native glyph return and measured simplification of overlapping
+predictions. The independent HTML remains the complete organism.
+
 ## 2026-10-31 — JANUS.CALENDAR integration proposal (not implemented)
 
 **AML computes time; LALO preserves factual provenance; AMOS acquires its own

@@ -721,6 +721,20 @@ test('an unchanged explicit reconsideration leaves a new evaluation fact while r
   assert.equal(AMOS2.WorldLab.load(life.dump()).dump(),life.dump());
 });
 
+test('external source names cannot turn admitted claims into internal receipts or unreadable lives',()=>{
+  const life=new AMOS2.WorldLab();speak(life,'earth stone',T);const before=life.dump();
+  for(const source of ['amos:evaluation/v1','amos:transition/v1','amos:links/v1','amos:inference/v1','amos:future/v1']){
+    const external={...sensor(1),kind:'claim',key:'namespace-collision',source,values:{transition_world:'plain external text'}};
+    assert.throws(()=>life.ingestWorld([sensor(2),external],T+1),/namespace is reserved/);
+    assert.equal(life.dump(),before);assert.equal(AMOS2.WorldLab.load(before).dump(),before);
+  }
+  life.ingestWorld([{...sensor(3),source:'external:amos-observer',values:{active:true}}],T+2);
+  const query={subject:'world:sensor:same-observation',predicate:'active',validAt:T,rule:LALO.RULE};
+  assert.equal(life.deriveReading(query,T+3),1);
+  while(life.queue.length)life.encounter(T+4);
+  const saved=life.dump();assert.equal(AMOS2.WorldLab.load(saved).dump(),saved);
+});
+
 test('dense glyph encounters retain all match witnesses within the completion receipt budget',()=>{
   const life=new AMOS2.WorldLab(),text=VOICE.names.join(' ');assert.ok(text.length<=1000);
   for(let i=0;i<6;i++)speak(life,text,T+i*10);
