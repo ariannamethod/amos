@@ -4,7 +4,7 @@
  */
 'use strict';
 function createAMOS(H=24) {
-if(![24,28].includes(H))throw Error('Supported neural widths are 24 and 28');
+if(![24,28,40].includes(H))throw Error('Supported neural widths are 24, 28 and 40');
 const F=2*H+6, G=8, L=4, K=32, E=64, MASK=(1n<<64n)-1n;
 const zeros=n=>Array(n).fill(0), matrix=(n,m)=>Array.from({length:n},()=>zeros(m));
 const clip=(x,lo,hi)=>Math.max(lo,Math.min(hi,x));
@@ -184,8 +184,9 @@ class Subject {
     }
     return chosen;
   }
-  regress(f,delta) {
-    const p=this.covariance,pf=zeros(F);let denominator=.997;
+  regress(f,delta,precision=1) {
+    if(!Number.isFinite(precision)||precision<=0)throw Error('Invalid observation precision');
+    const p=this.covariance,pf=zeros(F);let denominator=.997/precision;
     for(let i=0;i<F;i++) {
       for(let j=0;j<F;j++) pf[i]+=p[i][j]*f[j];denominator+=f[i]*pf[i];
     }
@@ -285,7 +286,7 @@ class Amos {
     const d=JSON.parse(text);
     if(d.format!=='AMOS-JSON-1') throw Error('Unsupported snapshot format');
     const width=d.amos?.subject?.h?.length;
-    if([24,28].includes(width)&&width!==H)return createAMOS(width).Amos.loads(text);
+    if([24,28,40].includes(width)&&width!==H)return createAMOS(width).Amos.loads(text);
     const keys=(x,names)=>{if(!x || typeof x!=='object' || Array.isArray(x) || Object.keys(x).sort().join('|')!==[...names].sort().join('|')) throw Error('Unexpected snapshot fields');};
     keys(d,['format','amos']);const data=d.amos;
     keys(data,['seed','birth','world','subject','memory']);

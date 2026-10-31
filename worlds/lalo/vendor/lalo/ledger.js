@@ -69,8 +69,9 @@ export class FactLedger {
         throw new Error('correct the latest revision; independent claims need their own lineage');
       if (fact.subject !== previous.subject || fact.predicate !== previous.predicate)
         throw new Error('a correction must retain its subject and predicate');
-      if (fact.recordedAt <= previous.recordedAt)
-        throw new RangeError('a correction must be learned after its predecessor');
+      // AMOS extension: append position orders corrections within one receipt millisecond.
+      if (fact.recordedAt < previous.recordedAt)
+        throw new RangeError('a correction must not precede its predecessor');
     }
     if (this.size >= this.#capacity)
       throw new RangeError('journal capacity reached; export history before choosing another storage budget');

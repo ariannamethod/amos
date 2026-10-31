@@ -1,0 +1,4 @@
+{"format":"amos/interactions","version":1,"events":[
+ {"id":"synthetic-request","actor":"fixture-model","type":"request","text":"What changed in the earth?","observedAt":1793400000000,"correlationId":"synthetic-exchange"},
+ {"id":"synthetic-response","actor":"fixture-model","type":"response","text":"I expect another earthquake.","observedAt":1793400000100,"correlationId":"synthetic-exchange"}
+]}

@@ -54,7 +54,7 @@ const VOICE = (() => {
   const cosine = (a,b) => {const d=norm(a)*norm(b);return d?a.reduce((s,v,i)=>s+v*b[i],0)/d:0;};
   class GlyphVoice {
     constructor(seed=17,width=24) {
-      if(![24,28].includes(width))throw Error('Invalid voice neural width');
+      if(![24,28,40].includes(width))throw Error('Invalid voice neural width');
       this.symbols=[];this.uni=blank();this.bi=Array.from({length:MAX},blank);this.cooc=Array.from({length:MAX},blank);
       this.neural=Array.from({length:MAX},()=>Array(width).fill(0));
       this.prototypes=Array.from({length:8},blank);this.recent=[];this.last=[];this.utterances=0;
@@ -71,7 +71,7 @@ const VOICE = (() => {
       const high=Math.max(...this.uni);if(!high)return 0;
       return ids.reduce((s,id)=>s+this.uni[id]/high,0)/ids.length;
     }
-    ingest(ids,h,mixture) {
+    ingest(ids,h,mixture,plasticity=1) {
       let compressed=ids.slice();
       for(let n=0;n<this.symbols.length;n++){
         const [a,b]=this.symbols[n],next=[];
@@ -83,7 +83,7 @@ const VOICE = (() => {
       const eaten=ids.concat(compressed.filter(id=>id>=BASE));
       for(const id of eaten) {
         this.uni[id]++;
-        for(let j=0;j<this.neural[id].length;j++)this.neural[id][j]=.94*this.neural[id][j]+.06*h[j];
+        for(let j=0;j<this.neural[id].length;j++)this.neural[id][j]=(1-.06*plasticity)*this.neural[id][j]+.06*plasticity*h[j];
         for(let k=0;k<8;k++)this.prototypes[k][id]+=(mixture[k]||0);
       }
       for(let i=1;i<ids.length;i++){this.bi[ids[i-1]][ids[i]]++;this.cooc[ids[i-1]][ids[i]]++;}
@@ -111,10 +111,10 @@ const VOICE = (() => {
       }
       return {id,pair,support:best,name:this.name(id)};
     }
-    express(h,mixture,arousal=0) {
+    express(h,mixture,arousal=0,temperatureScale=1) {
       const born=this.consolidate();if(!this.recent.length)return {ids:[],words:[],born,contributions:[]};
       const ids=[],contributions=[];let previous=this.recent.at(-1);
-      const temperature=.52+.28*Math.min(1,arousal),high=BASE+this.symbols.length;
+      const temperature=(.52+.28*Math.min(1,arousal))*temperatureScale,high=BASE+this.symbols.length;
       for(let n=0;n<5;n++) {
         const scores=Array(high).fill(-1e6),pieces=[];
         for(let id=0;id<high;id++)if(this.uni[id]>0) {
@@ -133,7 +133,7 @@ const VOICE = (() => {
       return {ids,words:ids.map(id=>this.name(id)),born,contributions};
     }
     grow(width) {
-      const old=this.neural[0].length;if(width<old||![24,28].includes(width))throw Error('Invalid voice growth');
+      const old=this.neural[0].length;if(width<old||![24,28,40].includes(width))throw Error('Invalid voice growth');
       this.neural=this.neural.map(row=>row.concat(Array(width-old).fill(0)));return this;
     }
     dump() {return {...this,rng:this.rng.state.toString(16)};}
@@ -142,7 +142,7 @@ const VOICE = (() => {
       const valid=(a,rows,cols)=>Array.isArray(a)&&a.length===rows&&a.every(v=>cols?valid(v,cols):typeof v==='number'&&Number.isFinite(v)&&Math.abs(v)<1e12);
       if(!data||!Array.isArray(data.symbols)||data.symbols.length>64||
         !data.symbols.every((p,i)=>Array.isArray(p)&&p.length===2&&p.every(v=>Number.isInteger(v)&&v>=0&&v<BASE+i))||
-        !valid(data.uni,MAX)||!valid(data.bi,MAX,MAX)||!valid(data.cooc,MAX,MAX)||(![24,28].includes(width)||!valid(data.neural,MAX,width))||!valid(data.prototypes,8,MAX)||
+        !valid(data.uni,MAX)||!valid(data.bi,MAX,MAX)||!valid(data.cooc,MAX,MAX)||(![24,28,40].includes(width)||!valid(data.neural,MAX,width))||!valid(data.prototypes,8,MAX)||
         !Array.isArray(data.recent)||data.recent.length>24||!Array.isArray(data.last)||data.last.length>5||
         ![...data.recent,...data.last].every(v=>Number.isInteger(v)&&v>=0&&v<BASE+data.symbols.length)||
         !Number.isSafeInteger(data.utterances)||data.utterances<0||!/^[0-9a-f]{1,16}$/.test(data.rng))throw Error('Invalid expression state');

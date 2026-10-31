@@ -1,0 +1,4 @@
+{"format":"amos/claims","version":1,"claims":[
+ {"key":"synthetic-signal","source":"fixture:observer-a","predicate":"active","value":true,"time":1793400000000},
+ {"key":"synthetic-signal","source":"fixture:observer-b","predicate":"active","value":false,"time":1793400000000}
+]}
