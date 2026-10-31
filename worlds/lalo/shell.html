@@ -10,12 +10,12 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#131719">
-<title>AMOS II — A consciousness in the world</title>
+<title>AMOS 2 — A consciousness in the world</title>
 <style>/* AMOS2_STYLE */</style>
 </head>
 <body>
 <header class="masthead">
-  <a class="wordmark" href="#" aria-label="AMOS II, Arianna Method">AMOS<span>II</span><small>ARIANNA METHOD</small></a>
+  <a class="wordmark" href="#" aria-label="AMOS 2, Arianna Method">AMOS<span>2</span><small>ARIANNA METHOD</small></a>
   <div class="masthead-center"><span class="live-dot" id="lifeDot"></span><span id="lifeStatus">Awaiting a first encounter</span></div>
   <div class="header-actions"><span class="counter"><b id="encounterCount">000</b> encounters</span><button id="pause" title="Pause or continue encounters">Ⅱ <span>Pause</span></button><button id="settingsOpen" aria-label="Open life settings">⋯</button></div>
 </header>
@@ -44,6 +44,7 @@
     <section class="consciousness" aria-label="AMOS recurrent state">
       <div class="field-title"><p class="eyebrow">02 / A PERSPECTIVE, ACQUIRED</p><h1>The world<br><em>leaves a trace.</em></h1><p id="fieldSubtitle">A consciousness forming through encounters.</p></div>
       <div class="neural-stage"><canvas id="field" aria-label="40 recurrent neurons and the measured changes caused by the latest encounter" tabindex="0"></canvas><div class="field-coordinate left">past → present</div><div class="field-coordinate right">40 recurrent neurons</div><div id="neuralHint" class="neural-hint">Touch a neuron to read its state</div></div>
+      <div class="state-path-heading"><span>THE RECORDED STATE PATH</span><button id="replayPath" class="text-button" disabled>Replay path ↻</button></div><nav id="statePath" class="state-path" aria-label="Recorded neural states"></nav><p id="phaseReadout" class="phase-readout">The next encounter will leave its path.</p>
       <div class="state-strip"><div><span>Prediction gap</span><strong id="surprise">0.000</strong><svg id="spark" viewBox="0 0 130 25" aria-label="Recent prediction gaps"></svg></div><div><span>Familiarity</span><strong id="familiarity">0.000</strong><div class="meter"><i id="familiarityBar"></i></div></div><div><span>Acquired alphabet</span><strong><b id="prototypeCount">0</b><small> / 8</small></strong><div id="prototypeDots" class="prototype-dots"></div></div></div>
       <div class="attention-line"><span class="small-orbit">◦</span><span>Its next attention</span><b id="attention">an arrival</b><button id="step" class="text-button">One encounter →</button></div>
     </section>
@@ -58,7 +59,7 @@
       <div class="relation-reading"><div class="section-label"><span>Acquired relations</span><b id="relationPattern">—</b></div><div id="relationRead" class="relation-values">The next encounter can meet a history.</div></div>
       <div class="encounter-links"><div class="section-label"><span>A shared past</span><b id="linkCount">—</b></div><div id="encounterLinks">The next encounter can meet a history.</div></div>
       <div class="self-reading"><div class="section-label"><span>Somatic self-reflection</span><b id="selfDepth">—</b></div><div id="sonarChambers" class="sonar-chambers"></div><p id="selfForecast">The next encounter can meet its own response.</p></div>
-      <div class="source-reading"><span class="eyebrow">THE INSTRUMENT IT CHOSE</span><p id="toolName">—</p><span id="toolDetail">A read keeps its source.</span><button id="deriveReading" class="text-button" hidden>Reconsider claims ↗</button></div>
+      <div class="source-reading"><span class="eyebrow">THE INSTRUMENT IT CHOSE</span><p id="toolName">—</p><span id="toolDetail">A read keeps its source.</span><p id="investigation" class="investigation" hidden></p><button id="deriveReading" class="text-button" hidden>Reconsider claims ↗</button></div>
       <details id="evidenceDetails"><summary>Read the evidence <span>↗</span></summary><div id="evidence" class="evidence"><p class="quiet">Select an encounter on the tape.</p></div></details>
     </aside>
   </section>

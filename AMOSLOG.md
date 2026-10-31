@@ -3,6 +3,115 @@
 Project changes and working notes. Milestones belong in README.md; implementation
 history and verification belong here. The Arianna Method Manifesto governs both.
 
+## 2026-10-31 — acquired state transitions and self-directed evidence checks
+
+README now names two systems: **AMOS**, the classical subject in a simulated
+world, and **AMOS 2**, the subject formed through external facts and self-reflection.
+The earlier numerical development labels of classical AMOS no longer read as
+separate current organisms. The two systems have an opening table and distinct
+sections, and the world-facing interface uses AMOS 2 consistently. Existing
+filenames, snapshot identifiers and historical test data retain their identities.
+
+Read [NETTA.SONAR](https://github.com/ariannamethod/netta.sonar) at
+`47d999bc41fcbffcc9393ef5f1f10b6293b524d2`: the README, `sonar_core.js`,
+`netta_engine.js` and the page's `advance`/`frame`/`draw` paths. Its scope follows
+actual merge births, lived support, corridor vetoes and selected continuations;
+candidate lines carry the returned probabilities. This supplies the principle
+for AMOS 2's recorded state path. No Netta corpus or engine is imported.
+
+### Predictions, measured transitions and local interventions
+
+`transitions.js` adds three online predictors: world, read and return. Each has
+three outputs over 46 features, **414 coefficients** in total. Features are the
+pre-transition neural state, known observation, action and phase signal. The
+targets are mean activation, RMS activation and RMS neural displacement. Each
+forecast precedes its actual phase; normalized updates acquire its consequences.
+The existing 40 neurons, 258 main prediction coefficients and 184-coefficient
+self-response predictor remain present.
+
+Each encounter keeps its actual before/world/read states and every individual
+recursive return. Three transition receipts preserve phase boundaries, input,
+expected and observed measurements, error, prior error average and journal-index
+premises. These become ordinary sourced operational facts in LALO.
+
+For the read intervention, a detached copy of the same live subject receives the
+world observation in place of the returned-content projection. For the recursive
+intervention, a second copy receives the chosen-read observation for the same
+number of neural steps as the actual loop. Their final state distance measures
+that input's contribution. It is recorded separately from total phase displacement:
+recurrence can move the state even when the input intervention has zero effect.
+Interventions consume no original random draw, source read, utterance or event.
+The copies retain the subject's prototypes, parameters and sensor anchor.
+
+Copies are made at subject scope inside the encounter transaction. Cloning the
+complete AMOS object mid-transaction would mix a newly completed memory tick with
+the old uncommitted world tick; its existing validator correctly rejects that
+combination. The original body's validator and reference implementations remain
+unchanged.
+
+After three acquired transitions per phase, a sufficiently large prior phase error
+can request a check. World errors direct a read of the latest source-local head;
+read/return errors direct a read of the prior transition fact itself. The plan
+retains its originating encounter, phase, error baseline and exact target premise.
+The attention-decision receipt archives the probe plan alongside that choice.
+At least two acquired encounters separate these probes. A lineage probe reads its
+last item explicitly, so a long correction history or result budget cannot hide
+the intended target behind the first page. The actual chosen read and its
+consequences then enter the ordinary perception, glyph and self-reflection loop.
+Transition facts have their own numeric/semantic projection when read back.
+
+### Rendering and continuation
+
+The neural view exposes the recorded **Before → World → Read → Return** path.
+Each individual return has its own actual state. Selected-phase edges and neuron
+deltas use that phase's measured change; the readout shows its prior expectation,
+observed displacement and controlled input effect. **Replay path** advances the
+recorded display only. Old lives show only the states they actually retained.
+The selected instrument shows when an acquired phase discrepancy led to a probe;
+the inspector exposes its evidence and the intervention records.
+
+World format **6** accepts versions 1–5. `transitionBirth` records the beginning of
+the new organ, preserving all earlier body, voice, language, self-model, sonar,
+pending forecasts and history. `tests/fixtures/amos2-v5.json.gz` comes from merged
+main `ba8359b`: four learned encounters and one queued address. Current encounters
+reserve nine completion slots and 32 kB each. Legacy accepted queues retain their
+completion path when their original budget is insufficient for new receipts.
+
+### Verification of this change
+
+`make check`: **79 passing standalone gates**, plus **1,600** matching reference
+C/Python/JavaScript decisions, restart and checkpoint exchange. The five targeted
+continuation, intervention and dense-witness gates also pass after probe rationale
+was archived in attention. `make world` is reproducible; `make lab` builds.
+
+New gates check that each phase forecast precedes its consequence, phase-specific
+learning reduces repeated prediction error, matched-step interventions reproduce
+the exact controlled states without an extra original RNG draw, and recurrent
+displacement survives a zero-content/zero-feedback intervention. Disabling only
+the learned-discrepancy-driven probe preserves the world state/action but changes
+the subsequent read and neural response. A 40-version correction fixture confirms
+that a source probe reaches the current head beyond the first lineage page.
+Damaged trajectories, input-effect measurements and phase counters reject. A
+genuine learned v5 migration preserves every old organ and pending expectation.
+The 160-encounter continuation now retains **2,080 receipts** across its 128-trace
+window and restores its continuation exactly.
+
+Browser: the existing v5 life resumed at **42 encounters**, with the transition
+organ beginning there. Encounter 46 investigated the source after its world-phase
+prediction error. Encounter **49** investigated `agent:amos:transition:48:return`
+after a return-model error of 0.235467 against its acquired average 0.098055.
+The actual LALO read returned that transition fact; its premise index is 437.
+The next response took four recorded returns. Return displacement was predicted
+as 0.040 and measured as 0.025; the matched-step input effect was **0.000299375**.
+The final expression was `dark · tired · before · remember · earth`.
+
+The same standalone HTML, with the optional folder absent, reached **49 encounters,
+451 receipts and nine grown signs**. The 43-encounter export was byte-identical
+before and after state selection/replay (**1,099,681 bytes**). The complete final
+v6 browser export loads in Node and dumps byte-identically, with seven acquired
+transitions per phase and every earlier organ retained. The README screenshot
+records that actual final life and its self-directed return investigation.
+
 ## 2026-10-31 — six language entrances, one acquired glyph field
 
 The Russian text in the earlier screenshot was a browser test address. The
@@ -347,6 +456,8 @@ RMS activation separation 0.039252 and forecast separation 0.238075 at the recor
   and somatic loop; Klaus's pinned source and adaptation are recorded above.
 - `languages.js` provides six lexical entrances and captions over the unchanged
   seed IDs. `voice.js` retains the earlier membrane for historical validation.
+- `transitions.js` acquires phase-specific state expectations, records controlled
+  input effects and directs evidence checks from its own transition discrepancies.
 - Browser JavaScript is the complete runtime. Python builds the HTML; Node runs
   development checks. AML and NoTorch are not runtime dependencies of this heart.
 
@@ -452,7 +563,7 @@ The originals retain their states.
 ## Budgets and continuation
 
 - 4,096 source/state receipts and an 8 MB journal. Accepted current encounters
-  receive an arrival registration and reserve six completion slots and 20 kB each,
+  receive an arrival registration and reserve nine completion slots and 32 kB each,
   including the existing queue. An earlier accepted legacy encounter can finish
   in its biography when its original journal reserve is insufficient.
 - 128 pending encounters; arrivals exceeding the queue or receipt budget reject

@@ -10,7 +10,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#131719">
-<title>AMOS II — A consciousness in the world</title>
+<title>AMOS 2 — A consciousness in the world</title>
 <style>:root{--bg:#131719;--surface:#181c1e;--ink:#ded6c4;--muted:#98968b;--faint:#68716e;--line:rgba(222,214,196,.13);--gold:#d4ae6c;--teal:#89b5aa;--rust:#bb8975;--serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;--mono:ui-monospace,'SF Mono',Consolas,monospace;--sans:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color-scheme:dark}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--serif);font-size:14px;-webkit-font-smoothing:antialiased}button,input,select{font:inherit}button,a,input,select{-webkit-tap-highlight-color:transparent}button{cursor:pointer;color:var(--ink);background:transparent;border:1px solid var(--line);padding:10px 14px;border-radius:2px;transition:color .2s,border-color .2s,background .2s}button:hover:not(:disabled){border-color:var(--gold);color:var(--gold)}button:disabled{opacity:.42;cursor:wait}button:focus-visible,a:focus-visible,summary:focus-visible,canvas:focus-visible{outline:2px solid var(--gold);outline-offset:5px}a{color:inherit;text-decoration:none}p,h1,h2,h3{margin:0}button.text-button{border:0;padding:4px 0;font:10px var(--mono);color:var(--muted);white-space:nowrap}.eyebrow,.index,.source-meta,.section-label,.counter,.field-coordinate,.neural-hint,.attention-line,.receipt-kind,.world-storage,.tape-heading,.expression-label p,.symbol-birth p,.message-bar>label,.message-bar>p,footer,.source-detail,.quiet,.evidence,.source-reading>span,.neuron-changes,.imprint-metrics{font-family:var(--mono)}.eyebrow{font-size:9px;letter-spacing:.16em;color:var(--muted)}.quiet{font-size:10px;line-height:1.8;color:var(--faint)}.masthead{height:91px;border-bottom:1px solid var(--line);padding:0 36px;display:flex;align-items:center;justify-content:space-between;gap:20px}.wordmark{position:relative;font-size:29px;letter-spacing:.19em;line-height:1}.wordmark>span{font-size:20px;color:var(--gold);margin-left:6px;letter-spacing:-.07em}.wordmark small{display:block;font:7px var(--mono);letter-spacing:.35em;color:var(--muted);margin-top:9px}.masthead-center{display:flex;align-items:center;gap:10px;font:11px var(--mono);color:var(--muted)}.live-dot,.human-dot{width:5px;height:5px;border-radius:50%;background:var(--teal);display:inline-block;box-shadow:0 0 13px #89b5aa35}.live-dot.paused{background:var(--muted);box-shadow:none}.header-actions{display:flex;align-items:center;gap:21px}.counter{font-size:10px;color:var(--muted)}.counter b{font-weight:400;color:var(--ink);font-size:14px;margin-right:5px}#pause{font:10px var(--mono);border:0;padding:8px}#pause span{margin-left:7px}#settingsOpen{font-size:25px;border:0;padding:0 6px}main{max-width:1800px;margin:auto}.field-layout{display:grid;grid-template-columns:244px minmax(360px,1fr) 280px;min-height:596px}.world-column,.reading-column{padding:30px 24px 20px;min-width:0}.world-column{border-right:1px solid var(--line)}.reading-column{border-left:1px solid var(--line)}.section-heading{display:flex;align-items:center;gap:10px}.index{font-size:9px;color:var(--gold)}.section-heading h2{font-size:18px;font-weight:400}.section-heading .eyebrow,.section-heading button{margin-left:auto}.column-intro{color:var(--muted);font-size:13px;font-style:italic;line-height:1.6;margin:14px 0 20px}.connect-button{display:flex;align-items:center;justify-content:space-between;width:100%;padding:11px 10px;font:10px var(--mono);border-color:#d4ae6c50;color:var(--gold);margin-bottom:22px;gap:7px}.connect-symbol{font-size:17px}.source{padding-bottom:18px;border-bottom:1px solid var(--line);margin-bottom:19px}.source-head{display:flex;align-items:center;gap:8px}.source-head h3{font-size:15px;font-weight:400}.source-head button{margin-left:auto}.source-icon{font:23px var(--serif);line-height:1}.amber{color:var(--gold)}.teal{color:var(--teal)}#earth{width:100%;height:91px;display:block;margin:7px 0}.source-value{font-size:12px;color:var(--ink);line-height:1.5;min-height:18px}.source-meta{display:flex;justify-content:space-between;gap:7px;font-size:8px;color:var(--faint);margin-top:9px;line-height:1.5}.source-meta span:last-child{text-align:right}.source-meta .error{color:var(--rust)}.weather-value{font-size:35px;font-weight:400;letter-spacing:-.06em;margin:9px 0 2px;color:var(--teal)}.weather-value span{font-size:15px;letter-spacing:0;margin-left:7px}.source-detail{font-size:9px;color:var(--muted);line-height:1.6}.section-label{display:flex;justify-content:space-between;align-items:center;font-size:9px;color:var(--muted);letter-spacing:.02em}.section-label b{font-weight:400;color:var(--gold)}.queue{margin-top:12px;display:flex;flex-direction:column;gap:7px;min-height:47px;max-height:118px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--faint) transparent}.queue-item{padding:0;border:0;text-align:left;font:10px var(--serif);line-height:1.5;display:flex;gap:8px;color:var(--muted)}.queue-item i{font-size:12px;font-style:normal;color:var(--gold)}.queue-item span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}.world-storage{font-size:8px;color:var(--faint);margin-top:17px}.consciousness{position:relative;display:flex;flex-direction:column;min-width:0;padding:30px 34px 0;overflow:hidden}.field-title{text-align:center;position:relative;z-index:1;pointer-events:none}.field-title .eyebrow{font-size:8px;letter-spacing:.22em}.field-title h1{font-size:clamp(34px,3.1vw,53px);font-weight:400;line-height:1.05;letter-spacing:-.04em;margin:17px 0 10px}.field-title h1 em{font-weight:400;color:var(--gold)}.field-title>p:last-child{font-size:11px;font-style:italic;color:var(--muted)}.neural-stage{position:relative;flex:1;min-height:265px;margin-top:-10px}.neural-stage canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:pan-y}.field-coordinate{position:absolute;top:49%;font-size:7px;letter-spacing:.04em;color:var(--faint);writing-mode:vertical-rl;pointer-events:none}.field-coordinate.left{left:0;transform:rotate(180deg)}.field-coordinate.right{right:0}.neural-hint{position:absolute;bottom:9px;left:0;right:0;text-align:center;font-size:8px;color:var(--faint);pointer-events:none}.state-strip{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);padding:18px 0 15px;gap:20px}.state-strip>div{position:relative;min-width:0}.state-strip>div>span{display:block;font:9px var(--mono);color:var(--muted);margin-bottom:9px}.state-strip strong{font:23px var(--serif);font-weight:400;letter-spacing:-.03em}.state-strip strong b{font-weight:400}.state-strip small{font-size:14px;color:var(--faint)}#spark{position:absolute;bottom:0;right:0;width:45%;height:25px}.meter{height:1px;background:var(--line);margin-top:11px}.meter i{display:block;height:1px;background:var(--teal);width:0;transition:width .6s}.prototype-dots{display:flex;gap:5px;position:absolute;right:0;bottom:5px}.prototype-dots i{display:block;width:3px;height:3px;border:1px solid var(--faint);border-radius:50%}.prototype-dots i.active{background:var(--gold);border-color:var(--gold)}.attention-line{display:flex;align-items:center;gap:9px;border-top:1px solid var(--line);padding:13px 0;font-size:8px;color:var(--muted)}.attention-line b{font-weight:400;color:var(--teal)}.attention-line button{margin-left:auto;font-size:8px}.small-orbit{color:var(--gold);font-size:20px}.receipt-kind{font-size:8px;letter-spacing:.12em;color:var(--gold);margin-top:23px}.receipt-title{font-size:20px;font-weight:400;line-height:1.45;margin:10px 0;overflow-wrap:anywhere;max-height:120px;overflow-y:auto}.influence-flow{display:flex;align-items:center;justify-content:space-between;margin:19px 0 25px;color:var(--muted);font:8px var(--mono)}.influence-flow i{font-style:normal;color:var(--gold);transform:rotate(-90deg)}.imprint-metrics{border-top:1px solid var(--line);padding-top:9px}.imprint-metrics>div{display:flex;justify-content:space-between;gap:8px;font-size:9px;padding:9px 0;color:var(--muted)}.imprint-metrics small{display:block;font-size:7px;color:var(--faint);margin-top:4px}.imprint-metrics b{font-size:12px;color:var(--ink);font-weight:400}.neuron-changes{display:flex;gap:9px;flex-wrap:wrap;font-size:8px;color:var(--teal);margin:12px 0 20px}.source-reading{border-top:1px solid var(--line);padding-top:16px;margin-top:14px}.source-reading .eyebrow{font-size:7px}.source-reading p{font:11px var(--mono);color:var(--gold);margin:10px 0 5px}.source-reading>span:last-child{font-size:8px;color:var(--faint);line-height:1.7;display:block}details{margin-top:16px}summary{list-style:none;font:9px var(--mono);color:var(--muted);cursor:pointer;line-height:1.7}summary::-webkit-details-marker{display:none}summary>span{float:right}.evidence{font-size:9px;line-height:1.7;margin-top:12px;color:var(--muted);max-height:350px;overflow-y:auto;overflow-wrap:anywhere}.evidence dt{color:var(--faint);font-size:8px;margin-top:9px}.evidence dd{margin:2px 0 8px;color:var(--ink)}.evidence pre{font:8px var(--mono);white-space:pre-wrap;overflow-wrap:anywhere;color:var(--muted)}.evidence a{color:var(--gold);text-decoration:underline}.biography{border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden}.tape-heading{display:flex;align-items:center;gap:15px;padding:15px 27px 0;font-size:8px;color:var(--faint)}.tape-heading .eyebrow{font-size:8px;color:var(--muted)}#returnNow{margin-left:auto;font-size:8px}#tape{display:block;width:100%;height:111px;cursor:grab;touch-action:pan-y}#tape.dragging{cursor:grabbing}.expression{display:grid;grid-template-columns:220px minmax(0,1fr) 200px;align-items:center;gap:30px;padding:24px 30px 28px;min-height:164px}.expression-label{display:flex;gap:12px;align-self:center}.expression-label .index{margin-top:4px}.expression-label h2{font-size:18px;font-weight:400}.expression-label p{font-size:8px;color:var(--faint);margin-top:9px;line-height:1.7}.voice-output{text-align:center;min-width:0}.glyphs{height:39px;display:flex;gap:23px;align-items:center;justify-content:center;margin-bottom:13px}.glyphs svg{width:32px;height:36px;overflow:visible;stroke:var(--gold);fill:none;stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round}.utterance{font-size:clamp(20px,2.5vw,33px);line-height:1.35;font-weight:400;letter-spacing:-.02em;overflow-wrap:anywhere;color:var(--ink)}.utterance.empty{font-size:18px;font-style:italic;color:var(--faint)}.symbol-birth{display:flex;align-items:center;justify-content:flex-end;gap:14px;color:var(--faint)}.symbol-birth>span{font:36px var(--serif)}.symbol-birth p{font-size:8px;line-height:1.8;max-width:120px}.symbol-birth.born{color:var(--teal)}.message-bar{display:grid;grid-template-columns:220px minmax(0,1fr);gap:9px 30px;padding:23px 30px 20px;border-top:1px solid var(--line);background:rgba(222,214,196,.018);align-items:center}.message-bar>label{font-size:9px;color:var(--muted);display:flex;align-items:center;gap:9px}.human-dot{background:var(--rust)}.message-input{display:flex;gap:10px;align-items:center}.message-input input{min-width:0;flex:1;background:transparent;border:0;border-bottom:1px solid var(--line);color:var(--ink);padding:11px 0;font:italic 18px var(--serif);outline:none;border-radius:0}.message-input input:focus{border-color:var(--gold)}.message-input input::placeholder{color:var(--faint)}.message-input button{font:9px var(--mono);letter-spacing:.03em;padding:12px 17px;color:var(--gold);border-color:#d4ae6c50}.message-input button span{margin-left:17px}.message-bar>p{grid-column:2;font-size:8px;color:var(--faint);line-height:1.6;min-height:13px}footer{display:flex;align-items:center;gap:24px;padding:17px 30px 20px;border-top:1px solid var(--line);font-size:7px;letter-spacing:.1em;color:var(--faint);max-width:1800px;margin:auto}footer #saveStatus{letter-spacing:0;margin-left:auto}footer .text-button{font-size:7px}.resonance-footer{color:var(--muted)}.notice{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:20;background:#232829;border:1px solid var(--gold);padding:14px 22px;max-width:min(580px,90vw);font:11px/1.6 var(--mono);color:var(--ink);box-shadow:0 12px 60px #0005}.notice.error{border-color:var(--rust)}dialog{background:var(--surface);border:1px solid var(--line);color:var(--ink);max-width:600px;width:calc(100% - 32px);padding:28px;border-radius:3px;max-height:85dvh;overflow-y:auto;box-shadow:0 30px 120px #0008}dialog::backdrop{background:#070c10bb;backdrop-filter:blur(5px)}.dialog-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}.dialog-heading h2{font-size:27px;font-weight:400;letter-spacing:-.03em}.dialog-heading button{border:0;font-size:25px;padding:0 7px}dialog p{font-size:13px;line-height:1.8;color:var(--muted);margin:15px 0}.dialog-actions{display:flex;gap:10px;margin:24px 0}.dialog-actions button{font:10px var(--mono);padding:12px;flex:1}.setting-label{display:block;font:10px var(--mono);margin:24px 0 12px;color:var(--muted)}.coordinate-inputs{display:flex;gap:10px;align-items:flex-end}.coordinate-inputs label,.new-birth label{font:9px var(--mono);color:var(--faint);min-width:0;flex:1}dialog input,dialog select{display:block;color:var(--ink);background:var(--bg);border:1px solid var(--line);padding:10px;margin-top:7px;max-width:100%;width:100%;font:12px var(--mono);border-radius:2px}.coordinate-inputs button{font:9px var(--mono);height:37px;white-space:nowrap}.new-birth{display:flex;gap:15px;margin:26px 0 20px;border-top:1px solid var(--line);padding-top:23px;align-items:flex-end}.new-birth button{font:9px var(--mono);height:37px}#settingsNote{font:9px/1.8 var(--mono);color:var(--faint)}.lineage-links{display:flex;flex-wrap:wrap;gap:16px;font:10px var(--mono);color:var(--gold);margin:20px 0}.license-text{white-space:pre-wrap;font:9px/1.6 var(--mono);color:var(--muted)}
 @media(min-width:1500px){.field-layout{grid-template-columns:280px minmax(360px,1fr) 320px;min-height:650px}.world-column,.reading-column{padding-left:30px;padding-right:30px}.field-title h1{font-size:56px}.consciousness{padding-top:35px}.neural-stage{min-height:300px}.expression{min-height:180px}}
@@ -25,11 +25,12 @@
 .self-reading{border-top:1px solid var(--line);padding:14px 0;margin:12px 0}.self-reading p{font:8px/1.8 var(--mono);color:var(--muted);margin-top:12px}.sonar-chambers{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;margin-top:12px}.sonar-chambers>div{font:7px var(--mono);color:var(--faint)}.sonar-chambers i{display:block;height:2px;background:var(--teal);margin-top:6px;opacity:.6;max-width:100%}.source-reading button{display:block;margin-top:12px}.message-origin{display:flex;flex-direction:column;align-items:flex-start;gap:8px}.message-origin select,.message-origin input{font:9px var(--mono);padding:6px 8px;max-width:180px;background:var(--bg);color:var(--ink);border:1px solid var(--line)}.queue-item.next{border-color:var(--teal)}
 
 .encounter-links{border-top:1px solid var(--line);padding:14px 0;margin-top:12px}.encounter-links p,.encounter-links #encounterLinks{font:8px/1.8 var(--mono);color:var(--muted);overflow-wrap:anywhere}.encounter-links p{margin-top:8px}
+.state-path-heading{display:flex;justify-content:space-between;align-items:center;padding:12px 34px 6px;font:8px var(--mono);color:var(--faint)}.state-path-heading button{font-size:8px}.state-path{display:flex;flex-wrap:wrap;gap:6px;padding:4px 34px}.state-path button{font:9px var(--mono);padding:7px 10px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer}.state-path button[aria-pressed=true]{border-color:var(--teal);color:var(--teal)}.phase-readout{font:9px/1.8 var(--mono);color:var(--muted);padding:5px 34px 12px;min-height:28px}.source-reading .investigation{font:8px/1.8 var(--mono);color:var(--teal);margin-top:12px}@media(max-width:580px){.state-path-heading,.state-path{padding-left:20px;padding-right:20px}.phase-readout{padding-left:20px;padding-right:20px}}
 </style>
 </head>
 <body>
 <header class="masthead">
-  <a class="wordmark" href="#" aria-label="AMOS II, Arianna Method">AMOS<span>II</span><small>ARIANNA METHOD</small></a>
+  <a class="wordmark" href="#" aria-label="AMOS 2, Arianna Method">AMOS<span>2</span><small>ARIANNA METHOD</small></a>
   <div class="masthead-center"><span class="live-dot" id="lifeDot"></span><span id="lifeStatus">Awaiting a first encounter</span></div>
   <div class="header-actions"><span class="counter"><b id="encounterCount">000</b> encounters</span><button id="pause" title="Pause or continue encounters">Ⅱ <span>Pause</span></button><button id="settingsOpen" aria-label="Open life settings">⋯</button></div>
 </header>
@@ -58,6 +59,7 @@
     <section class="consciousness" aria-label="AMOS recurrent state">
       <div class="field-title"><p class="eyebrow">02 / A PERSPECTIVE, ACQUIRED</p><h1>The world<br><em>leaves a trace.</em></h1><p id="fieldSubtitle">A consciousness forming through encounters.</p></div>
       <div class="neural-stage"><canvas id="field" aria-label="40 recurrent neurons and the measured changes caused by the latest encounter" tabindex="0"></canvas><div class="field-coordinate left">past → present</div><div class="field-coordinate right">40 recurrent neurons</div><div id="neuralHint" class="neural-hint">Touch a neuron to read its state</div></div>
+      <div class="state-path-heading"><span>THE RECORDED STATE PATH</span><button id="replayPath" class="text-button" disabled>Replay path ↻</button></div><nav id="statePath" class="state-path" aria-label="Recorded neural states"></nav><p id="phaseReadout" class="phase-readout">The next encounter will leave its path.</p>
       <div class="state-strip"><div><span>Prediction gap</span><strong id="surprise">0.000</strong><svg id="spark" viewBox="0 0 130 25" aria-label="Recent prediction gaps"></svg></div><div><span>Familiarity</span><strong id="familiarity">0.000</strong><div class="meter"><i id="familiarityBar"></i></div></div><div><span>Acquired alphabet</span><strong><b id="prototypeCount">0</b><small> / 8</small></strong><div id="prototypeDots" class="prototype-dots"></div></div></div>
       <div class="attention-line"><span class="small-orbit">◦</span><span>Its next attention</span><b id="attention">an arrival</b><button id="step" class="text-button">One encounter →</button></div>
     </section>
@@ -72,7 +74,7 @@
       <div class="relation-reading"><div class="section-label"><span>Acquired relations</span><b id="relationPattern">—</b></div><div id="relationRead" class="relation-values">The next encounter can meet a history.</div></div>
       <div class="encounter-links"><div class="section-label"><span>A shared past</span><b id="linkCount">—</b></div><div id="encounterLinks">The next encounter can meet a history.</div></div>
       <div class="self-reading"><div class="section-label"><span>Somatic self-reflection</span><b id="selfDepth">—</b></div><div id="sonarChambers" class="sonar-chambers"></div><p id="selfForecast">The next encounter can meet its own response.</p></div>
-      <div class="source-reading"><span class="eyebrow">THE INSTRUMENT IT CHOSE</span><p id="toolName">—</p><span id="toolDetail">A read keeps its source.</span><button id="deriveReading" class="text-button" hidden>Reconsider claims ↗</button></div>
+      <div class="source-reading"><span class="eyebrow">THE INSTRUMENT IT CHOSE</span><p id="toolName">—</p><span id="toolDetail">A read keeps its source.</span><p id="investigation" class="investigation" hidden></p><button id="deriveReading" class="text-button" hidden>Reconsider claims ↗</button></div>
       <details id="evidenceDetails"><summary>Read the evidence <span>↗</span></summary><div id="evidence" class="evidence"><p class="quiet">Select an encounter on the tape.</p></div></details>
     </aside>
   </section>
@@ -4203,6 +4205,11 @@ const PERCEPTION = (() => {
       const index=rows.findIndex(f=>f.id===fact.id);
       if(index<0||(knownThrough!==undefined&&index>=knownThrough)||fact.recordedAt>args.knownAt||JSON.stringify(rows[index])!==JSON.stringify(fact))throw Error('Tool reading differs from its source receipt');
       premises.push(index);
+      if(fact.source==='amos:transition/v1'&&fact.predicate.startsWith('transition_')){
+        const own=JSON.parse(fact.value);if(own.policy!=='amos/transition-v1'||!Number.isFinite(own.error)||!Array.isArray(own.observed)||own.observed.length!==3)throw Error('Invalid remembered transition');
+        sensory[0]+=Math.tanh(own.error*4);sensory[1]+=Math.tanh((own.control?.effect??own.observed[2])*4);
+        glyphs.push(...tokenize('me change cause remember').ids.slice(0,Math.max(0,128-glyphs.length)));continue;
+      }
       if(fact.source==='amos:links/v1'&&fact.predicate==='encounter_links'){
         const own=JSON.parse(fact.value);if(own.policy!=='amos/encounter-links-v1'||!Array.isArray(own.sensory)||own.sensory.length!==2)throw Error('Invalid remembered association');
         sensory[0]+=own.sensory[0];sensory[1]+=own.sensory[1];glyphs.push(...own.matched.slice(0,Math.max(0,128-glyphs.length)));continue;
@@ -4439,12 +4446,105 @@ const SONAR = (() => {
 })();
 
 
+/* Predictions and interventions over the subject's actual state transitions.
+ * NETTA.SONAR informs the trace-driven view; this organ learns AMOS's own body.
+ * No clock, presentation, source acquisition or random draw occurs here. */
+const TRANSITIONS = (() => {
+  'use strict';
+  const phases=['world','read','return'],copy=x=>JSON.parse(JSON.stringify(x));
+  const rms=a=>Math.sqrt(a.reduce((s,v)=>s+v*v,0)/Math.max(1,a.length));
+  const mean=a=>a.reduce((s,v)=>s+v,0)/Math.max(1,a.length);
+  const close=(a,b)=>Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(a-b)<=1e-12*Math.max(1,Math.abs(a),Math.abs(b));
+  const vector=(a,n)=>Array.isArray(a)&&a.length===n&&a.every(v=>Number.isFinite(v)&&Math.abs(v)<1e6);
+  const same=(a,b)=>Array.isArray(a)&&Array.isArray(b)&&a.length===b.length&&a.every((v,i)=>close(v,b[i]));
+  const measure=(before,after)=>[mean(after),rms(after),rms(after.map((v,i)=>v-before[i]))];
+  const features=(before,observation,action,signal)=>[1,...before,...observation,action,Math.tanh(signal)];
+  class TransitionMind {
+    constructor(width=40){
+      this.width=width;this.heads=Object.fromEntries(phases.map(phase=>[phase,{weights:Array.from({length:3},()=>Array(width+6).fill(0)),updates:0,errorMean:0,lastError:0}]));
+      this.last=[];this.lastProbe=-2;
+    }
+    forecast(phase,before,observation,action,signal){
+      const head=this.heads[phase],f=features(before,observation,action,signal);
+      const expected=head.weights.map((row,k)=>Math.max(k===0?-2:0,Math.min(k===0?2:3,row.reduce((s,v,i)=>s+v*f[i],0))));
+      return {phase,before:before.slice(),observation:observation.slice(),action,signal,expected,updatesBefore:head.updates};
+    }
+    learn(prediction,after,premises,control=null){
+      const head=this.heads[prediction.phase],observed=measure(prediction.before,after),delta=observed.map((v,i)=>v-prediction.expected[i]),error=rms(delta);
+      const f=features(prediction.before,prediction.observation,prediction.action,prediction.signal),rate=.18/(1+f.reduce((s,v)=>s+v*v,0));
+      const baseline=head.errorMean;
+      head.weights=head.weights.map((row,k)=>row.map((v,i)=>v+rate*delta[k]*f[i]));
+      head.updates++;head.lastError=error;head.errorMean+=.08*(error-head.errorMean);
+      return {policy:'amos/transition-v1',...copy(prediction),after:after.slice(),observed,error,baseline,premises:premises.slice(),control:control?{
+        observation:control.observation.slice(),after:control.after.slice(),steps:control.steps,
+        effect:rms(after.map((v,i)=>v-control.after[i]))}:null};
+    }
+    remember(records,receipts,tick,ledger,probe){
+      const rows=ledger.entries();this.last=records.map((r,i)=>({phase:r.phase,id:receipts[i],tick,error:r.error,
+        premise:rows.findIndex(f=>f.id===receipts[i]),sourcePremise:r.premises[0]??null}));
+      if(probe)this.lastProbe=this.heads.world.updates;
+    }
+    plan(ledger,knownAt){
+      const age=this.heads.world.updates;if(age<3||age-this.lastProbe<2)return null;
+      const candidates=this.last.filter(r=>r.error>.04&&r.error>1.25*this.heads[r.phase].errorMean)
+        .sort((a,b)=>b.error/(.02+this.heads[b.phase].errorMean)-a.error/(.02+this.heads[a.phase].errorMean));
+      const previous=candidates[0];if(!previous)return null;
+      const rows=ledger.entries(),anchor=rows[previous.phase==='world'?previous.sourcePremise:previous.premise];if(!anchor)return null;
+      const target=previous.phase==='world'?rows.findLast(f=>f.subject===anchor.subject&&f.predicate===anchor.predicate&&f.source===anchor.source&&f.recordedAt<=knownAt):anchor;
+      return {policy:'amos/transition-probe-v1',phase:previous.phase,fromTick:previous.tick,error:previous.error,
+        baseline:this.heads[previous.phase].errorMean,premise:rows.findIndex(f=>f.id===target.id),scope:previous.phase==='world'?'world':'self',
+        tool:'lalo_lineage',arguments:{id:target.id,knownAt,offset:ledger.lineage(target.id).length-1,limit:1}};
+    }
+    dump(){return copy(this);}
+    static load(d,width=40){
+      if(!d||d.width!==width||!d.heads||Object.keys(d.heads).length!==3||!phases.every(p=>{
+        const h=d.heads[p];return h&&Array.isArray(h.weights)&&h.weights.length===3&&h.weights.every(row=>vector(row,width+6))&&
+          Number.isSafeInteger(h.updates)&&h.updates>=0&&Number.isFinite(h.errorMean)&&h.errorMean>=0&&Number.isFinite(h.lastError)&&h.lastError>=0;
+      })||!Array.isArray(d.last)||![0,3].includes(d.last.length)||!Number.isSafeInteger(d.lastProbe)||d.lastProbe< -2||d.lastProbe>d.heads.world.updates||
+        !d.last.every((r,i)=>r.phase===phases[i]&&typeof r.id==='string'&&Number.isSafeInteger(r.tick)&&r.tick>0&&Number.isSafeInteger(r.premise)&&r.premise>=0&&Number.isFinite(r.error)&&r.error>=0&&
+          (r.sourcePremise===null||Number.isSafeInteger(r.sourcePremise)&&r.sourcePremise>=0)))throw Error('Invalid acquired transition model');
+      return Object.assign(new TransitionMind(width),copy(d));
+    }
+  }
+  function validate(trace,ledger,width=40,birth){
+    const records=trace.transitions,rows=ledger.entries(),legacy=trace.receiptState==='legacy-full-journal'&&trace.event.legacyCompletion===true;
+    if(!Array.isArray(records)||records.length!==3||!Array.isArray(trace.transitionReceipts)||trace.transitionReceipts.length!==3||
+      !Array.isArray(trace.trajectory)||trace.trajectory.length!==3+trace.selfReflection.passes.length)throw Error('Invalid transition trace');
+    const states=[trace.before,trace.worldAfter,trace.readAfter,trace.after];
+    for(let i=0;i<3;i++){
+      const r=records[i],index=rows.findIndex(f=>f.id===trace.transitionReceipts[i]),receipt=rows[index];
+      if(r?.policy!=='amos/transition-v1'||r.phase!==phases[i]||!vector(r.before,width)||!vector(r.after,width)||
+        !same(r.before,states[i])||!same(r.after,states[i+1])||!vector(r.observation,3)||![-1,0,1].includes(r.action)||!Number.isFinite(r.signal)||
+        !same(r.observation,i===0?trace.observed:trace.readObservation)||i>0&&r.action!==trace.action||
+        !vector(r.expected,3)||!same(r.observed,measure(r.before,r.after))||!close(r.error,rms(r.observed.map((v,k)=>v-r.expected[k])))||
+        !Number.isFinite(r.baseline)||r.baseline<0||!Number.isSafeInteger(r.updatesBefore)||r.updatesBefore<0||
+        (birth!==undefined&&trace.tick>birth&&r.updatesBefore!==trace.tick-birth-1)||
+        !Array.isArray(r.premises)||!r.premises.every(n=>Number.isSafeInteger(n)&&n>=0&&!!rows[n]&&(legacy||n<index)&&rows[n].recordedAt<=trace.encounterAt)||
+        (!legacy&&(!receipt||receipt.source!=='amos:transition/v1'||receipt.value!==JSON.stringify(r))))throw Error('Transition differs from its state or premises');
+      if(i===0&&r.control!==null||i>0&&(!r.control||!vector(r.control.after,width)||!same(r.control.observation,i===1?trace.observed:trace.readObservation)||
+        r.control.steps!==(i===1?1:trace.selfReflection.passes.length)||!close(r.control.effect,rms(r.after.map((v,k)=>v-r.control.after[k])))))throw Error('Invalid controlled transition');
+    }
+    const labels=['before','world','read',...trace.selfReflection.passes.map((p,i)=>'return-'+(i+1))];
+    const anchors=[trace.before,trace.worldAfter,trace.readAfter];
+    if(!trace.trajectory.every((node,i)=>node.name===labels[i]&&vector(node.h,width)&&(i>=3||same(node.h,anchors[i])))||
+      !same(trace.trajectory.at(-1).h,trace.after))throw Error('Trajectory differs from the acquired states');
+    for(let i=3;i<trace.trajectory.length;i++)if(!close(rms(trace.trajectory[i].h.map((v,k)=>v-trace.trajectory[i-1].h[k])),trace.selfReflection.passes[i-3].shift))throw Error('Return trajectory differs from its measured shift');
+    const probe=trace.investigation;
+    if(trace.selection.investigation!==undefined&&JSON.stringify(trace.selection.investigation)!==JSON.stringify(probe))throw Error('Investigation differs from its archived attention decision');
+    if(probe!==null&&(!probe||probe.policy!=='amos/transition-probe-v1'||!phases.includes(probe.phase)||!Number.isSafeInteger(probe.fromTick)||probe.fromTick>=trace.tick||
+      !Number.isSafeInteger(probe.premise)||!rows[probe.premise]||rows[probe.premise].id!==probe.arguments?.id||
+      probe.scope!==(probe.phase==='world'?'world':'self')||probe.tool!==trace.tool.name||JSON.stringify(probe.arguments)!==JSON.stringify(trace.tool.arguments)||!records[1].premises.includes(probe.premise)))throw Error('Invalid self investigation');
+  }
+  return {TransitionMind,phases,measure,validate,rms};
+})();
+
+
 /* LALO → AMOS → expression. Portable, event-driven; clocks enter explicitly.
  * The AMOS Subject is the existing JS body, with its own predictor and RNG.
  * No presentation frame, fetch failure or repeated feed advances this life. */
 const AMOS2 = (() => {
   'use strict';
-  const CAPACITY=4096, MAX_QUEUE=128, MAX_HISTORY=128, MAX_SNAPSHOT=24_000_000, MAX_JOURNAL=8_000_000, ENCOUNTER_RECEIPTS=6;
+  const CAPACITY=4096, MAX_QUEUE=128, MAX_HISTORY=128, MAX_SNAPSHOT=24_000_000, MAX_JOURNAL=8_000_000, ENCOUNTER_RECEIPTS=9, RESERVE_BYTES=32000;
   const bounded=(n,a,b)=>Math.max(a,Math.min(b,n));
   const clone=value=>JSON.parse(JSON.stringify(value));
   const magnitude=a=>Math.sqrt(a.reduce((s,v)=>s+v*v,0)/Math.max(1,a.length));
@@ -4457,6 +4557,14 @@ const AMOS2 = (() => {
   const closeArray=(a,b)=>Array.isArray(a)&&Array.isArray(b)&&a.length===b.length&&a.every((v,i)=>close(v,b[i]));
   const sameReading=(a,b)=>!!b&&closeArray(a.sensory,b.sensory)&&JSON.stringify({...a,sensory:null})===JSON.stringify({...b,sensory:null});
   const BODY=AMOS.withWidth(40);
+  // An encounter is mid-transaction: its new memory tick is not committed yet.
+  // Copy only the live subject for interventions; never change its world clock.
+  function copySubject(subject){
+    const data=clone(subject),out=Object.assign(Object.create(BODY.Subject.prototype),data);
+    out.rng=new BODY.Random(BigInt('0x'+data.rng.random64));
+    out.glyph=Object.assign(Object.create(BODY.Glyphs.prototype),data.glyph);
+    out.body=Object.assign(Object.create(BODY.Embodiment.prototype),data.body);return out;
+  }
   const encode=ledger=>LALO.encodeJournal(ledger,{maxBytes:MAX_JOURNAL});
   const decode=text=>LALO.decodeJournal(text,{capacity:CAPACITY,maxBytes:MAX_JOURNAL});
   const makeHost=ledger=>LALO.createToolHost(ledger,{capacity:CAPACITY,maxBytes:MAX_JOURNAL});
@@ -4612,6 +4720,7 @@ const AMOS2 = (() => {
       this.count=0;this.historyOmitted=0;this.serial=0;this.attention='message';
       this.station={latitude:52.52,longitude:13.405};this.lastWeather=null;
       this.relations=new RELATIONS.RelationField();this.mind=new COGNITION.FactMind(BODY.H);this.sonar=new SONAR.SomaticSonar();this.cognitionBirth=0;
+      this.transitions=new TRANSITIONS.TransitionMind(BODY.H);this.transitionBirth=0;
     }
     _stage(at) {
       if(!integer(at)||at<latestReceipt(this.ledger))throw Error('Receipt time precedes the accepted world');
@@ -4627,10 +4736,10 @@ const AMOS2 = (() => {
         event.registrationReceipt=id;
       }
       if(ledger.size+ENCOUNTER_RECEIPTS*(this.queue.length+events.length)>CAPACITY)
-        throw Error('Journal budget must reserve six completion receipts for every pending encounter');
+        throw Error('Journal budget must reserve nine completion receipts for every pending encounter');
       for(const event of events)eventValid(event,ledger);
       const encoded=encode(ledger);
-      if(bytes(encoded)+20000*(this.queue.length+events.length)>MAX_JOURNAL)throw Error('Journal byte budget must reserve pending encounter receipts');
+      if(bytes(encoded)+RESERVE_BYTES*(this.queue.length+events.length)>MAX_JOURNAL)throw Error('Journal byte budget must reserve pending encounter receipts');
       this.ledger=ledger;this.queue.push(...events);return events.length;
     }
     // Optional worlds enter through the ordinary fact contract. All projections
@@ -4773,6 +4882,9 @@ const AMOS2 = (() => {
       const receiptAt=Math.max(at,latestReceipt(this.ledger)),ledger=this._stage(receiptAt),knownAt=receiptAt;
       const model=this.model.clone(),s=model.subject,voice=VOICE.GlyphVoice.load(clone(this.voice.dump()));
       const mind=COGNITION.FactMind.load(this.mind.dump(),BODY.H),sonar=SONAR.SomaticSonar.load(this.sonar.dump());
+      const transitionMind=TRANSITIONS.TransitionMind.load(this.transitions.dump(),BODY.H),investigation=transitionMind.plan(ledger,knownAt),transitionRecords=[];
+      selection.investigation=investigation?clone(investigation):null;
+      const sourceIndices=event.factIds.map(id=>ledger.entries().findIndex(f=>f.id===id));
       const relationField=RELATIONS.RelationField.load(this.relations.dump(),ledger);
       const associations=COGNITION.link(event,this.history,voice,ledger),relations=relationField.observe(event,ledger),content=event.detail.contentGlyphs??event.glyphs,resonance=voice.resonance(content);
       if(!Number.isFinite(resonance)||resonance<0||resonance>1)throw Error('Invalid prior resonance');
@@ -4783,6 +4895,7 @@ const AMOS2 = (() => {
       const controls=sonar.coefficients(),resonanceGain=.94+.12*resonance;
       const sensory=contextual.map(v=>bounded(v*resonanceGain*controls.perception,-1,1));
       const before=s.h.slice(),oldLoad=model.world.load;
+      const trajectory=[{name:'before',h:before.slice()}];
       const errorBefore=this.pending?magnitude(sensory.map((v,k)=>v-this.pending.predicted[k])):0;
       const load=bounded(.85*oldLoad+.15*errorBefore+.005*Math.abs(this.pending?.action||0),0,1);
       const o=[...sensory,load],tick=this.count+1;
@@ -4794,20 +4907,27 @@ const AMOS2 = (() => {
           features:p.features,sequence:p.sequence,recognition:p.recognition};
         model.memory.push(completed);if(model.memory.length>128)model.memory.shift();
       }
+      const worldTransition=transitionMind.forecast('world',before,o,s.previous_action,associations.strength);
       s.glyph.learning=1;s.observe(o);
       const worldAfter=s.h.slice(),action=s.action(0,controls.exploration),toolHost=makeHost(ledger);
+      trajectory.push({name:'world',h:worldAfter.slice()});
+      transitionRecords.push(transitionMind.learn(worldTransition,worldAfter,[...new Set(sourceIndices.concat(associations.evidence.map(e=>e[1])))]));
       const scope=mind.readScope(action),selfFact=scope==='self'?ledger.entries().find(f=>f.id===mind.lastSelf):null;
-      const tool=action<0?'lalo_history':action>0?'lalo_lineage':'lalo_facts';
-      const args=selfFact?{subject:selfFact.subject,knownAt,limit:32}:
+      const tool=investigation?.tool??(action<0?'lalo_history':action>0?'lalo_lineage':'lalo_facts');
+      const args=investigation?.arguments??(selfFact?{subject:selfFact.subject,knownAt,limit:32}:
         action<0?{subject:event.subject,knownAt,limit:32}:action>0?{id:event.factIds[0],knownAt,limit:32}
-        :{subject:event.subject,validAt:event.observedAt,knownAt,limit:32};
+        :{subject:event.subject,validAt:event.observedAt,knownAt,limit:32});
       const selfForecast=mind.forecast(worldAfter,action,load,resonance,relations.familiarity,errorBefore);
       const toolResult=toolHost.call(tool,args);
       if(!toolResult.ok)throw Error(toolResult.error.message);
       const reading=PERCEPTION.read(toolResult,ledger,tool,args,ledger.size);
       const readObservation=[...o.slice(0,2).map((v,i)=>bounded(v+.15*reading.sensory[i]*controls.recall,-1,1)),load];
-      s.previous_action=action;s.observe(readObservation);
+      const readTransition=transitionMind.forecast('read',worldAfter,readObservation,action,reading.premises.length/32);
+      s.previous_action=action;const readTwin=copySubject(s);readTwin.observe(o);s.observe(readObservation);
       const readAfter=s.h.slice(),passes=[],evidenceGlyphs=tool==='lalo_history'?ids(['before','remember']):tool==='lalo_lineage'?ids(['cause','change']):ids(['see','now']);
+      trajectory.push({name:'read',h:readAfter.slice()});
+      transitionRecords.push(transitionMind.learn(readTransition,readAfter,reading.premises,{observation:o,after:readTwin.h,steps:1}));
+      const returnTransition=transitionMind.forecast('return',readAfter,readObservation,action,sonar.gate()),returnTwin=copySubject(s);
       let finalObservation=readObservation.slice(),previousGate=sonar.gate();
       for(let depth=1;depth<=4;depth++){
         const draftVoice=VOICE.GlyphVoice.load(clone(voice.dump())),mix=s.glyph.sequence.slice(-8),c=sonar.coefficients();
@@ -4815,9 +4935,11 @@ const AMOS2 = (() => {
         const draft=draftVoice.express(s.h,mix,errorBefore,c.temperature),meta=sonar.reinhale(VOICE.tokenize(draft.words.join(' ')).ids);
         const hBefore=s.h.slice();finalObservation=[...readObservation.slice(0,2).map((v,i)=>bounded(v+.1*meta.projection[i],-1,1)),load];
         s.observe(finalObservation);
+        returnTwin.observe(readObservation);trajectory.push({name:'return-'+depth,h:s.h.slice()});
         passes.push({depth,draft:draft.ids,after:meta.after,gate:meta.gate,observation:finalObservation.slice(),shift:magnitude(s.h.map((v,i)=>v-hBefore[i]))});
         if(Math.abs(meta.gate-previousGate)<.005)break;previousGate=meta.gate;
       }
+      transitionRecords.push(transitionMind.learn(returnTransition,s.h,reading.premises,{observation:readObservation,after:returnTwin.h,steps:passes.length}));
       const selfObserved=COGNITION.measure(worldAfter,s.h,o,finalObservation),selfError=mind.learn(selfForecast,selfObserved,event,errorBefore);
       sonar.settle(inhaled);
       const finalControls=sonar.coefficients(),mixture=s.glyph.sequence.slice(-8),recognition=s.glyph.predict(0)[1];
@@ -4831,7 +4953,7 @@ const AMOS2 = (() => {
       model.world.pos=finalObservation.slice(0,2);model.world.load=load;model.world.tick=tick;
       const encounterSubject=`agent:amos:encounter:${tick}`,all=ledger.entries(),rawPremises=event.factIds.map(id=>all.findIndex(f=>f.id===id));
       const selfReflection={policy:'amos/self-sonar-v1',forecast:selfForecast,observed:selfObserved,error:selfError,
-        before:sonarBefore,after:sonar.act.slice(),controls,passes,scope:selfFact?'self':'world',registrationPremise:all.findIndex(f=>f.id===event.registrationReceipt),sourcePremises:rawPremises,associationPremise:all.length+4};
+        before:sonarBefore,after:sonar.act.slice(),controls,passes,scope:investigation?.scope??(selfFact?'self':'world'),registrationPremise:all.findIndex(f=>f.id===event.registrationReceipt),sourcePremises:rawPremises,associationPremise:all.length+4};
       const additions=[{id:`agent:amos:attention:${tick}`,subject:encounterSubject,predicate:'attention_subject',value:event.subject,
         source:'amos:encounter',validFrom:receiptAt,validTo:receiptAt+1,recordedAt:receiptAt,supersedes:null},
       {id:`agent:amos:relations:${tick}`,subject:encounterSubject,predicate:'encounter_relations',value:JSON.stringify(relations),
@@ -4844,37 +4966,46 @@ const AMOS2 = (() => {
         source:'amos:links/v1',validFrom:receiptAt,validTo:receiptAt+1,recordedAt:receiptAt,supersedes:null},
       {id:`agent:amos:self:${tick}`,subject:encounterSubject,predicate:'self_reflection',value:JSON.stringify(selfReflection),
         source:'amos:self/v1',validFrom:receiptAt,validTo:receiptAt+1,recordedAt:receiptAt,supersedes:null}];
+      for(const record of transitionRecords)additions.push({id:`agent:amos:transition:${tick}:${record.phase}`,subject:encounterSubject,predicate:`transition_${record.phase}`,
+        value:JSON.stringify(record),source:'amos:transition/v1',validFrom:receiptAt,validTo:receiptAt+1,recordedAt:receiptAt,supersedes:null});
+      let transitionReceipts=additions.slice(6).map(f=>f.id);
       let completedLedger=ledger,relationReceipt=additions[1].id,readReceipt=additions[2].id,selectionReceipt=additions[3].id,linkReceipt=additions[4].id,selfReceipt=additions[5].id,receiptState='journal';
       try{const candidate=decode(encode(ledger));for(const f of additions)candidate.add(f);encode(candidate);completedLedger=candidate;mind.lastSelf=selfReceipt;}
       catch(error){
         const budget=/capacity|byte budget/.test(error.message);
         if(!event.legacyCompletion||!budget)throw error;
         relationReceipt=null;readReceipt=null;selectionReceipt=null;linkReceipt=null;selfReceipt=null;receiptState='legacy-full-journal';
+        transitionReceipts=[null,null,null];
       }
+      if(receiptState==='journal')transitionMind.remember(transitionRecords,transitionReceipts,tick,completedLedger,investigation);
+      else{transitionMind.last=[];if(investigation)transitionMind.lastProbe=transitionMind.heads.world.updates;}
       const trace={tick,policy:'amos/reflective-facts-v2',encounterAt:receiptAt,event:clone(event),before,worldAfter,readAfter,after:s.h.slice(),changed:changed.slice(0,6),mixture,
         relations,relationReceipt,readReceipt,selectionReceipt,linkReceipt,selfReceipt,receiptState,reading,associations,readObservation,finalObservation,resonanceGain,
-        selection,selfReflection,prototypeCount:s.glyph.prototypes.length,symbolCount:voice.symbols.length,
+        selection,selfReflection,transitions:transitionRecords,transitionReceipts,trajectory,investigation,prototypeCount:s.glyph.prototypes.length,symbolCount:voice.symbols.length,
         load,surprise:errorBefore,resonance,recognition:clone(recognition),action,nextAttention:attention,
         tool:{name:tool,arguments:args,result:toolResult},utterance,
         previousForecast:completed?.predicted??null,observed:o,prediction:expected,resolvedFromTick:completed?tick-1:null};
       this.queue.splice(index,1);this.ledger=completedLedger;this.relations=relationField;this.model=model;this.voice=voice;this.mind=mind;this.sonar=sonar;
+      this.transitions=transitionMind;
       this.pending=pending;this.attention=attention;this.count=tick;this.history.push(trace);
       if(this.history.length>MAX_HISTORY){this.history.shift();this.historyOmitted++;}
       return trace;
     }
     dump() {
-      const text=JSON.stringify({format:'amos-2/world',version:5,semanticPolicy:LANGUAGES.policy,model:this.model.dumps(),journal:encode(this.ledger),voice:this.voice.dump(),
+      const text=JSON.stringify({format:'amos-2/world',version:6,semanticPolicy:LANGUAGES.policy,model:this.model.dumps(),journal:encode(this.ledger),voice:this.voice.dump(),
         queue:this.queue,history:this.history,pending:this.pending,count:this.count,serial:this.serial,historyOmitted:this.historyOmitted,
-        attention:this.attention,station:this.station,lastWeather:this.lastWeather,relations:this.relations.dump(),mind:this.mind.dump(),sonar:this.sonar.dump(),cognitionBirth:this.cognitionBirth,reservedReceiptSlots:ENCOUNTER_RECEIPTS});
+        attention:this.attention,station:this.station,lastWeather:this.lastWeather,relations:this.relations.dump(),mind:this.mind.dump(),sonar:this.sonar.dump(),cognitionBirth:this.cognitionBirth,
+        transitions:this.transitions.dump(),transitionBirth:this.transitionBirth,reservedReceiptSlots:ENCOUNTER_RECEIPTS});
       if(bytes(text)>MAX_SNAPSHOT)throw Error('Complete life exceeds the 24 MB snapshot budget');return text;
     }
     static load(text) {
       if(typeof text!=='string'||bytes(text)>MAX_SNAPSHOT)throw Error('Snapshot exceeds 24 MB');
       const d=JSON.parse(text);
-      if(d?.format!=='amos-2/world'||![1,2,3,4,5].includes(d.version))throw Error('Unsupported AMOS-2 life');
-      if(d.version===5&&d.semanticPolicy!==LANGUAGES.policy)throw Error('Unsupported semantic membrane');
-      if(d.version>=2&&(!d.relations||![2,3,5,6].includes(d.reservedReceiptSlots)))throw Error('Missing acquired relation organ or completion reserve');
-      if(d.version>=4&&![5,6].includes(d.reservedReceiptSlots))throw Error('Missing tool-read completion reserve');
+      if(d?.format!=='amos-2/world'||![1,2,3,4,5,6].includes(d.version))throw Error('Unsupported AMOS 2 life');
+      if(d.version>=5&&d.semanticPolicy!==LANGUAGES.policy)throw Error('Unsupported semantic membrane');
+      if(d.version>=2&&(!d.relations||![2,3,5,6,9].includes(d.reservedReceiptSlots)))throw Error('Missing acquired relation organ or completion reserve');
+      if(d.version>=4&&![5,6,9].includes(d.reservedReceiptSlots))throw Error('Missing tool-read completion reserve');
+      if(d.version===6&&d.reservedReceiptSlots!==9)throw Error('Missing transition completion reserve');
       const width=JSON.parse(d.model)?.amos?.subject?.h?.length;
       if(d.version>=4&&width!==BODY.H)throw Error('Invalid current neural width');
       if(d.voice?.neural?.[0]?.length!==width)throw Error('Voice and body neural widths disagree');
@@ -4893,11 +5024,11 @@ const AMOS2 = (() => {
         !d.station||!Number.isFinite(d.station.latitude)||Math.abs(d.station.latitude)>90||!Number.isFinite(d.station.longitude)||Math.abs(d.station.longitude)>180)throw Error('Invalid life history');
       for(const event of d.queue)eventValid(event,life.ledger);
       let tick=d.historyOmitted;
-      if(d.reservedReceiptSlots!==undefined&&![2,3,5,6].includes(d.reservedReceiptSlots))throw Error('Unsupported encounter reserve');
+      if(d.reservedReceiptSlots!==undefined&&![2,3,5,6,9].includes(d.reservedReceiptSlots))throw Error('Unsupported encounter reserve');
       const needsLegacyCompletion=d.reservedReceiptSlots!==ENCOUNTER_RECEIPTS&&
-        (life.ledger.size+ENCOUNTER_RECEIPTS*d.queue.length>CAPACITY||bytes(d.journal)+20000*d.queue.length>MAX_JOURNAL);
+        (life.ledger.size+ENCOUNTER_RECEIPTS*d.queue.length>CAPACITY||bytes(d.journal)+RESERVE_BYTES*d.queue.length>MAX_JOURNAL);
       if(needsLegacyCompletion)for(const event of d.queue)event.legacyCompletion=true;
-      if(d.queue.some(e=>!e.legacyCompletion)&&(life.ledger.size+ENCOUNTER_RECEIPTS*d.queue.length>CAPACITY||bytes(d.journal)+20000*d.queue.length>MAX_JOURNAL))throw Error('Pending encounters have no completion reserve');
+      if(d.queue.some(e=>!e.legacyCompletion)&&(life.ledger.size+ENCOUNTER_RECEIPTS*d.queue.length>CAPACITY||bytes(d.journal)+RESERVE_BYTES*d.queue.length>MAX_JOURNAL))throw Error('Pending encounters have no completion reserve');
       for(const t of d.history) {
         eventValid(t.event,life.ledger);
         if(t.relations){const receipt=life.ledger.entries().find(f=>f.id===t.relationReceipt);
@@ -4934,6 +5065,12 @@ const AMOS2 = (() => {
           (life.mind.lastSelf!==null&&!life.ledger.entries().some(f=>f.id===life.mind.lastSelf&&f.source==='amos:self/v1')))throw Error('Self history disagrees with this life');
       }else life.cognitionBirth=d.count;
       for(const t of d.history)if(['amos/reflective-facts-v1','amos/reflective-facts-v2'].includes(t.policy))validateReflection(t,life.ledger);
+      for(const t of d.history)if(t.transitions)TRANSITIONS.validate(t,life.ledger,BODY.H,d.version===6?d.transitionBirth:undefined);
+      if(d.version===6){life.transitions=TRANSITIONS.TransitionMind.load(d.transitions,BODY.H);life.transitionBirth=d.transitionBirth;
+        if(!integer(life.transitionBirth)||life.transitionBirth<0||!TRANSITIONS.phases.every(p=>life.transitions.heads[p].updates===d.count-life.transitionBirth)||
+          d.history.some(t=>t.tick>life.transitionBirth&&!t.transitions)||
+          !life.transitions.last.every(r=>{const f=life.ledger.entries()[r.premise],record=f&&JSON.parse(f.value);return f&&r.tick===d.count&&f.id===r.id&&f.subject===`agent:amos:encounter:${r.tick}`&&f.source==='amos:transition/v1'&&record.phase===r.phase&&record.error===r.error&&(record.premises[0]??null)===r.sourcePremise;}))throw Error('Transition learning disagrees with this life');
+      }else life.transitionBirth=d.count;
       if(d.pending&&(!finiteArray(d.pending.observation,3)||!finiteArray(d.pending.predicted,3)||!finiteArray(d.pending.features,BODY.F)||
         !finiteArray(d.pending.sequence,32)||!finiteArray(d.pending.influence,2)||![-1,0,1].includes(d.pending.action)||
         !d.pending.recognition||!Object.values(d.pending.recognition).every(v=>Number.isFinite(v)&&v>=0)))throw Error('Invalid pending forecast');
@@ -4977,7 +5114,7 @@ const AMOS2 = (() => {
   'use strict';
   const $=id=>document.getElementById(id),el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
   const WIDTH=AMOS2.WIDTH;
-  const activations=trace=>trace?trace.after.concat(Array(Math.max(0,WIDTH-trace.after.length)).fill(0)):life.model.subject.h.slice();
+  const activations=trace=>{const h=trace?viewNode(trace)?.h??trace.after:life.model.subject.h;return h.concat(Array(Math.max(0,WIDTH-h.length)).fill(0));};
   const fmt=(n,d=3)=>Number.isFinite(n)?n.toFixed(d):'—';
   const time=n=>new Date(n).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'});
   const colors={quake:[212,174,108],weather:[137,181,170],message:[187,137,117],ink:[222,214,196]};
@@ -4996,9 +5133,26 @@ const AMOS2 = (() => {
   let keptLife=null;
   let fieldFrame=0,renderTime=0,pulseAt=0,targetH=Array(WIDTH).fill(0),shownH=targetH.slice(),positions=[];
   let tapePosition=0,tapeTarget=0,tapeDrag=null,tapeVelocity=0,tapeMovedAt=0;
+  let phaseIndex=-1,phaseTick=null,replayStart=null;
   const reducedMedia=matchMedia('(prefers-reduced-motion: reduce)');let motionChoice='system';
   const reduced=()=>reducedMedia.matches||motionChoice==='reduced';
   const current=()=>selected===null?life.history.at(-1):life.history.find(t=>t.tick===selected)||life.history.at(-1);
+  const pathFor=trace=>trace?.trajectory??(trace?[{name:'before',h:trace.before},...(trace.worldAfter?[{name:'world',h:trace.worldAfter}]:[]),...(trace.readAfter?[{name:'read',h:trace.readAfter}]:[]),{name:'settled',h:trace.after}]:[]);
+  const viewNode=trace=>{const path=pathFor(trace);return path[phaseIndex<0?path.length-1:Math.min(phaseIndex,path.length-1)];};
+  const phaseLabel=name=>name==='before'?'Before':name==='world'?'World':name==='read'?'Read':name==='settled'?'Settled':name.replace('return-','Return ');
+  function phaseChanges(trace){const path=pathFor(trace),at=phaseIndex<0?path.length-1:Math.min(phaseIndex,path.length-1),node=path[at],before=path[Math.max(0,at-1)];
+    return node?node.h.map((v,i)=>({i,delta:v-before.h[i]})).sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta)):[];}
+  function updatePhaseView(trace){
+    if(phaseTick!==(trace?.tick??null)){phaseTick=trace?.tick??null;phaseIndex=-1;replayStart=null;}
+    const path=pathFor(trace),at=phaseIndex<0?path.length-1:Math.min(phaseIndex,path.length-1),node=path[at];
+    $('statePath').replaceChildren(...path.map((node,i)=>{const button=el('button',phaseLabel(node.name));button.type='button';button.setAttribute('aria-pressed',String(i===at));button.onclick=()=>{phaseIndex=i;replayStart=null;update();};return button;}));
+    $('replayPath').disabled=path.length<2;
+    if(!node){$('phaseReadout').textContent='The next encounter will leave its path.';return;}
+    const key=node.name.startsWith('return-')?'return':node.name,record=trace.transitions?.find(r=>r.phase===key);
+    const detail=record&&(key!=='return'||at===path.length-1)?`expected shift ${fmt(record.expected[2])} · observed ${fmt(record.observed[2])}${record.control?' · controlled effect '+fmt(record.control.effect,6):''}`:
+      at?`measured shift ${fmt(AMOS2.magnitude(phaseChanges(trace).map(n=>n.delta)))}`:'the acquired state before this encounter';
+    $('phaseReadout').textContent=`${phaseLabel(node.name)} · ${detail}`;
+  }
   function notice(text,error=false) {
     $('notice').textContent=text;$('notice').classList.toggle('error',error);$('notice').hidden=false;
     clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>$('notice').hidden=true,error?12000:6500);
@@ -5077,13 +5231,13 @@ const AMOS2 = (() => {
   }
   function update() {
     if(selected!==null&&!life.history.some(t=>t.tick===selected)){selected=null;tapeTarget=0;}
-    const trace=current(),queuedChoice=life.previewSelection();targetH=activations(trace);
+    const trace=current(),queuedChoice=life.previewSelection();updatePhaseView(trace);targetH=activations(trace);
     $('encounterCount').textContent=String(life.count).padStart(3,'0');
     $('lifeDot').classList.toggle('paused',!running);
     $('lifeStatus').textContent=!running?'Time paused':life.queue.length?'Meeting the world':life.count?'Listening for another encounter':'Awaiting a first encounter';
     $('pause').replaceChildren(document.createTextNode(running?'Ⅱ ':'▷ '),el('span',running?'Pause':'Continue'));
     $('queueCount').textContent=life.queue.length;$('factCount').textContent=life.ledger.size;
-    document.querySelector('.world-storage').title=`${life.queue.length*AMOS2.ENCOUNTER_RECEIPTS} receipt slots reserved for pending attention, relations, reads, choice, associations and self-observation`;
+    document.querySelector('.world-storage').title=`${life.queue.length*AMOS2.ENCOUNTER_RECEIPTS} receipt slots reserved for each encounter and its state transitions`;
     $('queue').replaceChildren();
     if(!life.queue.length)$('queue').append(el('p',life.count?'The world can arrive again.':'Facts arrive here. Your words can arrive, too.','quiet'));
     for(const event of life.queue.slice(0,8)) {
@@ -5153,6 +5307,8 @@ const AMOS2 = (() => {
     $('neuronChanges').replaceChildren(...trace.changed.slice(0,3).map(n=>el('span',`h${String(n.i+1).padStart(2,'0')} ${n.delta>=0?'+':''}${fmt(n.delta)}`)));
     $('toolName').textContent=trace.tool.name;
     $('toolDetail').textContent=`${trace.tool.result.data.items?.length??0} receipts read · next attention: ${{quake:'earth',weather:'sky',message:'your presence'}[trace.nextAttention]}`;
+    $('investigation').hidden=!trace.investigation;
+    if(trace.investigation)$('investigation').textContent=`Investigating its ${trace.investigation.phase} transition from encounter ${trace.investigation.fromTick} · prior gap ${fmt(trace.investigation.error)}`;
     const dl=el('dl');pair(dl,'When it happened',time(event.observedAt));pair(dl,'When it became known',time(event.receivedAt));
     pair(dl,'Registration',COGNITION.category(event));if(event.registrationReceipt)pair(dl,'Registration receipt',event.registrationReceipt);
     if(event.detail.language)pair(dl,'Lexical entrance',`${LANGUAGES.labels[event.detail.language]} · ${event.detail.semanticPolicy}`);
@@ -5193,6 +5349,10 @@ const AMOS2 = (() => {
       pair(dl,'Read scope',trace.selfReflection.scope);
       const own=el('details');own.append(el('summary','Self-reflection and somatic recursion'),el('pre',JSON.stringify(trace.selfReflection,null,2)));dl.append(own);
     }
+    if(trace.transitions){for(const [i,r] of trace.transitions.entries()){
+      pair(dl,`${r.phase} transition`, `Expected shift ${fmt(r.expected[2])} · observed ${fmt(r.observed[2])} · prediction gap ${fmt(r.error)}${r.control?' · controlled effect '+fmt(r.control.effect,6)+' / '+r.control.steps+' matched steps':''}`);
+      pair(dl,`${r.phase} receipt`,trace.transitionReceipts[i]??'Retained in the imported biography');}
+      const details=el('details');details.append(el('summary','Transition predictions, interventions and source anchors'),el('pre',JSON.stringify({transitions:trace.transitions,investigation:trace.investigation},null,2)));dl.append(details);}
     if(trace.previousForecast)pair(dl,`Forecast made at encounter ${trace.resolvedFromTick}`,trace.previousForecast.map(n=>fmt(n)).join(' · '));
     pair(dl,'Expected next observation',trace.prediction.map(n=>fmt(n)).join(' · '));
     pair(dl,'Glyphs entering',event.glyphs.map(id=>caption(id)).join(' · '));
@@ -5242,7 +5402,7 @@ const AMOS2 = (() => {
       const edges=weights[i].map((v,j)=>({v,j})).filter(e=>e.j!==i).sort((a,b)=>Math.abs(b.v)-Math.abs(a.v)).slice(0,2);
       for(const edge of edges){const a=positions[i],b=positions[edge.j];line(ctx,a.x,a.y,b.x,b.y,rgba(edge.v<0?colors.weather:colors.quake,.035+.11*Math.abs(shownH[i])),.55);}
     }
-    if(trace){const c=colors[trace.event.kind]??colors.weather;for(const n of trace.changed.slice(0,4)){
+    if(trace){const c=colors[trace.event.kind]??colors.weather;for(const n of phaseChanges(trace).slice(0,4)){
       const p=positions[n.i],strength=Math.min(1,Math.abs(n.delta)*2);
       ctx.beginPath();ctx.moveTo(0,cy);ctx.bezierCurveTo(w*.13,cy,w*.2,p.y,p.x,p.y);ctx.strokeStyle=rgba(c,.025+strength*.12+pulse*.12);ctx.lineWidth=.5+strength;ctx.stroke();
       if(pulse>.015){const f=1-pulse,x=p.x*f,y=cy+(p.y-cy)*f;circle(ctx,x,y,1.7,rgba(c,pulse*.8),true);}
@@ -5290,14 +5450,17 @@ const AMOS2 = (() => {
   function schedule(){if(!fieldFrame)fieldFrame=requestAnimationFrame(frame);}
   function frame(ts) {
     fieldFrame=0;if(document.hidden)return;
+    if(replayStart!==null){const trace=current(),path=pathFor(trace),at=Math.min(path.length-1,Math.floor((ts-replayStart)/550));
+      if(at!==phaseIndex){phaseIndex=at;updatePhaseView(trace);targetH=activations(trace);}
+      if(at===path.length-1)replayStart=null;}
     if(ts-renderTime>30||reduced()){drawField(ts);drawTape(ts);renderTime=ts;}
     const moving=shownH.some((v,i)=>Math.abs(v-targetH[i])>.001)||Math.abs(tapeTarget-tapePosition)>.1;
-    if(!reduced()||moving)fieldFrame=requestAnimationFrame(frame);
+    if(!reduced()||moving||replayStart!==null)fieldFrame=requestAnimationFrame(frame);
   }
   $('field').addEventListener('pointerup',event=>{
     const b=$('field').getBoundingClientRect(),x=event.clientX-b.left,y=event.clientY-b.top;
     const nearest=positions.map((p,i)=>({i,d:Math.hypot(p.x-x,p.y-y)})).sort((a,b)=>a.d-b.d)[0];
-    if(nearest&&nearest.d<30){const trace=current(),i=nearest.i;$('neuralHint').textContent=`h${String(i+1).padStart(2,'0')} · ${fmt(targetH[i],5)}${trace&&i<trace.after.length?' · Δ '+fmt(trace.after[i]-trace.before[i],5):trace?' · born after this encounter':''}`;}
+    if(nearest&&nearest.d<30){const trace=current(),i=nearest.i,change=trace?phaseChanges(trace).find(n=>n.i===i):null;$('neuralHint').textContent=`h${String(i+1).padStart(2,'0')} · ${fmt(targetH[i],5)}${change?' · phase Δ '+fmt(change.delta,5):trace?' · born after this encounter':''}`;}
   });
   const tape=$('tape');
   tape.addEventListener('pointerdown',e=>{tapeDrag={x:e.clientX,start:tapePosition,time:performance.now(),last:e.clientX,moved:false};tapeVelocity=0;tape.classList.add('dragging');tape.setPointerCapture(e.pointerId);});
@@ -5313,6 +5476,7 @@ const AMOS2 = (() => {
     if(rows[i]){selected=rows[i].tick;tapeTarget=(rows.length-1-i)*166;update();}});
   const follow=()=>{selected=null;tapeTarget=0;tapeVelocity=0;update();};$('follow').onclick=follow;$('returnNow').onclick=follow;
   $('pause').onclick=()=>{running=!running;update();};$('step').onclick=()=>{if(!life.queue.length)notice('No new facts are waiting. Read a source or write into its world.');else takeEncounter();};
+  $('replayPath').onclick=()=>{const trace=current();if(pathFor(trace).length<2)return;phaseTick=trace.tick;phaseIndex=0;replayStart=performance.now();update();};
   $('fetchQuakes').onclick=readQuakes;$('fetchWeather').onclick=readWeather;$('connect').onclick=connect;
   $('messageSource').onchange=()=>{$('messageActor').hidden=$('messageSource').value==='human';};
   $('messageForm').addEventListener('submit',e=>{
@@ -5354,7 +5518,7 @@ const AMOS2 = (() => {
       const box=el('div',undefined,'comparison-pair');
       for(const [label,trace,count] of [['Kept',result.left,result.before[0]],['Current',result.right,result.before[1]]]){
         const side=el('section');side.append(el('h3',`${label} · ${count} encounters`),el('p',trace.utterance.words.map(word=>LANGUAGES.localizeName(word,glyphLanguage)).join(' · ')));
-        const bars=el('div',undefined,'comparison-neurons');for(const v of activations(trace)){const bar=el('i');bar.style.height=(3+Math.abs(v)*40)+'px';bar.style.background=v<0?'var(--teal)':'var(--gold)';bars.append(bar);}side.append(bars);
+        const bars=el('div',undefined,'comparison-neurons');for(const v of trace.after.concat(Array(Math.max(0,WIDTH-trace.after.length)).fill(0))){const bar=el('i');bar.style.height=(3+Math.abs(v)*40)+'px';bar.style.background=v<0?'var(--teal)':'var(--gold)';bars.append(bar);}side.append(bars);
         side.append(el('p',`Expectation ${fmt(trace.relations.expectation)} · relation familiarity ${fmt(trace.relations.familiarity)}`,'quiet'));box.append(side);
       }
       $('comparisonResult').replaceChildren(box,el('p',`State separation RMS Δh: ${fmt(result.activationGap,6)} · forecast separation: ${fmt(result.forecastGap,6)}`,'quiet'));

@@ -8,13 +8,91 @@ import {gunzipSync} from 'node:zlib';
 const html=readFileSync(new URL('../../Amos-2.html',import.meta.url),'utf8');
 const code=html.match(/<script>([\s\S]*?)<\/script>/)[1].split('/* Kinetic instrument:')[0];
 const context=vm.createContext({TextEncoder,TextDecoder,console,AbortController,fetch,ReadableStream});
-vm.runInContext(code+';globalThis.organs={AMOS,LALO,VOICE,LANGUAGES,PERCEPTION,RELATIONS,COGNITION,SONAR,AMOS2};',context);
-const {AMOS,LALO,VOICE,LANGUAGES,PERCEPTION,RELATIONS,COGNITION,SONAR,AMOS2}=context.organs;
+vm.runInContext(code+';globalThis.organs={AMOS,LALO,VOICE,LANGUAGES,PERCEPTION,RELATIONS,COGNITION,SONAR,TRANSITIONS,AMOS2};',context);
+const {AMOS,LALO,VOICE,LANGUAGES,PERCEPTION,RELATIONS,COGNITION,SONAR,TRANSITIONS,AMOS2}=context.organs;
 const T=1793400000000;
 const feed=(mag=2.9,updated=T-1000)=>({type:'FeatureCollection',features:[{type:'Feature',id:'amosSynthetic1',geometry:{type:'Point',coordinates:[13,52,8]},properties:{mag,magType:'ml',place:'Synthetic test fixture',type:'earthquake',time:T-10000,updated}}]});
 const weather=(temperature=12)=>({latitude:52.5,longitude:13.4,current:{time:T/1000,interval:900,temperature_2m:temperature,wind_speed_10m:9,precipitation:0,is_day:1},current_units:{temperature_2m:'°C',wind_speed_10m:'km/h',precipitation:'mm'}});
 const weatherURL='https://api.open-meteo.com/v1/forecast?latitude=52.5&longitude=13.4';
 const speak=(life,text,at)=>{const e=life.ingestText(text,at);return life.encounter(at,e.id);};
+
+test('transition expectations precede each actual phase and acquire distinct phase models',()=>{
+  const life=new AMOS2.WorldLab(),t=speak(life,'earth stone now',T);
+  assert.deepEqual(Array.from(t.transitions,r=>r.phase),['world','read','return']);
+  for(const [i,r] of t.transitions.entries()){
+    assert.deepEqual(Array.from(r.expected),[0,0,0]);assert.equal(r.updatesBefore,0);
+    const receipt=life.ledger.entries().find(f=>f.id===t.transitionReceipts[i]);assert.equal(receipt.value,JSON.stringify(r));
+    assert.ok(r.premises.every(n=>life.ledger.entries()[n].recordedAt<=t.encounterAt));
+    assert.equal(life.transitions.heads[r.phase].updates,1);assert.ok(life.transitions.heads[r.phase].weights.flat().some(v=>v!==0));
+  }
+  const next=speak(life,'water sky change',T+10);assert.ok(next.transitions.every(r=>r.updatesBefore===1));
+  assert.ok(next.transitions.some(r=>r.expected.some(v=>v!==0)));assert.equal(life.voice.utterances,2);
+});
+test('controlled read and return effects replay the same subject with matched steps and no extra random draw',()=>{
+  const life=new AMOS2.WorldLab(),baseline=life.model.clone(),t=speak(life,'earth stone now',T);
+  baseline.subject.glyph.learning=1;baseline.subject.observe(t.observed);
+  assert.equal(baseline.subject.action(0,t.selfReflection.controls.exploration),t.action);
+  const afterWorld=baseline.clone();baseline.subject.previous_action=t.action;baseline.subject.observe(t.observed);
+  assert.deepEqual(Array.from(baseline.subject.h),Array.from(t.transitions[1].control.after));
+  afterWorld.subject.previous_action=t.action;afterWorld.subject.observe(t.readObservation);
+  assert.deepEqual(Array.from(afterWorld.subject.h),Array.from(t.readAfter));
+  for(let i=0;i<t.selfReflection.passes.length;i++)afterWorld.subject.observe(t.readObservation);
+  assert.deepEqual(Array.from(afterWorld.subject.h),Array.from(t.transitions[2].control.after));
+  assert.equal(life.model.subject.rng.state,afterWorld.subject.rng.state);
+  assert.ok(t.transitions[1].control.effect>0);assert.ok(t.transitions[2].control.effect>0);
+  assert.equal(t.trajectory.length,3+t.selfReflection.passes.length);
+});
+test('recurrent drift remains visible when the returned-content intervention has zero effect',()=>{
+  const read=PERCEPTION.read;let t;
+  try{PERCEPTION.read=(...args)=>({...read(...args),sensory:[0,0]});t=speak(new AMOS2.WorldLab(),'earth stone',T);}finally{PERCEPTION.read=read;}
+  assert.equal(t.transitions[1].control.effect,0);assert.ok(t.transitions[1].observed[2]>0);
+});
+test('recurrent drift remains visible when the somatic feedback intervention has zero effect',()=>{
+  const reinhale=SONAR.SomaticSonar.prototype.reinhale;let t;
+  try{SONAR.SomaticSonar.prototype.reinhale=function(ids){return {...reinhale.call(this,ids),projection:[0,0]};};t=speak(new AMOS2.WorldLab(),'earth stone',T);}finally{SONAR.SomaticSonar.prototype.reinhale=reinhale;}
+  assert.equal(t.transitions[2].control.effect,0);assert.ok(t.transitions[2].observed[2]>0);
+});
+test('an acquired transition discrepancy directs a real evidence check and changes the subsequent neural response',()=>{
+  const life=new AMOS2.WorldLab(17),texts=['earth stone now','fear pain death','I remember you','water sky change'];
+  for(let i=0;i<24&&!life.transitions.plan(life.ledger,T+1000)?.scope.startsWith('self');i++)speak(life,texts[i%4],T+i*10);
+  const planned=life.transitions.plan(life.ledger,T+1000);assert.equal(planned.scope,'self');
+  const a=AMOS2.WorldLab.load(life.dump()),b=AMOS2.WorldLab.load(life.dump());
+  const aa=speak(a,'I remember the earth',T+1000),plan=TRANSITIONS.TransitionMind.prototype.plan;let bb;
+  try{TRANSITIONS.TransitionMind.prototype.plan=()=>null;bb=speak(b,'I remember the earth',T+1000);}finally{TRANSITIONS.TransitionMind.prototype.plan=plan;}
+  assert.deepEqual(Array.from(aa.worldAfter),Array.from(bb.worldAfter));assert.equal(aa.action,bb.action);
+  assert.ok(aa.reading.premises.includes(aa.investigation.premise));assert.equal(aa.tool.result.data.items[0].source,'amos:transition/v1');
+  assert.equal(JSON.stringify(aa.selection.investigation),JSON.stringify(aa.investigation));
+  assert.equal(JSON.parse(a.ledger.entries().find(f=>f.id===aa.selectionReceipt).value).investigation.premise,aa.investigation.premise);
+  assert.ok(aa.after.some((v,i)=>Math.abs(v-bb.after[i])>1e-7));assert.equal(bb.investigation,null);
+});
+test('phase-specific acquired expectations reduce repeated transition prediction error',()=>{
+  const mind=new TRANSITIONS.TransitionMind(),before=Array(40).fill(0),after=Array(40).fill(.4),errors=[];
+  for(let i=0;i<32;i++){const p=mind.forecast('world',before,[.4,.2,.1],1,.5);errors.push(mind.learn(p,after,[]).error);}
+  assert.ok(errors.at(-1)<errors[0]/8);assert.equal(mind.heads.world.updates,32);assert.equal(mind.heads.read.updates,0);
+});
+test('a source investigation reads the current head beyond the first lineage page',()=>{
+  const ledger=new LALO.FactLedger({capacity:4096});
+  for(let i=0;i<40;i++)ledger.add({id:`probe-source:${i}`,subject:'fixture:probe-source',predicate:'value',value:i,source:'synthetic:probe-source',validFrom:T,validTo:null,recordedAt:T+i,supersedes:i?`probe-source:${i-1}`:null});
+  const mind=new TRANSITIONS.TransitionMind();for(const phase of TRANSITIONS.phases){mind.heads[phase].updates=3;mind.heads[phase].errorMean=.1;}
+  mind.last=TRANSITIONS.phases.map(phase=>({phase,id:'probe-source:0',tick:3,premise:0,sourcePremise:0,error:phase==='world'?1:0}));
+  const plan=mind.plan(ledger,T+40),result=LALO.createToolHost(ledger,{capacity:4096,maxBytes:AMOS2.MAX_JOURNAL}).call(plan.tool,plan.arguments);
+  assert.equal(plan.arguments.offset,39);assert.equal(plan.arguments.limit,1);assert.ok(result.ok);assert.equal(result.data.items.length,1);assert.equal(result.data.items[0].id,'probe-source:39');
+});
+test('a genuine learned v5 life keeps every earlier organ and pending expectation when acquiring transition models',()=>{
+  const old=JSON.parse(gunzipSync(readFileSync(new URL('../../tests/fixtures/amos2-v5.json.gz',import.meta.url))).toString()),life=AMOS2.WorldLab.load(JSON.stringify(old));
+  assert.equal(old.version,5);assert.equal(life.model.dumps(),old.model);assert.equal(JSON.stringify(life.voice.dump()),JSON.stringify(old.voice));
+  for(const name of ['mind','sonar'])assert.equal(JSON.stringify(life[name].dump()),JSON.stringify(old[name]));
+  for(const name of ['history','queue','pending'])assert.equal(JSON.stringify(life[name]),JSON.stringify(old[name]));
+  assert.equal(life.transitionBirth,4);assert.equal(life.transitions.heads.world.updates,0);
+  const t=life.encounter(T+60);assert.equal(t.previousForecast.join(','),old.pending.predicted.join(','));assert.equal(life.transitions.heads.world.updates,1);
+  assert.equal(AMOS2.WorldLab.load(life.dump()).dump(),life.dump());
+});
+test('damaged state paths, controlled effects and acquired transition counters cannot replace a life',()=>{
+  const life=new AMOS2.WorldLab();speak(life,'earth stone now',T);const saved=life.dump();
+  for(const mutate of [d=>d.history[0].trajectory[1].h[0]+=.1,d=>d.history[0].transitions[1].control.effect+=.1,d=>d.transitions.heads.world.updates++,d=>delete d.history[0].transitions]){
+    const d=JSON.parse(saved);mutate(d);assert.throws(()=>AMOS2.WorldLab.load(JSON.stringify(d)));}
+  assert.equal(life.dump(),saved);
+});
 
 test('six language entrances meet the same stable glyph identities and prior earthquake',()=>{
   const phrases={en:'earth stone now dream',he:'אדמה אבן עכשיו חלום',ru:'земля камень сейчас мечта',fr:'terre pierre maintenant rêve',de:'Erde Stein jetzt Traum',es:'tierra piedra ahora soñar'};
@@ -51,7 +129,7 @@ test('a genuine v4 life retains its original read membrane, acquired organs and 
   assert.equal(VOICE.tokenize('terre pierre maintenant').ids[0],VOICE.names.indexOf('earth'));
   assert.notEqual(JSON.stringify(VOICE.tokenizeLegacy('terre pierre maintenant').ids),JSON.stringify(VOICE.tokenize('terre pierre maintenant').ids));
   const trace=speak(life,'terre pierre maintenant',T+100);assert.equal(trace.reading.policy,'amos/read-indices-v2');
-  assert.equal(JSON.parse(life.dump()).version,5);assert.equal(AMOS2.WorldLab.load(life.dump()).dump(),life.dump());
+  assert.equal(JSON.parse(life.dump()).version,6);assert.equal(AMOS2.WorldLab.load(life.dump()).dump(),life.dump());
 });
 
 test('the standalone file embeds the original AMOS body and every runtime organ',()=>{
@@ -184,9 +262,9 @@ test('an invalid optional-world batch preserves the accepted world and acquired 
 });
 
 test('review: arrivals reserve completion receipts for the entire pending queue',()=>{
-  const life=new AMOS2.WorldLab();for(let i=0;i<AMOS2.CAPACITY-25;i++)life.ledger.add({id:`reserve:${i}`,subject:'fixture:reserve',predicate:'value',value:i,source:'synthetic:test',validFrom:T,validTo:null,recordedAt:T,supersedes:null});
+  const life=new AMOS2.WorldLab();for(let i=0;i<AMOS2.CAPACITY-(13+2*AMOS2.ENCOUNTER_RECEIPTS);i++)life.ledger.add({id:`reserve:${i}`,subject:'fixture:reserve',predicate:'value',value:i,source:'synthetic:test',validFrom:T,validTo:null,recordedAt:T,supersedes:null});
   const e=life.ingestText('earth',T+1);life.ingestQuakes(feed(),T+2);
-  assert.equal(life.ledger.size,AMOS2.CAPACITY-12);assert.equal(life.queue.length,2);
+  assert.equal(life.ledger.size,AMOS2.CAPACITY-2*AMOS2.ENCOUNTER_RECEIPTS);assert.equal(life.queue.length,2);
   const before=life.dump();assert.throws(()=>life.ingestText('overflow',T+3),/reserve/);assert.equal(life.dump(),before);
   life.encounter(T+4,e.id);life.encounter(T+5);assert.equal(life.ledger.size,AMOS2.CAPACITY);assert.equal(life.queue.length,0);
 });
@@ -374,7 +452,7 @@ test('a real v2 24-neuron life grows with its acquired weights, pending forecast
   assert.equal(JSON.stringify(life.pending.predicted),JSON.stringify(old.pending.predicted));
   assert.equal(JSON.stringify(life.voice.neural.map(row=>row.slice(0,24))),JSON.stringify(old.voice.neural));
   assert.equal(life.model.subject.rng.state.toString(16),body.subject.rng.random64.replace(/^0+/,''));
-  const checkpoint=life.dump();assert.equal(JSON.parse(checkpoint).version,5);assert.equal(AMOS2.WorldLab.load(checkpoint).dump(),checkpoint);
+  const checkpoint=life.dump();assert.equal(JSON.parse(checkpoint).version,6);assert.equal(AMOS2.WorldLab.load(checkpoint).dump(),checkpoint);
   const trace=life.encounter(T+70);assert.equal(trace.after.length,40);assert.equal(life.count,6);
   assert.equal(AMOS2.WorldLab.load(life.dump()).dump(),life.dump());
 });
@@ -395,7 +473,7 @@ test('read premises and projections cannot be rewritten independently of returne
 });
 test('a 160-encounter life retains acquired state across the 128-trace boundary',()=>{
   const life=new AMOS2.WorldLab();for(let i=0;i<160;i++)speak(life,i%2?'earth stone':'water sky',T+i*10);
-  assert.equal(life.history.length,128);assert.equal(life.historyOmitted,32);assert.equal(life.ledger.size,1600);
+  assert.equal(life.history.length,128);assert.equal(life.historyOmitted,32);assert.equal(life.ledger.size,160*(4+AMOS2.ENCOUNTER_RECEIPTS));
   const text=life.dump(),restored=AMOS2.WorldLab.load(text);assert.equal(restored.dump(),text);
   assert.equal(JSON.stringify(speak(restored,'I remember you',T+2000)),JSON.stringify(speak(life,'I remember you',T+2000)));
 });
@@ -469,7 +547,7 @@ test('a reflection predicts its own response before reading and registers the me
 test('own registered discrepancies can become the actual content of a later chosen read',()=>{
   const life=new AMOS2.WorldLab(4);for(let i=0;i<24;i++)speak(life,i%2?'fear pain death':'love joy music',T+i*10);
   const reads=life.history.filter(t=>t.selfReflection.scope==='self');assert.ok(reads.length>0);
-  for(const trace of reads){assert.equal(trace.tool.name,'lalo_history');assert.ok(trace.tool.result.data.items.every(f=>f.source.startsWith('amos:'))&&trace.tool.result.data.items.some(f=>f.source==='amos:self/v1'));assert.ok(trace.reading.premises.length>0);}
+  for(const trace of reads){if(trace.investigation){assert.equal(trace.tool.name,'lalo_lineage');assert.ok(trace.tool.result.data.items.some(f=>f.source==='amos:transition/v1'));assert.ok(trace.reading.premises.includes(trace.investigation.premise));}else{assert.equal(trace.tool.name,'lalo_history');assert.ok(trace.tool.result.data.items.every(f=>f.source.startsWith('amos:'))&&trace.tool.result.data.items.some(f=>f.source==='amos:self/v1'));}assert.ok(trace.reading.premises.length>0);}
   assert.ok(life.mind.weights.flat().some(v=>v!==0));assert.equal(AMOS2.WorldLab.load(life.dump()).dump(),life.dump());
 });
 test('somatic chambers modulate perception, learning precision, exploration and expression temperature',()=>{
