@@ -65,7 +65,7 @@ const COGNITION = (() => {
         const stats=this.kinds.find(x=>x.kind===event.kind),prior=stats?.impact??0;
         const glyphs=event.detail.contentGlyphs??event.glyphs,contextRelevance=glyphs.filter(g=>this.focus.includes(g)).length/Math.max(1,glyphs.length);
         const novelty=1-voice.resonance(event.detail.contentGlyphs??event.glyphs);
-        const revision=event.factIds.some(id=>all.find(f=>f.id===id)?.supersedes!==null)?1:0;
+        const revision=event.detail.archivedVersion||event.factIds.some(id=>all.find(f=>f.id===id)?.supersedes!==null)?1:0;
         const stale=event.factIds.every(id=>replaced.has(id));
         const waiting=Math.max(0,count-(event.acceptedAtCount??0));
         const uncertainty=1/Math.sqrt(1+(stats?.count??0));

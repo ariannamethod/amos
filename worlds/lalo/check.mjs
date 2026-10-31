@@ -15,6 +15,94 @@ const feed=(mag=2.9,updated=T-1000)=>({type:'FeatureCollection',features:[{type:
 const weather=(temperature=12)=>({latitude:52.5,longitude:13.4,current:{time:T/1000,interval:900,temperature_2m:temperature,wind_speed_10m:9,precipitation:0,is_day:1},current_units:{temperature_2m:'°C',wind_speed_10m:'km/h',precipitation:'mm'}});
 const weatherURL='https://api.open-meteo.com/v1/forecast?latitude=52.5&longitude=13.4';
 const speak=(life,text,at)=>{const e=life.ingestText(text,at);return life.encounter(at,e.id);};
+const g=name=>VOICE.names.indexOf(name);
+
+test('all canonical seed names retain their identities while previous lexical receipts keep their old interpretation',()=>{
+  for(let id=0;id<88;id++)assert.deepEqual(Array.from(VOICE.tokenize(VOICE.names[id],'en').ids),[id]);
+  assert.equal(VOICE.tokenize('much').ids[0],65);assert.equal(VOICE.tokenizePrevious('much').ids[0],64);
+  const old=JSON.parse(gunzipSync(readFileSync(new URL('../../tests/fixtures/amos2-v6.json.gz',import.meta.url)))),life=AMOS2.WorldLab.load(JSON.stringify(old));
+  for(const name of ['model','voice','history','queue','pending','mind','sonar','transitions']){
+    const actual=name==='model'?life.model.dumps():name==='voice'?life.voice.dump():['mind','sonar','transitions'].includes(name)?life[name].dump():life[name];
+    assert.equal(typeof actual==='string'?actual:JSON.stringify(actual),typeof old[name]==='string'?old[name]:JSON.stringify(old[name]));
+  }
+  const t=life.encounter(T+100);assert.equal(t.reading.policy,'amos/read-indices-v3');
+  const saved=life.dump();assert.equal(AMOS2.WorldLab.load(saved).dump(),saved);
+});
+
+test('native representation return is independent of glyph captions and preserves recursive composition',()=>{
+  const fear=g('fear'),love=g('love'),a=SONAR.semantic([89],[[fear,love],[88,love]]),b=SONAR.semantic([89],[[love,love],[fear,88]]);
+  assert.equal(a[0],.25);assert.equal(a[1],.75);assert.equal(b[0],.5);assert.equal(b[1],.5);
+  assert.throws(()=>SONAR.semantic([88],[[88,love]]),/compound/);
+  const original=VOICE.GlyphVoice.prototype.name,left=new AMOS2.WorldLab(),right=new AMOS2.WorldLab();
+  const expected=speak(left,'love pain remember',T);let actual;
+  try{VOICE.GlyphVoice.prototype.name=()=> 'fear death pain';actual=speak(right,'love pain remember',T);}finally{VOICE.GlyphVoice.prototype.name=original;}
+  assert.equal(JSON.stringify(actual.after),JSON.stringify(expected.after));assert.equal(right.model.dumps(),left.model.dumps());
+  assert.equal(JSON.stringify(right.sonar.dump()),JSON.stringify(left.sonar.dump()));
+  assert.equal(actual.selfReflection.returnPolicy,'amos/glyph-return-v1');
+  for(const p of expected.selfReflection.passes)assert.ok(p.representations);
+});
+
+test('closing a chapter preserves acquired life and its pending expectation while archiving exact detailed history',()=>{
+  const life=new AMOS2.WorldLab();for(let i=0;i<8;i++)speak(life,i%2?'earth stone now':'water sky remember',T+i);
+  const before=life.dump(),{archive,life:next}=life.continueWithExperience(T+10);
+  assert.equal(archive,before);assert.equal(life.dump(),before);assert.equal(next.model.dumps(),life.model.dumps());
+  assert.equal(JSON.stringify(next.voice.dump()),JSON.stringify(life.voice.dump()));assert.equal(JSON.stringify(next.sonar.dump()),JSON.stringify(life.sonar.dump()));
+  for(const key of ['weights','kinds','focus','updates','lastError','errorMean'])assert.equal(JSON.stringify(next.mind[key]),JSON.stringify(life.mind[key]));
+  assert.equal(JSON.stringify(next.transitions.heads),JSON.stringify(life.transitions.heads));assert.equal(next.transitions.lastProbe,life.transitions.lastProbe);
+  for(const key of ['patterns','transitions','seen','lastPattern'])assert.equal(JSON.stringify(next.relations[key]),JSON.stringify(life.relations[key]));
+  assert.equal(JSON.stringify(next.pending),JSON.stringify(life.pending));assert.equal(next.count,life.count);assert.equal(next.serial,life.serial);
+  assert.equal(next.history.length,0);assert.equal(next.historyOmitted,8);assert.equal(next.chapter.number,2);assert.equal(next.ledger.size,2);
+  assert.equal(next.mind.lastSelf,'agent:amos:chapter:2:self');assert.ok(next.ledger.entries().some(f=>f.id===next.mind.lastSelf));
+  assert.equal(next.voice.resonance([g('earth')]),life.voice.resonance([g('earth')]));
+  const restored=AMOS2.WorldLab.load(next.dump()),x=speak(next,'much earth',T+11),y=speak(restored,'much earth',T+11);
+  assert.equal(JSON.stringify(x),JSON.stringify(y));assert.equal(next.dump(),restored.dump());assert.equal(x.tick,9);
+  assert.equal(JSON.stringify(x.previousForecast),JSON.stringify(life.pending.predicted));assert.equal(x.reading.scope.chapter,2);
+  const query={subject:'world:sensor:unknown',predicate:'active',validAt:T,knownAt:T,rule:LALO.RULE};
+  assert.throws(()=>next.deriveReading(query,T+12),/archived chapter/);
+  next.deriveReading({...query,knownAt:T+12},T+12);assert.equal(next.queue.at(-1).title,'active: unsettled · chapter 2');
+  assert.equal(next.ledger.entries().findLast(f=>f.predicate==='knowledge_scope').value,'chapter:2');
+  const saved=next.dump();assert.equal(AMOS2.WorldLab.load(saved).dump(),saved);
+});
+
+test('chapter continuation refuses waiting facts and rejects a damaged boundary without replacing the life',()=>{
+  const life=new AMOS2.WorldLab();assert.throws(()=>life.continueWithExperience(T),/no acquired/);
+  speak(life,'earth stone',T);life.ingestText('waiting',T+1);const saved=life.dump();
+  assert.throws(()=>life.continueWithExperience(T+2),/waiting facts/);assert.equal(life.dump(),saved);
+  life.encounter(T+2);const next=life.continueWithExperience(T+3).life,d=JSON.parse(next.dump());
+  d.chapter.fromCount++;assert.throws(()=>AMOS2.WorldLab.load(JSON.stringify(d)),/boundary/);
+  d.chapter.fromCount--;d.chapter.archive='changed';assert.throws(()=>AMOS2.WorldLab.load(JSON.stringify(d)),/boundary/);
+  const damaged=JSON.parse(next.dump()),journal=JSON.parse(damaged.journal),memory=journal.records.find(f=>f.predicate==='self_memory');
+  const m=JSON.parse(memory.value);m.observed[0]=null;memory.value=JSON.stringify(m);damaged.journal=JSON.stringify(journal);
+  assert.throws(()=>AMOS2.WorldLab.load(JSON.stringify(damaged)),/carried self/);
+});
+
+test('remembered source versions prevent repeated polls from fabricating experience across chapter boundaries',()=>{
+  const life=new AMOS2.WorldLab(),frame={kind:'sensor',key:'carry',source:'synthetic:carry',observedAt:T,title:'Synthetic sample',values:{reading:1},sensory:[0,0],projection:'Synthetic baseline',glyphs:[2],detail:{}};
+  life.ingestQuakes(feed(),T);life.ingestWeather(weather(),T+1,weatherURL);life.ingestWorld([frame],T+2);
+  while(life.queue.length)life.encounter(T+3);
+  const next=life.continueWithExperience(T+4).life,saved=next.dump();assert.equal(next.sourceMemory.length,3);
+  assert.equal(next.ingestQuakes(feed(),T+5).unchanged,1);assert.equal(next.ingestWeather(weather(),T+5,weatherURL),0);assert.equal(next.ingestWorld([frame],T+5),0);
+  assert.equal(next.dump(),saved);assert.equal(next.ingestQuakes(feed(2.9,T-2000),T+6).stale,1);assert.equal(next.dump(),saved);
+  assert.throws(()=>next.ingestQuakes(feed(3.1),T+7),/without changing/);assert.equal(next.dump(),saved);
+  const result=next.ingestQuakes(feed(3.1,T+8),T+9);assert.equal(result.revised,1);assert.equal(result.added,0);assert.equal(result.encounters,1);
+  assert.ok(next.queue[0].detail.revised);assert.equal(next.queue[0].detail.archivedVersion.archive,next.chapter.archive);
+  const correction=next.encounter(T+10);assert.equal(correction.selection.selected.revision,1);
+  const checkpoint=next.dump();assert.equal(AMOS2.WorldLab.load(checkpoint).dump(),checkpoint);
+  const second=next.continueWithExperience(T+11).life;assert.equal(second.ingestQuakes(feed(3.1,T+8),T+12).unchanged,1);
+});
+
+test('acquired experience continues beyond the former 315-encounter ceiling across bounded chapters',()=>{
+  let life=new AMOS2.WorldLab();
+  for(let i=0;i<336;i++){
+    if(i&&i%16===0){const old=life.dump(),carried=life.continueWithExperience(T+i*10-1);assert.equal(carried.archive,old);life=carried.life;}
+    speak(life,i%2?'earth stone now':'water sky change',T+i*10);
+  }
+  assert.equal(life.count,336);assert.equal(life.model.subject.updates,335);assert.equal(life.voice.utterances,336);
+  assert.equal(life.mind.updates,336);assert.equal(life.sonar.turns,336);assert.equal(life.relations.seen,336);
+  assert.equal(life.transitions.heads.world.updates,336);assert.equal(life.chapter.number,21);assert.ok(life.ledger.size<300);
+  const saved=life.dump(),restored=AMOS2.WorldLab.load(saved);assert.equal(restored.dump(),saved);
+  assert.equal(JSON.stringify(speak(restored,'much remember',T+4000)),JSON.stringify(speak(life,'much remember',T+4000)));
+});
 
 test('transition expectations precede each actual phase and acquire distinct phase models',()=>{
   const life=new AMOS2.WorldLab(),t=speak(life,'earth stone now',T);
@@ -128,8 +216,8 @@ test('a genuine v4 life retains its original read membrane, acquired organs and 
   assert.equal(JSON.stringify(life.mind.dump()),JSON.stringify(old.mind));assert.equal(JSON.stringify(life.sonar.dump()),JSON.stringify(old.sonar));
   assert.equal(VOICE.tokenize('terre pierre maintenant').ids[0],VOICE.names.indexOf('earth'));
   assert.notEqual(JSON.stringify(VOICE.tokenizeLegacy('terre pierre maintenant').ids),JSON.stringify(VOICE.tokenize('terre pierre maintenant').ids));
-  const trace=speak(life,'terre pierre maintenant',T+100);assert.equal(trace.reading.policy,'amos/read-indices-v2');
-  assert.equal(JSON.parse(life.dump()).version,6);assert.equal(AMOS2.WorldLab.load(life.dump()).dump(),life.dump());
+  const trace=speak(life,'terre pierre maintenant',T+100);assert.equal(trace.reading.policy,'amos/read-indices-v3');
+  assert.equal(JSON.parse(life.dump()).version,7);assert.equal(AMOS2.WorldLab.load(life.dump()).dump(),life.dump());
 });
 
 test('the standalone file embeds the original AMOS body and every runtime organ',()=>{
@@ -452,7 +540,7 @@ test('a real v2 24-neuron life grows with its acquired weights, pending forecast
   assert.equal(JSON.stringify(life.pending.predicted),JSON.stringify(old.pending.predicted));
   assert.equal(JSON.stringify(life.voice.neural.map(row=>row.slice(0,24))),JSON.stringify(old.voice.neural));
   assert.equal(life.model.subject.rng.state.toString(16),body.subject.rng.random64.replace(/^0+/,''));
-  const checkpoint=life.dump();assert.equal(JSON.parse(checkpoint).version,6);assert.equal(AMOS2.WorldLab.load(checkpoint).dump(),checkpoint);
+  const checkpoint=life.dump();assert.equal(JSON.parse(checkpoint).version,7);assert.equal(AMOS2.WorldLab.load(checkpoint).dump(),checkpoint);
   const trace=life.encounter(T+70);assert.equal(trace.after.length,40);assert.equal(life.count,6);
   assert.equal(AMOS2.WorldLab.load(life.dump()).dump(),life.dump());
 });

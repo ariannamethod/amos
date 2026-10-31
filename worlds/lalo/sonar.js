@@ -13,10 +13,18 @@ const SONAR = (() => {
     'music go free agree','think question idea how cause know'];
   const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x)),copy=x=>JSON.parse(JSON.stringify(x));
   const vector=a=>Array.isArray(a)&&a.length===6&&a.every(x=>Number.isFinite(x)&&x>=0&&x<=1);
-  function semantic(ids){
-    const out=Array(6).fill(0),words=ids.map(id=>VOICE.names[id]);
-    for(let c=0;c<6;c++)out[c]=words.filter(w=>anchors[c].split(' ').includes(w)).length/Math.max(1,words.length);
-    return out;
+  function semantic(ids,symbols=[]){
+    const cache=new Map();
+    function meaning(id){
+      if(!Number.isSafeInteger(id)||id<0||id>=88+symbols.length)throw Error('Unknown returned representation');
+      if(cache.has(id))return cache.get(id);
+      let out;
+      if(id<88)out=anchors.map(words=>Number(words.split(' ').includes(VOICE.names[id])));
+      else{const pair=symbols[id-88];if(!Array.isArray(pair)||pair.length!==2||!pair.every(p=>Number.isSafeInteger(p)&&p>=0&&p<id))throw Error('Invalid returned compound');
+        const a=meaning(pair[0]),b=meaning(pair[1]);out=a.map((v,c)=>(v+b[c])/2);}
+      cache.set(id,out);return out;
+    }
+    const out=Array(6).fill(0);for(const id of ids){const v=meaning(id);for(let c=0;c<6;c++)out[c]+=v[c]/Math.max(1,ids.length);}return out;
   }
   class SomaticSonar {
     constructor(){
@@ -67,8 +75,8 @@ const SONAR = (() => {
         exploration:clamp(.18+.12*complex+.08*flow-.1*fear,.03,.4),
         temperature:clamp(1+.5*flow-.3*fear,.5,2),novelty:1+.3*complex-.2*fear};
     }
-    reinhale(ids){
-      const meta=semantic(ids),before=this.act.slice();
+    reinhale(ids,symbols=[]){
+      const meta=semantic(ids,symbols),before=this.act.slice();
       this.act=this.act.map((v,c)=>clamp(.85*v+.15*(.6*meta[c]+.4*this.soma[c])));
       this.refresh();return {before,after:this.act.slice(),gate:this.gate(),projection:this.projection()};
     }

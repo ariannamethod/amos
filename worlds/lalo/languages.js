@@ -3,7 +3,7 @@
  * Klaus and Brodsky inform the multilingual organ; no corpus is imported. */
 const LANGUAGES = (() => {
   'use strict';
-  const policy='amos/semantic-six-v1',codes=['en','he','ru','fr','de','es'];
+  const policy='amos/semantic-six-v2',previousPolicy='amos/semantic-six-v1',codes=['en','he','ru','fr','de','es'];
   const labels={en:'English',he:'עברית',ru:'Русский',fr:'Français',de:'Deutsch',es:'Español'};
   // name | Hebrew | Russian | French | German | Spanish. First word = caption.
   const rows=`water|מים גשם ים נהר|вода воды воду дождь|eau pluie mer rivière|Wasser Regen Meer Fluss|agua lluvia mar río
@@ -117,17 +117,18 @@ wait|לחכות מחכה|ждать жду|attendre attends|warten warte|esperar
     scores.ru+=tokens.filter(w=>/\p{Script=Cyrillic}/u.test(w)).length*3;
     const language=codes.reduce((a,c)=>scores[c]>scores[a]?c:a,'en');return {language,scores};
   }
-  function tokenize(text,language='auto'){
+  const canonical=new Map(LIFE_SEMANTIC.names.map((name,id)=>[normalize(name),id]));
+  function tokenize(text,language='auto',version=2){
     if(language!=='auto'&&!codes.includes(language))throw Error('Unsupported address language');
     const detected=detect(text),code=language==='auto'?detected.language:language,pack=packs[code],tokens=[];
     for(const word of words(text)){const w=normalize(word);if(stopSets[code].has(w))continue;
-      let id=pack.dictionary.get(w),via='lexicon';
+      let id=version===2&&code==='en'&&canonical.has(w)?canonical.get(w):pack.dictionary.get(w),via='lexicon';
       // A mixed-language word can enter through its own exact dictionary.
-      if(id===undefined)for(const other of codes){if(packs[other].dictionary.has(w)){id=packs[other].dictionary.get(w);break;}}
+      if(id===undefined)for(const other of codes){if(packs[other].dictionary.has(w)){id=version===2&&other==='en'&&canonical.has(w)?canonical.get(w):packs[other].dictionary.get(w);break;}}
       if(id===undefined){const votes=Array(88).fill(0);for(const gram of grams(w)){const row=pack.grams.get(gram);if(row)for(let i=0;i<88;i++)votes[i]+=row[i];}
         const best=Math.max(...votes);if(best){id=votes.indexOf(best);via='orthographic';}else{let h=2166136261;for(const c of w)h=Math.imul(h^c.codePointAt(0),16777619);id=(h>>>0)%88;via='hash';}}
       tokens.push({word,id,via});}
-    return {ids:tokens.map(t=>t.id),tokens,language:code,policy};
+    return {ids:tokens.map(t=>t.id),tokens,language:code,policy:version===1?previousPolicy:policy};
   }
   function caption(id,language='en',symbols=[],depth=0){
     if(!codes.includes(language))throw Error('Unsupported glyph caption language');
@@ -139,5 +140,5 @@ wait|לחכות מחכה|ждать жду|attendre attends|warten warte|esperar
     if(!codes.includes(language))throw Error('Unsupported glyph caption language');
     return name.replace(/[A-Za-z]+/g,word=>{const id=LIFE_SEMANTIC.names.indexOf(word);return id<0?word:packs[language].captions[id];});
   }
-  return {policy,codes,labels,tokenize,detect,caption,localizeName,extend};
+  return {policy,previousPolicy,codes,labels,tokenize,tokenizePrevious:(text,language='auto')=>tokenize(text,language,1),detect,caption,localizeName,extend};
 })();

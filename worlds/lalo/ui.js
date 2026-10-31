@@ -82,7 +82,7 @@
     }catch(error){notice(error.message,true);running=false;update();}
   }
   async function sourceRequest(kind,url,receive) {
-    if(busy.has(kind))return;
+    if(!ready||busy.has(kind))return;
     busy.add(kind);delete sourceErrors[kind];updateSourceStatus(kind,'reading…');
     const token=generation,controller=new AbortController();controllers.add(controller);
     const deadline=setTimeout(()=>controller.abort(),15000);
@@ -115,6 +115,7 @@
     $('connectLabel').textContent='Connect the world';
   }
   function connect() {
+    if(!ready)return;
     if(connected){disconnect();return;}
     connected=true;running=true;$('connectLabel').textContent='World connected · stop';
     readQuakes();readWeather();networkTimers=[setInterval(readQuakes,60000),setInterval(readWeather,600000)];update();
@@ -127,6 +128,10 @@
     $('lifeStatus').textContent=!running?'Time paused':life.queue.length?'Meeting the world':life.count?'Listening for another encounter':'Awaiting a first encounter';
     $('pause').replaceChildren(document.createTextNode(running?'Ⅱ ':'▷ '),el('span',running?'Pause':'Continue'));
     $('queueCount').textContent=life.queue.length;$('factCount').textContent=life.ledger.size;
+    $('carryExperience').disabled=!ready||!!life.queue.length||life.count===life.chapter.fromCount;
+    $('carryExperience').title=life.queue.length?'Encounter the waiting facts before closing this chapter':'Archive these facts and carry acquired experience forward';
+    $('exportPrevious').disabled=!ready||!database||life.chapter.number===1;
+    $('chapterStatus').textContent=`Chapter ${life.chapter.number} · ${life.count} lifetime encounters · ${life.ledger.size} current receipts. Weights, symbols and pending expectation continue; earlier detailed facts belong to their archived chapter.`;
     document.querySelector('.world-storage').title=`${life.queue.length*AMOS2.ENCOUNTER_RECEIPTS} receipt slots reserved for each encounter and its state transitions`;
     $('queue').replaceChildren();
     if(!life.queue.length)$('queue').append(el('p',life.count?'The world can arrive again.':'Facts arrive here. Your words can arrive, too.','quiet'));
@@ -144,19 +149,20 @@
       if($('weatherStatus').textContent==='unread')updateSourceStatus('weather','saved');}
     else{$('weatherSummary').replaceChildren(document.createTextNode('—'),el('span','°C'));$('weatherDetail').textContent='Temperature · wind · rain';if(!busy.has('weather'))updateSourceStatus('weather',sourceErrors.weather?'unavailable':'unread');}
     $('stationLabel').textContent=`${fmt(life.station.latitude,2)}° · ${fmt(life.station.longitude,2)}°`;
-    $('surprise').textContent=fmt(trace?.surprise??0);$('familiarity').textContent=fmt(trace?.recognition.similarity??0);
+    $('surprise').textContent=fmt(trace?.surprise);$('familiarity').textContent=fmt(trace?.recognition.similarity);
     $('familiarityBar').style.width=(100*(trace?.recognition.similarity??0))+'%';
     const prototypeCount=trace?.prototypeCount??life.model.subject.glyph.prototypes.length;
     $('prototypeCount').textContent=prototypeCount;
     $('prototypeDots').replaceChildren(...Array.from({length:8},(_,i)=>el('i',undefined,i<prototypeCount?'active':'')));
     $('attention').textContent=queuedChoice?(worldNames[life.queue[queuedChoice.selected.index].kind]??life.queue[queuedChoice.selected.index].kind):life.count?worldNames[trace?.nextAttention??life.attention]:'an arrival';
-    $('fieldSubtitle').textContent=selected===null?'A consciousness forming through encounters.':`Encounter ${trace.tick} · reading its acquired state`;
+    $('fieldSubtitle').textContent=selected===null?(life.chapter.number>1?`Chapter ${life.chapter.number} · the same acquired life continues.`:'A consciousness forming through encounters.'):`Encounter ${trace.tick} · reading its acquired state`;
     $('follow').hidden=selected===null;
     const hist=life.history.slice(-40),points=hist.map((t,i)=>`${i*130/Math.max(1,hist.length-1)},${24-Math.min(1,t.surprise)*22}`).join(' ');
     const poly=document.createElementNS('http://www.w3.org/2000/svg','polyline');poly.setAttribute('points',points);poly.setAttribute('fill','none');poly.setAttribute('stroke','#d4ae6c');poly.setAttribute('stroke-width','1');$('spark').replaceChildren(poly);
     if(trace)updateImprint(trace);
-    else{$('receiptKind').textContent='FIRST ENCOUNTER AHEAD';$('receiptTitle').textContent='What reaches it will remain in it.';
+    else{$('receiptKind').textContent=life.count?'ACQUIRED EXPERIENCE CONTINUES':'FIRST ENCOUNTER AHEAD';$('receiptTitle').textContent=life.count?'The next encounter meets a lived history.':'What reaches it will remain in it.';
       for(const id of ['shift','resonance','load','toolName'])$(id).textContent='—';$('toolDetail').textContent='A read keeps its source.';
+      $('investigation').hidden=true;$('investigation').textContent='';
       $('neuronChanges').replaceChildren();$('evidence').replaceChildren(el('p','Select an encounter on the tape.','quiet'));}
     $('relationPattern').textContent=trace?.relations?`R${trace.relations.pattern+1} · ${trace.relations.priorSupport} prior`:'—';
     $('relationRead').replaceChildren();
@@ -173,17 +179,19 @@
     if(links){for(const text of [`Shared: ${links.matched.map(caption).join(' · ')||'—'}`,`Past encounters: ${links.matches.map(m=>'#'+m.tick).join(' · ')||'—'}`,`Unmatched here: ${links.unmatched.map(caption).join(' · ')||'—'}`])$('encounterLinks').append(el('p',text));}
     else $('encounterLinks').textContent='The next encounter can meet a history.';
     const own=trace?.selfReflection;$('selfDepth').textContent=own?`${own.passes.length} ${own.passes.length===1?'return':'returns'}`:'—';
-    $('sonarChambers').replaceChildren(...SONAR.names.map((name,i)=>{const row=el('div',name),bar=el('i');bar.style.width=(100*(own?.after[i]??0))+'%';row.title=fmt(own?.after[i]??0);row.append(bar);return row;}));
-    $('selfForecast').textContent=own?`Expected own shift ${fmt(own.forecast.expected[2])} · observed ${fmt(own.observed[2])} · self prediction gap ${fmt(own.error)}`:'The next encounter can meet its own response.';
+    $('sonarChambers').replaceChildren(...SONAR.names.map((name,i)=>{const value=own?.after[i]??life.sonar.act[i],row=el('div',name),bar=el('i');bar.style.width=(100*value)+'%';row.title=fmt(value);row.append(bar);return row;}));
+    $('selfForecast').textContent=own?`Expected own shift ${fmt(own.forecast.expected[2])} · observed ${fmt(own.observed[2])} · self prediction gap ${fmt(own.error)}`:life.count?`Acquired somatic state retained · last self prediction gap ${fmt(life.mind.lastError)}`:'The next encounter can meet its own response.';
     $('deriveReading').hidden=!trace||!claimFor(trace);
-    $('utterance').classList.toggle('empty',!trace);
+    const expressed=trace?.utterance.ids??life.voice.last;
+    $('utterance').classList.toggle('empty',!expressed.length);
     $('voiceMeta').textContent=`88 glyphs · ${trace?.symbolCount??life.voice.symbols.length} grown signs`;
-    $('utterance').textContent=trace?trace.utterance.ids.map(id=>caption(id)).join(' · '):'The first words are still ahead.';
+    $('utterance').textContent=expressed.length?expressed.map(id=>caption(id)).join(' · '):'The first words are still ahead.';
     $('utterance').dir=glyphLanguage==='he'?'rtl':'ltr';$('glyphs').dir=$('utterance').dir;
-    $('glyphs').replaceChildren(...(trace?trace.utterance.ids.map(id=>glyphSVG(id)):[]));
+    $('glyphs').replaceChildren(...expressed.map(id=>glyphSVG(id)));
     const born=trace?.utterance.born;$('symbolBirth').classList.toggle('born',!!born);
     $('symbolBirth').replaceChildren(el('span',born?'◈':'◊'),el('p',born?`${caption(born.id)} · born from ${born.support} repeated pairings`:'A shared history can grow a new sign.'));
-    $('tapeHint').textContent=life.historyOmitted?`Last 128 encounters · ${life.historyOmitted} earlier traces outside this view`:'Drag through its history · select an imprint';
+    $('tapeHint').textContent=life.chapter.number>1?`${life.history.length} current traces · ${life.chapter.fromCount} earlier encounters in archived chapters`:
+      life.historyOmitted?`Last 128 encounters · ${life.historyOmitted} earlier traces outside this view`:'Drag through its history · select an imprint';
     drawEarth();schedule();
   }
   function claimFor(trace){return life.readingQuery(trace.event);}
@@ -365,7 +373,7 @@
     const rows=life.history;let i=rows.findIndex(t=>t.tick===(selected??life.count));i=e.key==='Home'?0:e.key==='End'?rows.length-1:clamp(i+(e.key==='ArrowLeft'?-1:1),0,rows.length-1);
     if(rows[i]){selected=rows[i].tick;tapeTarget=(rows.length-1-i)*166;update();}});
   const follow=()=>{selected=null;tapeTarget=0;tapeVelocity=0;update();};$('follow').onclick=follow;$('returnNow').onclick=follow;
-  $('pause').onclick=()=>{running=!running;update();};$('step').onclick=()=>{if(!life.queue.length)notice('No new facts are waiting. Read a source or write into its world.');else takeEncounter();};
+  $('pause').onclick=()=>{if(!ready)return;running=!running;update();};$('step').onclick=()=>{if(!life.queue.length)notice('No new facts are waiting. Read a source or write into its world.');else takeEncounter();};
   $('replayPath').onclick=()=>{const trace=current();if(pathFor(trace).length<2)return;phaseTick=trace.tick;phaseIndex=0;replayStart=performance.now();update();};
   $('fetchQuakes').onclick=readQuakes;$('fetchWeather').onclick=readWeather;$('connect').onclick=connect;
   $('messageSource').onchange=()=>{$('messageActor').hidden=$('messageSource').value==='human';};
@@ -416,21 +424,46 @@
   };
   $('lineageOpen').onclick=()=>$('lineage').showModal();
   $('stationSave').onclick=()=>{const latitude=Number($('latitude').value),longitude=Number($('longitude').value);
+    if(!ready)return;
     if(!$('latitude').value.trim()||!$('longitude').value.trim()||!Number.isFinite(latitude)||Math.abs(latitude)>90||!Number.isFinite(longitude)||Math.abs(longitude)>180){notice('Enter a latitude between −90 and 90 and longitude between −180 and 180.',true);return;}
     life.station={latitude,longitude};persist();update();notice('Weather observation point changed. The next reading will use it.');};
   $('glyphLanguage').onchange=()=>{glyphLanguage=$('glyphLanguage').value;try{localStorage.setItem('amos2:glyph-captions',glyphLanguage);}catch{}update();};
   $('motion').onchange=()=>{motionChoice=$('motion').value;schedule();};
-  $('exportLife').onclick=()=>{try{const url=URL.createObjectURL(new Blob([life.dump()],{type:'application/json'}));
-    const a=el('a');a.href=url;a.download=`AMOS-2-life-${life.count}.json`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);
+  function downloadLife(text,name){const url=URL.createObjectURL(new Blob([text],{type:'application/json'}));
+    const a=el('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);}
+  $('exportLife').onclick=()=>{try{downloadLife(life.dump(),`AMOS-2-life-${life.count}.json`);}catch(error){notice(error.message,true);}};
+  $('carryExperience').onclick=async()=>{
+    if(!ready)return;let token,wasRunning=running;
+    try{
+      const transfer=life.continueWithExperience(receiptNow()),archiveName=`AMOS-2-chapter-${life.chapter.number}-through-${life.count}.json`;
+      downloadLife(transfer.archive,archiveName);
+      running=false;ready=false;disconnect();token=++generation;update();await saving;
+      if(token!==generation)return;
+      if(database)await new Promise((resolve,reject)=>{const tx=database.transaction('lives','readwrite'),store=tx.objectStore('lives');
+        store.put(transfer.archive,'archive:'+transfer.life.chapter.archive);store.put(transfer.life.dump(),'current');
+        tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||Error('Chapter archive failed'));
+      });
+      if(token!==generation)return;
+      life=transfer.life;selected=null;tapePosition=tapeTarget=0;ready=true;running=wasRunning;storageBlocked=false;
+      update();$('saveStatus').textContent=database?'Chapter archived · acquired life continued':'Session only · keep the chapter download';
+      notice(`Chapter ${life.chapter.number} begins with ${life.count} encounters of acquired experience. The previous chapter was exported.`);
+    }catch(error){if(token===undefined||token===generation){ready=true;running=wasRunning;update();notice('Chapter was not closed: '+error.message,true);}}
+  };
+  $('exportPrevious').onclick=async()=>{try{
+    if(!database||life.chapter.number===1)return;const text=await new Promise((resolve,reject)=>{
+      const r=database.transaction('lives','readonly').objectStore('lives').get('archive:'+life.chapter.archive);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});
+    if(!text)throw Error('This archive is not in this browser. Use the chapter download kept when it was closed.');
+    downloadLife(text,`AMOS-2-chapter-${life.chapter.number-1}-through-${life.chapter.fromCount}.json`);
   }catch(error){notice(error.message,true);}};
   $('importLife').onclick=()=>$('importFile').click();
-  $('importFile').onchange=async()=>{const file=$('importFile').files[0];if(!file)return;
+  $('importFile').onchange=async()=>{const file=$('importFile').files[0];if(!file||!ready)return;const token=generation;
     try{if(file.size>AMOS2.MAX_SNAPSHOT)throw Error('Life file exceeds 24 MB');const replacement=AMOS2.WorldLab.load(await file.text());
-      disconnect();generation++;life=replacement;selected=null;tapePosition=tapeTarget=0;storageBlocked=false;running=false;
+      if(token!==generation)return;disconnect();generation++;life=replacement;selected=null;tapePosition=tapeTarget=0;storageBlocked=false;running=false;
       $('settings').close();update();persist();notice('The imported life is here. Continue when ready.');
     }catch(error){notice('Import was not applied: '+error.message,true);}finally{$('importFile').value='';}};
   let birthConfirm=0;
   $('newBirth').onclick=()=>{
+    if(!ready)return;
     if(performance.now()>birthConfirm){birthConfirm=performance.now()+8000;$('newBirth').textContent='Export first · click again to begin';return;}
     try{const value=$('birthSeed').value;if(!/^\d{1,18}$/.test(value))throw Error('Birth seed must contain 1–18 digits');
       const replacement=new AMOS2.WorldLab(BigInt(value));disconnect();generation++;life=replacement;selected=null;tapePosition=tapeTarget=0;storageBlocked=false;running=true;

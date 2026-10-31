@@ -153,5 +153,5 @@ const VOICE = (() => {
   }
   // Keep the original membrane for immutable historical read validation.
   LANGUAGES.extend('ru',russian);
-  return {GlyphVoice,tokenize:LANGUAGES.tokenize,tokenizeLegacy:tokenize,BASE,MAX,names:LIFE_SEMANTIC.names,cosine};
+  return {GlyphVoice,tokenize:LANGUAGES.tokenize,tokenizePrevious:LANGUAGES.tokenizePrevious,tokenizeLegacy:tokenize,BASE,MAX,names:LIFE_SEMANTIC.names,cosine};
 })();
