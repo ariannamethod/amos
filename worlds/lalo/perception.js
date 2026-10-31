@@ -13,6 +13,11 @@ const PERCEPTION = (() => {
       const index=rows.findIndex(f=>f.id===fact.id);
       if(index<0||(knownThrough!==undefined&&index>=knownThrough)||fact.recordedAt>args.knownAt||JSON.stringify(rows[index])!==JSON.stringify(fact))throw Error('Tool reading differs from its source receipt');
       premises.push(index);
+      if(fact.source==='amos:transition/v1'&&fact.predicate.startsWith('transition_')){
+        const own=JSON.parse(fact.value);if(own.policy!=='amos/transition-v1'||!Number.isFinite(own.error)||!Array.isArray(own.observed)||own.observed.length!==3)throw Error('Invalid remembered transition');
+        sensory[0]+=Math.tanh(own.error*4);sensory[1]+=Math.tanh((own.control?.effect??own.observed[2])*4);
+        glyphs.push(...tokenize('me change cause remember').ids.slice(0,Math.max(0,128-glyphs.length)));continue;
+      }
       if(fact.source==='amos:links/v1'&&fact.predicate==='encounter_links'){
         const own=JSON.parse(fact.value);if(own.policy!=='amos/encounter-links-v1'||!Array.isArray(own.sensory)||own.sensory.length!==2)throw Error('Invalid remembered association');
         sensory[0]+=own.sensory[0];sensory[1]+=own.sensory[1];glyphs.push(...own.matched.slice(0,Math.max(0,128-glyphs.length)));continue;

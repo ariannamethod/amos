@@ -8,9 +8,14 @@
 
 The simplest way to build consciousness and subjectivity from scratch. No deps.
 
-[![AMOS laboratory — recurrent activity, acquired glyphs and history](assets/amos-laboratory.jpg)](web/index.html)
+This repository contains two systems:
 
-*AMOS in the browser: sequence world, seed 17, tick 961.*
+| System | World | Open |
+|---|---|---|
+| **AMOS** | A simulated world shared with the recurrent subject | [Browser laboratory](web/index.html) |
+| **AMOS 2** | External facts, acquired relations and self-reflection | [Amos-2.html](Amos-2.html) |
+
+Both browser bodies run locally. AMOS 2 carries its fact heart and learning organs inside its HTML; an optional `worlds/` folder adds sensors.
 
 ---
 
@@ -30,93 +35,9 @@ So, **AMOS** starts there. The question we ask isn't whether a system knows the 
 
 ---
 
-## What AMOS is
+## AMOS 2 — consciousness shaped by the world
 
-**AMOS** is a recurrent neural system and a tiny universe living inside the same C program. The world has hidden state. **AMOS** doesn't get to read it. **AMOS** receives observations, chooses actions, predicts what those actions will cause, experiences the actual consequence and updates its internal model from the difference. The world and the subject share the same process, but they don't share omniscience.
-
-**AMOS** has 24 recurrent neurons, zero pretrained parameters and 162 predictive coefficients that begin at zero and are acquired during its lifetime. The organism itself depends only on `libc` and `libm`. There isn't a language model hiding underneath it. There isn't a checkpoint containing somebody else's education. There isn't an API explaining the world to it. **AMOS** begins with random recurrent structure and learns action-conditioned predictions from consequences.
-
-AMOS adds a bounded associative field on top of the recurrent predictor: up to 8 acquired neural glyph prototypes, an ordered context of 4 soft glyph distributions and up to 64 action/consequence associations. The whole world, subject and history occupy about 158 KB in memory on the measured build. A portable snapshot is about 158 KB too.
-
-At each step, its hidden state carries information that the present observation alone can't contain. Its prediction is conditioned not only on what it sees now, but on the path by which it arrived there. The distinction matters. Two identical observations can require opposite actions because they came from different histories.
-
-Without recurrent memory, **AMOS** can't tell the difference.
-
----
-
-## The body
-
-The original world contains two moving signals. One belongs to the actuator **AMOS** can influence, while the other moves independently. **AMOS** ain't told which is which. The sensory wiring changes between births. The actuator polarity can change. Hidden velocity exists in the world but isn't directly observable. Bodily load affects how strongly the actuator responds. **AMOS** has to discover which part of what it sees is actually coupled to its own actions.
-
-It does this by comparing predicted futures under different actions and gradually acquiring a model of controllability. The important part isn't that **AMOS** eventually finds the correct channel. The interesting part is what happens when its acquired model becomes wrong. Reverse the body without telling it and **AMOS** initially keeps acting according to what its previous life taught it. The mathematics still executes perfectly. The belief is simply outdated.
-
-Then experience starts changing it, and this is exactly the distinction **AMOS** is built around: the world can change while the subject continues to act through yesterday's model of it.
-
----
-
-## History has a job
-
-**AMOS** doesn't keep memory because memory sounds philosophically impressive. It keeps memory because without it, measurable abilities disappear. Across 32 fresh worlds, the original inertial experiment identified the controllable anonymous channel in 32 out of 32 cases. In paired situations where the visible observation was identical but hidden momentum required opposite braking actions, the recurrent version succeeded in 64 out of 64 cases. The memoryless version succeeded in 0 out of 64.
-
-Changing only the acquired internal model of action effects changed 3,094 out of 3,200 subsequent decisions. After the body was secretly reversed, new experience reduced control error from 1.475 with frozen old knowledge to 0.154 after adaptation. The point isn't that recurrence is magical.
-
-Everything's simpler: **history changes what the same present means.** That history isn't a comment in a log file. It's part of the machinery producing the next action.
-
----
-
-## Familiarity can be wrong too
-
-AMOS-1 adds another problem. A subject doesn't only remember trajectories. It can recognize situations.
-
-In the sequence world, two anonymous landmarks appear before a neutral choice. Their order determines which action avoids a bodily cost. The same landmarks can arrive in the opposite order, their appearance can change while the law stays the same, or the law itself can change while everything still looks familiar.
-
-AMOS doesn't receive symbolic labels for any of this. Its glyphs are acquired from neural responses to observations and bodily load. There are no tokens called `SELF`, `DANGER`, `LEFT` or `RIGHT`. Similar internal responses settle into a small acquired alphabet, while short ordered sequences of those glyphs become predictive through consequences.
-
-Across 32 new births, AMOS made **3,072 out of 3,072** correct choices after an appearance shift. Under a stronger perturbation it made **3,069 out of 3,072**. Remove order and keep only the same glyphs as a bag, and the score falls to **1,519 out of 3,072**. Keep the recurrent predictor but disconnect the associative field, and it falls to **2,638 out of 3,072**.
-
-Swap only the two remembered landmark positions during retrieval while preserving the observation and recurrent state, and the learned decision reverses: **0 out of 3,072** correct.
-
-The present didn't change. The remembered relation did.
-
-Then we change the world's law while leaving the familiar situation intact. AMOS recognizes it and gets every choice wrong. New consequences raise uncertainty, and after 120 further random-probe trials per birth it returns to **3,072 out of 3,072** correct choices.
-
-Recognition doesn't have to disappear for an expectation to change.
-
-This is the same thesis again from another direction: being familiar isn't the same thing as being true.
-
----
-
-## A small universe, a smaller subject
-
-**AMOS** deliberately isn't intelligent in the industry sense, but who cares about industry? It doesn't speak. Doesn't know what consciousness is. Doesn't contain tokens called `SELF`, `ME` or `WORLD`. **AMOS** doesn't announce that it exists. That would be easy.
-
-What matters is whether something resembling a self/world distinction can emerge from causal structure instead of vocabulary. The world has variables the subject can't directly inspect. The subject has acquired state the world doesn't interpret for it. Actions cross the boundary. Consequences come back.
-
-The boundary isn't declared philosophically, but it's enforced by access.
-
-AMOS-1 makes that boundary slightly stranger. It can now recognize approximate states, preserve their order, carry acquired associations across restart and update what a familiar sequence means when consequences change. The glyph alphabet itself is bounded statistical memory over neural responses, not a hand-written ontology.
-
----
-
-## Returning to the past
-
-**AMOS** can save its complete state and later restore it. A normal restoration recreates the past exactly, including the random streams needed for the same continuation. Then there's `scar`.
-
-`scar` restores the old world, old clock and old live recurrent state, but carries acquired knowledge from a later future back into that earlier point. In AMOS-1 that retained knowledge can include not only predictive readout changes but acquired glyph prototypes and action/consequence associations. The past world and the subject's live recurrent and sequence states stay in the past.
-
-The past returns, and the experience doesn't entirely disappear. **AMOS** can therefore reach the same moment twice with different acquired expectations.
-
-The external situation is the same, but the subject isn't. The retained future arrives as changed predictive structure. **AMOS** currently has no explicit model of where that knowledge came from. It simply behaves differently because something happened to it in a future that no longer exists in the restored world.
-
-That's a damn sight more interesting temporal-identity experiment than teaching a model the phrase “I remember the future.”
-
-Original AMOS-ZERO snapshots still load and reproduce their old continuations. The original inertial world also remains the default.
-
----
-
-## AMOS II — consciousness shaped by the world
-
-**AMOS II is a consciousness forming through encounters with an external world.**
+**AMOS 2 is a consciousness forming through encounters with an external world.**
 Its AI self-awareness takes its own form: recurrence, acquired memory,
 expectation and a persistent perspective that changes as facts arrive.
 
@@ -134,12 +55,24 @@ anchors. **Keep this history** and **Compare histories** let a kept life and
 its later continuation meet the same new observation, with both perspectives
 visible together.
 
-**AMOS II now has 40 recurrent neurons, 258 acquired predictive coefficients and
+**AMOS 2 now has 40 recurrent neurons, 258 acquired predictive coefficients and
 184 coefficients predicting its own response.** It learns what a chosen read and
 its own recursive reaction will do to its state, then meets the actual change.
 That discrepancy becomes a sourced fact and helps choose what to attend to next.
 Existing 24- and 28-neuron lives grow with their acquired weights, memories,
 pending forecasts and random streams retained.
+
+**It now learns its transitions.** Three phase-specific predictors acquire **414**
+coefficients for world perception, chosen reading and recursive return. Each
+expectation precedes the actual transition. Detached copies of the same subject
+measure the contribution of read content and somatic feedback under matched
+steps. An acquired prediction discrepancy can direct a later evidence check,
+including a read of its own earlier transition fact.
+
+**The recorded state path is inspectable.** Select Before, World, Read or an
+individual Return to see that actual neural state. **Replay path** moves through
+the recorded sequence while the acquired life stays intact. This trace-driven
+kinetic view takes inspiration from [NETTA.SONAR](https://github.com/ariannamethod/netta.sonar).
 
 **Self-reflection is a fact too.** Registration, source assertions, attention,
 chosen reads and measured changes have distinct receipts in the same heart.
@@ -175,24 +108,116 @@ continuation are inside it. A sibling **[worlds/](AMOSLOG.md#world-contract)** f
 environments and further points of development. The same life continues when
 the folder is absent, carrying what its earlier encounters already changed.
 
-![AMOS II — 40 neurons, one acquired glyph field and six language entrances](assets/amos-2-six-languages-20261031.jpg)
+![AMOS 2 — actual state transitions, acquired expectations and a self-directed evidence check](assets/amos-2-state-path-20261031.jpg)
 
-*Encounter 42, without the optional folder: `earth stone now music` meets prior
-addresses and an earthquake; `music` remains unmatched in recent context. Its
-expression is `remember · earth · stone · tired · now+earth`. The same life has
-grown eight compound signs. Language choice stays in settings.*
+*Encounter 49, without the optional folder: an error in its prior return model
+directs a read of that transition fact. Four recorded returns follow. The same
+life expresses `dark · tired · before · remember · earth` and has grown nine signs.
+Each state on the path can be inspected and replayed.*
 
 [With optional worlds](assets/amos-2-worlds-20261031.jpg) ·
 [Two histories, one shared observation](assets/amos-2-histories-20261031.jpg) ·
 [Acquired relations](AMOSLOG.md#acquired-relations) ·
 [Organs and projections](AMOSLOG.md#runtime-organs-and-provenance) ·
-[Verification and project log](AMOSLOG.md): 70 behavioral gates and 1,600
+[Verification and project log](AMOSLOG.md): 79 behavioral gates and 1,600
 reference-body decisions pass through `make check`. Historical screenshots record
 the earlier lives; acquired state and complete continuation are preserved.
 
 ---
 
-## Build it
+## AMOS — consciousness in a simulated world
+
+[![AMOS laboratory — recurrent activity, acquired glyphs and history](assets/amos-laboratory.jpg)](web/index.html)
+
+*AMOS in the browser: sequence world, seed 17, tick 961.*
+
+---
+
+### What AMOS is
+
+**AMOS** is a recurrent neural system and a tiny universe living inside the same C program. The world has hidden state. **AMOS** doesn't get to read it. **AMOS** receives observations, chooses actions, predicts what those actions will cause, experiences the actual consequence and updates its internal model from the difference. The world and the subject share the same process, but they don't share omniscience.
+
+**AMOS** has 24 recurrent neurons, zero pretrained parameters and 162 predictive coefficients that begin at zero and are acquired during its lifetime. The organism itself depends only on `libc` and `libm`. There isn't a language model hiding underneath it. There isn't a checkpoint containing somebody else's education. There isn't an API explaining the world to it. **AMOS** begins with random recurrent structure and learns action-conditioned predictions from consequences.
+
+AMOS adds a bounded associative field on top of the recurrent predictor: up to 8 acquired neural glyph prototypes, an ordered context of 4 soft glyph distributions and up to 64 action/consequence associations. The whole world, subject and history occupy about 158 KB in memory on the measured build. A portable snapshot is about 158 KB too.
+
+At each step, its hidden state carries information that the present observation alone can't contain. Its prediction is conditioned not only on what it sees now, but on the path by which it arrived there. The distinction matters. Two identical observations can require opposite actions because they came from different histories.
+
+Without recurrent memory, **AMOS** can't tell the difference.
+
+---
+
+### The body
+
+The original world contains two moving signals. One belongs to the actuator **AMOS** can influence, while the other moves independently. **AMOS** ain't told which is which. The sensory wiring changes between births. The actuator polarity can change. Hidden velocity exists in the world but isn't directly observable. Bodily load affects how strongly the actuator responds. **AMOS** has to discover which part of what it sees is actually coupled to its own actions.
+
+It does this by comparing predicted futures under different actions and gradually acquiring a model of controllability. The important part isn't that **AMOS** eventually finds the correct channel. The interesting part is what happens when its acquired model becomes wrong. Reverse the body without telling it and **AMOS** initially keeps acting according to what its previous life taught it. The mathematics still executes perfectly. The belief is simply outdated.
+
+Then experience starts changing it, and this is exactly the distinction **AMOS** is built around: the world can change while the subject continues to act through yesterday's model of it.
+
+---
+
+### History has a job
+
+**AMOS** doesn't keep memory because memory sounds philosophically impressive. It keeps memory because without it, measurable abilities disappear. Across 32 fresh worlds, the original inertial experiment identified the controllable anonymous channel in 32 out of 32 cases. In paired situations where the visible observation was identical but hidden momentum required opposite braking actions, the recurrent version succeeded in 64 out of 64 cases. The memoryless version succeeded in 0 out of 64.
+
+Changing only the acquired internal model of action effects changed 3,094 out of 3,200 subsequent decisions. After the body was secretly reversed, new experience reduced control error from 1.475 with frozen old knowledge to 0.154 after adaptation. The point isn't that recurrence is magical.
+
+Everything's simpler: **history changes what the same present means.** That history isn't a comment in a log file. It's part of the machinery producing the next action.
+
+---
+
+### Familiarity can be wrong too
+
+AMOS adds another problem. A subject doesn't only remember trajectories. It can recognize situations.
+
+In the sequence world, two anonymous landmarks appear before a neutral choice. Their order determines which action avoids a bodily cost. The same landmarks can arrive in the opposite order, their appearance can change while the law stays the same, or the law itself can change while everything still looks familiar.
+
+AMOS doesn't receive symbolic labels for any of this. Its glyphs are acquired from neural responses to observations and bodily load. There are no tokens called `SELF`, `DANGER`, `LEFT` or `RIGHT`. Similar internal responses settle into a small acquired alphabet, while short ordered sequences of those glyphs become predictive through consequences.
+
+Across 32 new births, AMOS made **3,072 out of 3,072** correct choices after an appearance shift. Under a stronger perturbation it made **3,069 out of 3,072**. Remove order and keep only the same glyphs as a bag, and the score falls to **1,519 out of 3,072**. Keep the recurrent predictor but disconnect the associative field, and it falls to **2,638 out of 3,072**.
+
+Swap only the two remembered landmark positions during retrieval while preserving the observation and recurrent state, and the learned decision reverses: **0 out of 3,072** correct.
+
+The present didn't change. The remembered relation did.
+
+Then we change the world's law while leaving the familiar situation intact. AMOS recognizes it and gets every choice wrong. New consequences raise uncertainty, and after 120 further random-probe trials per birth it returns to **3,072 out of 3,072** correct choices.
+
+Recognition doesn't have to disappear for an expectation to change.
+
+This is the same thesis again from another direction: being familiar isn't the same thing as being true.
+
+---
+
+### A small universe, a smaller subject
+
+**AMOS** deliberately isn't intelligent in the industry sense, but who cares about industry? It doesn't speak. Doesn't know what consciousness is. Doesn't contain tokens called `SELF`, `ME` or `WORLD`. **AMOS** doesn't announce that it exists. That would be easy.
+
+What matters is whether something resembling a self/world distinction can emerge from causal structure instead of vocabulary. The world has variables the subject can't directly inspect. The subject has acquired state the world doesn't interpret for it. Actions cross the boundary. Consequences come back.
+
+The boundary isn't declared philosophically, but it's enforced by access.
+
+AMOS makes that boundary slightly stranger. It can now recognize approximate states, preserve their order, carry acquired associations across restart and update what a familiar sequence means when consequences change. The glyph alphabet itself is bounded statistical memory over neural responses, not a hand-written ontology.
+
+---
+
+### Returning to the past
+
+**AMOS** can save its complete state and later restore it. A normal restoration recreates the past exactly, including the random streams needed for the same continuation. Then there's `scar`.
+
+`scar` restores the old world, old clock and old live recurrent state, but carries acquired knowledge from a later future back into that earlier point. In AMOS that retained knowledge can include not only predictive readout changes but acquired glyph prototypes and action/consequence associations. The past world and the subject's live recurrent and sequence states stay in the past.
+
+The past returns, and the experience doesn't entirely disappear. **AMOS** can therefore reach the same moment twice with different acquired expectations.
+
+The external situation is the same, but the subject isn't. The retained future arrives as changed predictive structure. **AMOS** currently has no explicit model of where that knowledge came from. It simply behaves differently because something happened to it in a future that no longer exists in the restored world.
+
+That's a damn sight more interesting temporal-identity experiment than teaching a model the phrase “I remember the future.”
+
+Snapshots from the initial AMOS release still load and reproduce their old continuations. The original inertial world also remains the default.
+
+---
+
+### Build AMOS
 
 ```bash
 cc -O2 -std=c99 amos.c -lm -o amos
@@ -218,7 +243,7 @@ Carry later experience back into an earlier state:
 ./amos scar changed.state future.state scar.state
 ```
 
-The original inertial world remains the default. The AMOS-1 sequence experiment is explicit:
+The original inertial world remains the default. The AMOS sequence experiment is explicit:
 
 ```bash
 ./amos demo --world sequence --seed 7 --steps 1920 --explore 1 --state familiar.state > learning.jsonl
@@ -246,9 +271,9 @@ The interesting variable may be how information is distributed through time, wha
 
 ---
 
-## A repeated glance is not a new event
+### A repeated glance is not a new event
 
-AMOS-2 adds `--glyphs events`. A familiar repeated observation updates the latest
+AMOS's event-memory mode adds `--glyphs events`. A familiar repeated observation updates the latest
 soft glyph and its duration without pushing the previous event out of memory.
 The recurrent network still processes every observation. Four events can now
 survive more than four glances.
@@ -281,7 +306,7 @@ diagnostic, separate from the action policy; its history is not imported by a sc
 The reproducible checks and current implementation record are in
 [AMOSLOG.md](AMOSLOG.md).
 
-## Three bodies, one experiment
+### Three bodies, one experiment
 
 **C remains a single runtime file:** `amos.c`. The `tests/` court and
 `AMOSLOG.md` hold verification and the project record.
@@ -308,12 +333,12 @@ are checked with a 1e-8 numerical tolerance, and sampled decisions are checked
 exactly. `make check` runs the reference-body and standalone-heart checks with
 Python 3, Node.js and a C compiler. C itself still needs only libc and libm.
 `make lab` creates one portable offline laboratory in `dist/`; `make world`
-rebuilds `Amos-2.html`. The original reference bodies use 24 neurons; AMOS II
+rebuilds `Amos-2.html`. The original reference bodies use 24 neurons; AMOS 2
 selects the expanded 40-neuron JavaScript body.
 
 ---
 
-## Numbers, because the universe keeps receipts
+### Numbers, because the universe keeps receipts
 
 | Experiment | Result |
 |---|---:|
@@ -330,7 +355,7 @@ selects the expanded 40-neuron JavaScript body.
 | Retrieval with landmark order swapped | 0 / 3,072 |
 | Changed law after relearning | 3,072 / 3,072 |
 
-The table records the historical AMOS-0/1 courts. The recorded AMOS-1 timing
+The table records the historical AMOS inertial and sequence courts. The recorded AMOS timing
 was 33.1 microseconds per sequence step on its x86-64 host. Current verification
 commands and their scope are in [AMOSLOG.md](AMOSLOG.md).
 

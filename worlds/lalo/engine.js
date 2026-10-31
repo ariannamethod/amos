@@ -3,7 +3,7 @@
  * No presentation frame, fetch failure or repeated feed advances this life. */
 const AMOS2 = (() => {
   'use strict';
-  const CAPACITY=4096, MAX_QUEUE=128, MAX_HISTORY=128, MAX_SNAPSHOT=24_000_000, MAX_JOURNAL=8_000_000, ENCOUNTER_RECEIPTS=6;
+  const CAPACITY=4096, MAX_QUEUE=128, MAX_HISTORY=128, MAX_SNAPSHOT=24_000_000, MAX_JOURNAL=8_000_000, ENCOUNTER_RECEIPTS=9, RESERVE_BYTES=32000;
   const bounded=(n,a,b)=>Math.max(a,Math.min(b,n));
   const clone=value=>JSON.parse(JSON.stringify(value));
   const magnitude=a=>Math.sqrt(a.reduce((s,v)=>s+v*v,0)/Math.max(1,a.length));
@@ -16,6 +16,14 @@ const AMOS2 = (() => {
   const closeArray=(a,b)=>Array.isArray(a)&&Array.isArray(b)&&a.length===b.length&&a.every((v,i)=>close(v,b[i]));
   const sameReading=(a,b)=>!!b&&closeArray(a.sensory,b.sensory)&&JSON.stringify({...a,sensory:null})===JSON.stringify({...b,sensory:null});
   const BODY=AMOS.withWidth(40);
+  // An encounter is mid-transaction: its new memory tick is not committed yet.
+  // Copy only the live subject for interventions; never change its world clock.
+  function copySubject(subject){
+    const data=clone(subject),out=Object.assign(Object.create(BODY.Subject.prototype),data);
+    out.rng=new BODY.Random(BigInt('0x'+data.rng.random64));
+    out.glyph=Object.assign(Object.create(BODY.Glyphs.prototype),data.glyph);
+    out.body=Object.assign(Object.create(BODY.Embodiment.prototype),data.body);return out;
+  }
   const encode=ledger=>LALO.encodeJournal(ledger,{maxBytes:MAX_JOURNAL});
   const decode=text=>LALO.decodeJournal(text,{capacity:CAPACITY,maxBytes:MAX_JOURNAL});
   const makeHost=ledger=>LALO.createToolHost(ledger,{capacity:CAPACITY,maxBytes:MAX_JOURNAL});
@@ -171,6 +179,7 @@ const AMOS2 = (() => {
       this.count=0;this.historyOmitted=0;this.serial=0;this.attention='message';
       this.station={latitude:52.52,longitude:13.405};this.lastWeather=null;
       this.relations=new RELATIONS.RelationField();this.mind=new COGNITION.FactMind(BODY.H);this.sonar=new SONAR.SomaticSonar();this.cognitionBirth=0;
+      this.transitions=new TRANSITIONS.TransitionMind(BODY.H);this.transitionBirth=0;
     }
     _stage(at) {
       if(!integer(at)||at<latestReceipt(this.ledger))throw Error('Receipt time precedes the accepted world');
@@ -186,10 +195,10 @@ const AMOS2 = (() => {
         event.registrationReceipt=id;
       }
       if(ledger.size+ENCOUNTER_RECEIPTS*(this.queue.length+events.length)>CAPACITY)
-        throw Error('Journal budget must reserve six completion receipts for every pending encounter');
+        throw Error('Journal budget must reserve nine completion receipts for every pending encounter');
       for(const event of events)eventValid(event,ledger);
       const encoded=encode(ledger);
-      if(bytes(encoded)+20000*(this.queue.length+events.length)>MAX_JOURNAL)throw Error('Journal byte budget must reserve pending encounter receipts');
+      if(bytes(encoded)+RESERVE_BYTES*(this.queue.length+events.length)>MAX_JOURNAL)throw Error('Journal byte budget must reserve pending encounter receipts');
       this.ledger=ledger;this.queue.push(...events);return events.length;
     }
     // Optional worlds enter through the ordinary fact contract. All projections
@@ -332,6 +341,9 @@ const AMOS2 = (() => {
       const receiptAt=Math.max(at,latestReceipt(this.ledger)),ledger=this._stage(receiptAt),knownAt=receiptAt;
       const model=this.model.clone(),s=model.subject,voice=VOICE.GlyphVoice.load(clone(this.voice.dump()));
       const mind=COGNITION.FactMind.load(this.mind.dump(),BODY.H),sonar=SONAR.SomaticSonar.load(this.sonar.dump());
+      const transitionMind=TRANSITIONS.TransitionMind.load(this.transitions.dump(),BODY.H),investigation=transitionMind.plan(ledger,knownAt),transitionRecords=[];
+      selection.investigation=investigation?clone(investigation):null;
+      const sourceIndices=event.factIds.map(id=>ledger.entries().findIndex(f=>f.id===id));
       const relationField=RELATIONS.RelationField.load(this.relations.dump(),ledger);
       const associations=COGNITION.link(event,this.history,voice,ledger),relations=relationField.observe(event,ledger),content=event.detail.contentGlyphs??event.glyphs,resonance=voice.resonance(content);
       if(!Number.isFinite(resonance)||resonance<0||resonance>1)throw Error('Invalid prior resonance');
@@ -342,6 +354,7 @@ const AMOS2 = (() => {
       const controls=sonar.coefficients(),resonanceGain=.94+.12*resonance;
       const sensory=contextual.map(v=>bounded(v*resonanceGain*controls.perception,-1,1));
       const before=s.h.slice(),oldLoad=model.world.load;
+      const trajectory=[{name:'before',h:before.slice()}];
       const errorBefore=this.pending?magnitude(sensory.map((v,k)=>v-this.pending.predicted[k])):0;
       const load=bounded(.85*oldLoad+.15*errorBefore+.005*Math.abs(this.pending?.action||0),0,1);
       const o=[...sensory,load],tick=this.count+1;
@@ -353,20 +366,27 @@ const AMOS2 = (() => {
           features:p.features,sequence:p.sequence,recognition:p.recognition};
         model.memory.push(completed);if(model.memory.length>128)model.memory.shift();
       }
+      const worldTransition=transitionMind.forecast('world',before,o,s.previous_action,associations.strength);
       s.glyph.learning=1;s.observe(o);
       const worldAfter=s.h.slice(),action=s.action(0,controls.exploration),toolHost=makeHost(ledger);
+      trajectory.push({name:'world',h:worldAfter.slice()});
+      transitionRecords.push(transitionMind.learn(worldTransition,worldAfter,[...new Set(sourceIndices.concat(associations.evidence.map(e=>e[1])))]));
       const scope=mind.readScope(action),selfFact=scope==='self'?ledger.entries().find(f=>f.id===mind.lastSelf):null;
-      const tool=action<0?'lalo_history':action>0?'lalo_lineage':'lalo_facts';
-      const args=selfFact?{subject:selfFact.subject,knownAt,limit:32}:
+      const tool=investigation?.tool??(action<0?'lalo_history':action>0?'lalo_lineage':'lalo_facts');
+      const args=investigation?.arguments??(selfFact?{subject:selfFact.subject,knownAt,limit:32}:
         action<0?{subject:event.subject,knownAt,limit:32}:action>0?{id:event.factIds[0],knownAt,limit:32}
-        :{subject:event.subject,validAt:event.observedAt,knownAt,limit:32};
+        :{subject:event.subject,validAt:event.observedAt,knownAt,limit:32});
       const selfForecast=mind.forecast(worldAfter,action,load,resonance,relations.familiarity,errorBefore);
       const toolResult=toolHost.call(tool,args);
       if(!toolResult.ok)throw Error(toolResult.error.message);
       const reading=PERCEPTION.read(toolResult,ledger,tool,args,ledger.size);
       const readObservation=[...o.slice(0,2).map((v,i)=>bounded(v+.15*reading.sensory[i]*controls.recall,-1,1)),load];
-      s.previous_action=action;s.observe(readObservation);
+      const readTransition=transitionMind.forecast('read',worldAfter,readObservation,action,reading.premises.length/32);
+      s.previous_action=action;const readTwin=copySubject(s);readTwin.observe(o);s.observe(readObservation);
       const readAfter=s.h.slice(),passes=[],evidenceGlyphs=tool==='lalo_history'?ids(['before','remember']):tool==='lalo_lineage'?ids(['cause','change']):ids(['see','now']);
+      trajectory.push({name:'read',h:readAfter.slice()});
+      transitionRecords.push(transitionMind.learn(readTransition,readAfter,reading.premises,{observation:o,after:readTwin.h,steps:1}));
+      const returnTransition=transitionMind.forecast('return',readAfter,readObservation,action,sonar.gate()),returnTwin=copySubject(s);
       let finalObservation=readObservation.slice(),previousGate=sonar.gate();
       for(let depth=1;depth<=4;depth++){
         const draftVoice=VOICE.GlyphVoice.load(clone(voice.dump())),mix=s.glyph.sequence.slice(-8),c=sonar.coefficients();
@@ -374,9 +394,11 @@ const AMOS2 = (() => {
         const draft=draftVoice.express(s.h,mix,errorBefore,c.temperature),meta=sonar.reinhale(VOICE.tokenize(draft.words.join(' ')).ids);
         const hBefore=s.h.slice();finalObservation=[...readObservation.slice(0,2).map((v,i)=>bounded(v+.1*meta.projection[i],-1,1)),load];
         s.observe(finalObservation);
+        returnTwin.observe(readObservation);trajectory.push({name:'return-'+depth,h:s.h.slice()});
         passes.push({depth,draft:draft.ids,after:meta.after,gate:meta.gate,observation:finalObservation.slice(),shift:magnitude(s.h.map((v,i)=>v-hBefore[i]))});
         if(Math.abs(meta.gate-previousGate)<.005)break;previousGate=meta.gate;
       }
+      transitionRecords.push(transitionMind.learn(returnTransition,s.h,reading.premises,{observation:readObservation,after:returnTwin.h,steps:passes.length}));
       const selfObserved=COGNITION.measure(worldAfter,s.h,o,finalObservation),selfError=mind.learn(selfForecast,selfObserved,event,errorBefore);
       sonar.settle(inhaled);
       const finalControls=sonar.coefficients(),mixture=s.glyph.sequence.slice(-8),recognition=s.glyph.predict(0)[1];
@@ -390,7 +412,7 @@ const AMOS2 = (() => {
       model.world.pos=finalObservation.slice(0,2);model.world.load=load;model.world.tick=tick;
       const encounterSubject=`agent:amos:encounter:${tick}`,all=ledger.entries(),rawPremises=event.factIds.map(id=>all.findIndex(f=>f.id===id));
       const selfReflection={policy:'amos/self-sonar-v1',forecast:selfForecast,observed:selfObserved,error:selfError,
-        before:sonarBefore,after:sonar.act.slice(),controls,passes,scope:selfFact?'self':'world',registrationPremise:all.findIndex(f=>f.id===event.registrationReceipt),sourcePremises:rawPremises,associationPremise:all.length+4};
+        before:sonarBefore,after:sonar.act.slice(),controls,passes,scope:investigation?.scope??(selfFact?'self':'world'),registrationPremise:all.findIndex(f=>f.id===event.registrationReceipt),sourcePremises:rawPremises,associationPremise:all.length+4};
       const additions=[{id:`agent:amos:attention:${tick}`,subject:encounterSubject,predicate:'attention_subject',value:event.subject,
         source:'amos:encounter',validFrom:receiptAt,validTo:receiptAt+1,recordedAt:receiptAt,supersedes:null},
       {id:`agent:amos:relations:${tick}`,subject:encounterSubject,predicate:'encounter_relations',value:JSON.stringify(relations),
@@ -403,37 +425,46 @@ const AMOS2 = (() => {
         source:'amos:links/v1',validFrom:receiptAt,validTo:receiptAt+1,recordedAt:receiptAt,supersedes:null},
       {id:`agent:amos:self:${tick}`,subject:encounterSubject,predicate:'self_reflection',value:JSON.stringify(selfReflection),
         source:'amos:self/v1',validFrom:receiptAt,validTo:receiptAt+1,recordedAt:receiptAt,supersedes:null}];
+      for(const record of transitionRecords)additions.push({id:`agent:amos:transition:${tick}:${record.phase}`,subject:encounterSubject,predicate:`transition_${record.phase}`,
+        value:JSON.stringify(record),source:'amos:transition/v1',validFrom:receiptAt,validTo:receiptAt+1,recordedAt:receiptAt,supersedes:null});
+      let transitionReceipts=additions.slice(6).map(f=>f.id);
       let completedLedger=ledger,relationReceipt=additions[1].id,readReceipt=additions[2].id,selectionReceipt=additions[3].id,linkReceipt=additions[4].id,selfReceipt=additions[5].id,receiptState='journal';
       try{const candidate=decode(encode(ledger));for(const f of additions)candidate.add(f);encode(candidate);completedLedger=candidate;mind.lastSelf=selfReceipt;}
       catch(error){
         const budget=/capacity|byte budget/.test(error.message);
         if(!event.legacyCompletion||!budget)throw error;
         relationReceipt=null;readReceipt=null;selectionReceipt=null;linkReceipt=null;selfReceipt=null;receiptState='legacy-full-journal';
+        transitionReceipts=[null,null,null];
       }
+      if(receiptState==='journal')transitionMind.remember(transitionRecords,transitionReceipts,tick,completedLedger,investigation);
+      else{transitionMind.last=[];if(investigation)transitionMind.lastProbe=transitionMind.heads.world.updates;}
       const trace={tick,policy:'amos/reflective-facts-v2',encounterAt:receiptAt,event:clone(event),before,worldAfter,readAfter,after:s.h.slice(),changed:changed.slice(0,6),mixture,
         relations,relationReceipt,readReceipt,selectionReceipt,linkReceipt,selfReceipt,receiptState,reading,associations,readObservation,finalObservation,resonanceGain,
-        selection,selfReflection,prototypeCount:s.glyph.prototypes.length,symbolCount:voice.symbols.length,
+        selection,selfReflection,transitions:transitionRecords,transitionReceipts,trajectory,investigation,prototypeCount:s.glyph.prototypes.length,symbolCount:voice.symbols.length,
         load,surprise:errorBefore,resonance,recognition:clone(recognition),action,nextAttention:attention,
         tool:{name:tool,arguments:args,result:toolResult},utterance,
         previousForecast:completed?.predicted??null,observed:o,prediction:expected,resolvedFromTick:completed?tick-1:null};
       this.queue.splice(index,1);this.ledger=completedLedger;this.relations=relationField;this.model=model;this.voice=voice;this.mind=mind;this.sonar=sonar;
+      this.transitions=transitionMind;
       this.pending=pending;this.attention=attention;this.count=tick;this.history.push(trace);
       if(this.history.length>MAX_HISTORY){this.history.shift();this.historyOmitted++;}
       return trace;
     }
     dump() {
-      const text=JSON.stringify({format:'amos-2/world',version:5,semanticPolicy:LANGUAGES.policy,model:this.model.dumps(),journal:encode(this.ledger),voice:this.voice.dump(),
+      const text=JSON.stringify({format:'amos-2/world',version:6,semanticPolicy:LANGUAGES.policy,model:this.model.dumps(),journal:encode(this.ledger),voice:this.voice.dump(),
         queue:this.queue,history:this.history,pending:this.pending,count:this.count,serial:this.serial,historyOmitted:this.historyOmitted,
-        attention:this.attention,station:this.station,lastWeather:this.lastWeather,relations:this.relations.dump(),mind:this.mind.dump(),sonar:this.sonar.dump(),cognitionBirth:this.cognitionBirth,reservedReceiptSlots:ENCOUNTER_RECEIPTS});
+        attention:this.attention,station:this.station,lastWeather:this.lastWeather,relations:this.relations.dump(),mind:this.mind.dump(),sonar:this.sonar.dump(),cognitionBirth:this.cognitionBirth,
+        transitions:this.transitions.dump(),transitionBirth:this.transitionBirth,reservedReceiptSlots:ENCOUNTER_RECEIPTS});
       if(bytes(text)>MAX_SNAPSHOT)throw Error('Complete life exceeds the 24 MB snapshot budget');return text;
     }
     static load(text) {
       if(typeof text!=='string'||bytes(text)>MAX_SNAPSHOT)throw Error('Snapshot exceeds 24 MB');
       const d=JSON.parse(text);
-      if(d?.format!=='amos-2/world'||![1,2,3,4,5].includes(d.version))throw Error('Unsupported AMOS-2 life');
-      if(d.version===5&&d.semanticPolicy!==LANGUAGES.policy)throw Error('Unsupported semantic membrane');
-      if(d.version>=2&&(!d.relations||![2,3,5,6].includes(d.reservedReceiptSlots)))throw Error('Missing acquired relation organ or completion reserve');
-      if(d.version>=4&&![5,6].includes(d.reservedReceiptSlots))throw Error('Missing tool-read completion reserve');
+      if(d?.format!=='amos-2/world'||![1,2,3,4,5,6].includes(d.version))throw Error('Unsupported AMOS 2 life');
+      if(d.version>=5&&d.semanticPolicy!==LANGUAGES.policy)throw Error('Unsupported semantic membrane');
+      if(d.version>=2&&(!d.relations||![2,3,5,6,9].includes(d.reservedReceiptSlots)))throw Error('Missing acquired relation organ or completion reserve');
+      if(d.version>=4&&![5,6,9].includes(d.reservedReceiptSlots))throw Error('Missing tool-read completion reserve');
+      if(d.version===6&&d.reservedReceiptSlots!==9)throw Error('Missing transition completion reserve');
       const width=JSON.parse(d.model)?.amos?.subject?.h?.length;
       if(d.version>=4&&width!==BODY.H)throw Error('Invalid current neural width');
       if(d.voice?.neural?.[0]?.length!==width)throw Error('Voice and body neural widths disagree');
@@ -452,11 +483,11 @@ const AMOS2 = (() => {
         !d.station||!Number.isFinite(d.station.latitude)||Math.abs(d.station.latitude)>90||!Number.isFinite(d.station.longitude)||Math.abs(d.station.longitude)>180)throw Error('Invalid life history');
       for(const event of d.queue)eventValid(event,life.ledger);
       let tick=d.historyOmitted;
-      if(d.reservedReceiptSlots!==undefined&&![2,3,5,6].includes(d.reservedReceiptSlots))throw Error('Unsupported encounter reserve');
+      if(d.reservedReceiptSlots!==undefined&&![2,3,5,6,9].includes(d.reservedReceiptSlots))throw Error('Unsupported encounter reserve');
       const needsLegacyCompletion=d.reservedReceiptSlots!==ENCOUNTER_RECEIPTS&&
-        (life.ledger.size+ENCOUNTER_RECEIPTS*d.queue.length>CAPACITY||bytes(d.journal)+20000*d.queue.length>MAX_JOURNAL);
+        (life.ledger.size+ENCOUNTER_RECEIPTS*d.queue.length>CAPACITY||bytes(d.journal)+RESERVE_BYTES*d.queue.length>MAX_JOURNAL);
       if(needsLegacyCompletion)for(const event of d.queue)event.legacyCompletion=true;
-      if(d.queue.some(e=>!e.legacyCompletion)&&(life.ledger.size+ENCOUNTER_RECEIPTS*d.queue.length>CAPACITY||bytes(d.journal)+20000*d.queue.length>MAX_JOURNAL))throw Error('Pending encounters have no completion reserve');
+      if(d.queue.some(e=>!e.legacyCompletion)&&(life.ledger.size+ENCOUNTER_RECEIPTS*d.queue.length>CAPACITY||bytes(d.journal)+RESERVE_BYTES*d.queue.length>MAX_JOURNAL))throw Error('Pending encounters have no completion reserve');
       for(const t of d.history) {
         eventValid(t.event,life.ledger);
         if(t.relations){const receipt=life.ledger.entries().find(f=>f.id===t.relationReceipt);
@@ -493,6 +524,12 @@ const AMOS2 = (() => {
           (life.mind.lastSelf!==null&&!life.ledger.entries().some(f=>f.id===life.mind.lastSelf&&f.source==='amos:self/v1')))throw Error('Self history disagrees with this life');
       }else life.cognitionBirth=d.count;
       for(const t of d.history)if(['amos/reflective-facts-v1','amos/reflective-facts-v2'].includes(t.policy))validateReflection(t,life.ledger);
+      for(const t of d.history)if(t.transitions)TRANSITIONS.validate(t,life.ledger,BODY.H,d.version===6?d.transitionBirth:undefined);
+      if(d.version===6){life.transitions=TRANSITIONS.TransitionMind.load(d.transitions,BODY.H);life.transitionBirth=d.transitionBirth;
+        if(!integer(life.transitionBirth)||life.transitionBirth<0||!TRANSITIONS.phases.every(p=>life.transitions.heads[p].updates===d.count-life.transitionBirth)||
+          d.history.some(t=>t.tick>life.transitionBirth&&!t.transitions)||
+          !life.transitions.last.every(r=>{const f=life.ledger.entries()[r.premise],record=f&&JSON.parse(f.value);return f&&r.tick===d.count&&f.id===r.id&&f.subject===`agent:amos:encounter:${r.tick}`&&f.source==='amos:transition/v1'&&record.phase===r.phase&&record.error===r.error&&(record.premises[0]??null)===r.sourcePremise;}))throw Error('Transition learning disagrees with this life');
+      }else life.transitionBirth=d.count;
       if(d.pending&&(!finiteArray(d.pending.observation,3)||!finiteArray(d.pending.predicted,3)||!finiteArray(d.pending.features,BODY.F)||
         !finiteArray(d.pending.sequence,32)||!finiteArray(d.pending.influence,2)||![-1,0,1].includes(d.pending.action)||
         !d.pending.recognition||!Object.values(d.pending.recognition).every(v=>Number.isFinite(v)&&v>=0)))throw Error('Invalid pending forecast');
