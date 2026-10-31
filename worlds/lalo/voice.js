@@ -151,5 +151,7 @@ const VOICE = (() => {
       if(!voice.rng.state)throw Error('Invalid expression random stream');return voice;
     }
   }
-  return {GlyphVoice,tokenize,BASE,MAX,names:LIFE_SEMANTIC.names,cosine};
+  // Keep the original membrane for immutable historical read validation.
+  LANGUAGES.extend('ru',russian);
+  return {GlyphVoice,tokenize:LANGUAGES.tokenize,tokenizeLegacy:tokenize,BASE,MAX,names:LIFE_SEMANTIC.names,cosine};
 })();

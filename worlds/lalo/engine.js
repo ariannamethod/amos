@@ -143,6 +143,7 @@ const AMOS2 = (() => {
       (e.kind==='message'&&(typeof e.detail.text!=='string'||e.detail.text.length>1000))))throw Error('Invalid text encounter');
     if(e.detail.contentGlyphs!==undefined&&(!Array.isArray(e.detail.contentGlyphs)||e.detail.contentGlyphs.length>128||
       !e.detail.contentGlyphs.every(id=>integer(id)&&id>=0&&id<88)))throw Error('Invalid content glyphs');
+    if(e.detail.semanticPolicy!==undefined&&(e.detail.semanticPolicy!==LANGUAGES.policy||!LANGUAGES.codes.includes(e.detail.language)))throw Error('Invalid lexical provenance');
     if(e.kind==='quake'&&(!integer(e.detail.sourceUpdatedAt)||!Number.isFinite(e.detail.depth)||
       !(e.detail.magnitude===null||Number.isFinite(e.detail.magnitude))))throw Error('Invalid earthquake encounter');
     if(e.kind==='weather'&&![e.detail.temperature_c,e.detail.wind_kmh,e.detail.precipitation_mm].every(Number.isFinite))throw Error('Invalid weather encounter');
@@ -161,7 +162,7 @@ const AMOS2 = (() => {
     return {kind:'llm',key:`${fingerprint(packet.actor)}:${packet.id}`,source,observedAt:packet.observedAt,
       title:`${packet.actor} · ${packet.type}: ${packet.text}`,values:{received:true,actor:packet.actor,message_id:packet.id,speech_act:packet.type,text:packet.text,correlation_id:packet.correlationId??'',acquisition:via,origin:packet.origin??''},
       sensory,projection:'Semantic projection of an observed interaction; text remains attributed to its actor',
-      glyphs:ids(['AI','speak','now']).concat(parsed.ids),detail:{tokens:parsed.tokens,contentGlyphs:parsed.ids,acquisition:via,origin:packet.origin??null}};
+      glyphs:ids(['AI','speak','now']).concat(parsed.ids),detail:{tokens:parsed.tokens,contentGlyphs:parsed.ids,language:parsed.language,semanticPolicy:parsed.policy,acquisition:via,origin:packet.origin??null}};
   }
   class WorldLab {
     constructor(seed=17) {
@@ -280,7 +281,7 @@ const AMOS2 = (() => {
       }
       const e={id,subject,kind:'message',title:text,observedAt:receivedAt,receivedAt,source:'local:human',factIds,
         sensory,projection:'Order-weighted mean of the 88 glyph basis vectors: (cos(g·2.39996), sin(g·2.39996))',glyphs,
-        detail:{text,tokens:parsed.tokens,contentGlyphs:parsed.ids}};
+        detail:{text,tokens:parsed.tokens,contentGlyphs:parsed.ids,language:parsed.language,semanticPolicy:parsed.policy}};
       this._commit(ledger,[e]);this.serial=serial;return e;
     }
     ingestInteraction(packet,receivedAt) {
@@ -421,7 +422,7 @@ const AMOS2 = (() => {
       return trace;
     }
     dump() {
-      const text=JSON.stringify({format:'amos-2/world',version:4,model:this.model.dumps(),journal:encode(this.ledger),voice:this.voice.dump(),
+      const text=JSON.stringify({format:'amos-2/world',version:5,semanticPolicy:LANGUAGES.policy,model:this.model.dumps(),journal:encode(this.ledger),voice:this.voice.dump(),
         queue:this.queue,history:this.history,pending:this.pending,count:this.count,serial:this.serial,historyOmitted:this.historyOmitted,
         attention:this.attention,station:this.station,lastWeather:this.lastWeather,relations:this.relations.dump(),mind:this.mind.dump(),sonar:this.sonar.dump(),cognitionBirth:this.cognitionBirth,reservedReceiptSlots:ENCOUNTER_RECEIPTS});
       if(bytes(text)>MAX_SNAPSHOT)throw Error('Complete life exceeds the 24 MB snapshot budget');return text;
@@ -429,11 +430,12 @@ const AMOS2 = (() => {
     static load(text) {
       if(typeof text!=='string'||bytes(text)>MAX_SNAPSHOT)throw Error('Snapshot exceeds 24 MB');
       const d=JSON.parse(text);
-      if(d?.format!=='amos-2/world'||![1,2,3,4].includes(d.version))throw Error('Unsupported AMOS-2 life');
+      if(d?.format!=='amos-2/world'||![1,2,3,4,5].includes(d.version))throw Error('Unsupported AMOS-2 life');
+      if(d.version===5&&d.semanticPolicy!==LANGUAGES.policy)throw Error('Unsupported semantic membrane');
       if(d.version>=2&&(!d.relations||![2,3,5,6].includes(d.reservedReceiptSlots)))throw Error('Missing acquired relation organ or completion reserve');
-      if(d.version===4&&![5,6].includes(d.reservedReceiptSlots))throw Error('Missing tool-read completion reserve');
+      if(d.version>=4&&![5,6].includes(d.reservedReceiptSlots))throw Error('Missing tool-read completion reserve');
       const width=JSON.parse(d.model)?.amos?.subject?.h?.length;
-      if(d.version===4&&width!==BODY.H)throw Error('Invalid current neural width');
+      if(d.version>=4&&width!==BODY.H)throw Error('Invalid current neural width');
       if(d.voice?.neural?.[0]?.length!==width)throw Error('Voice and body neural widths disagree');
       const life=new WorldLab();life.model=growModel(d.model);life.ledger=decode(d.journal);
       life.voice=VOICE.GlyphVoice.load(d.voice).grow(BODY.H);
@@ -481,10 +483,11 @@ const AMOS2 = (() => {
         const receipt=life.ledger.entries().find(f=>f.id===t.readReceipt);
         const legacy=t.receiptState==='legacy-full-journal'&&t.event.legacyCompletion===true&&t.readReceipt===null;
         if(!finiteArray(t.worldAfter,t.after.length)||!finiteArray(t.readObservation,3)||t.resonanceGain!==.94+.12*t.resonance||
-          !sameReading(PERCEPTION.read(t.tool.result,life.ledger,t.tool.name,t.tool.arguments,t.reading?.knownThrough),t.reading)||
+          !['amos/read-indices-v1','amos/read-indices-v2'].includes(t.reading?.policy)||
+          !sameReading(PERCEPTION.read(t.tool.result,life.ledger,t.tool.name,t.tool.arguments,t.reading?.knownThrough,t.reading?.policy==='amos/read-indices-v1'?1:2),t.reading)||
           (!legacy&&(!receipt||receipt.source!=='amos:tool-read/v1'||receipt.value!==JSON.stringify(t.reading))))throw Error('Invalid acquired tool reading');
       }
-      if(d.version===4){
+      if(d.version>=4){
         life.mind=COGNITION.FactMind.load(d.mind,BODY.H);life.sonar=SONAR.SomaticSonar.load(d.sonar);life.cognitionBirth=d.cognitionBirth;
         if(!integer(life.cognitionBirth)||life.cognitionBirth<0||life.mind.updates!==d.count-life.cognitionBirth||life.sonar.turns!==life.mind.updates||
           (life.mind.lastSelf!==null&&!life.ledger.entries().some(f=>f.id===life.mind.lastSelf&&f.source==='amos:self/v1')))throw Error('Self history disagrees with this life');

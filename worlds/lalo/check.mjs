@@ -8,13 +8,51 @@ import {gunzipSync} from 'node:zlib';
 const html=readFileSync(new URL('../../Amos-2.html',import.meta.url),'utf8');
 const code=html.match(/<script>([\s\S]*?)<\/script>/)[1].split('/* Kinetic instrument:')[0];
 const context=vm.createContext({TextEncoder,TextDecoder,console,AbortController,fetch,ReadableStream});
-vm.runInContext(code+';globalThis.organs={AMOS,LALO,VOICE,RELATIONS,COGNITION,SONAR,AMOS2};',context);
-const {AMOS,LALO,VOICE,RELATIONS,COGNITION,SONAR,AMOS2}=context.organs;
+vm.runInContext(code+';globalThis.organs={AMOS,LALO,VOICE,LANGUAGES,PERCEPTION,RELATIONS,COGNITION,SONAR,AMOS2};',context);
+const {AMOS,LALO,VOICE,LANGUAGES,PERCEPTION,RELATIONS,COGNITION,SONAR,AMOS2}=context.organs;
 const T=1793400000000;
 const feed=(mag=2.9,updated=T-1000)=>({type:'FeatureCollection',features:[{type:'Feature',id:'amosSynthetic1',geometry:{type:'Point',coordinates:[13,52,8]},properties:{mag,magType:'ml',place:'Synthetic test fixture',type:'earthquake',time:T-10000,updated}}]});
 const weather=(temperature=12)=>({latitude:52.5,longitude:13.4,current:{time:T/1000,interval:900,temperature_2m:temperature,wind_speed_10m:9,precipitation:0,is_day:1},current_units:{temperature_2m:'°C',wind_speed_10m:'km/h',precipitation:'mm'}});
 const weatherURL='https://api.open-meteo.com/v1/forecast?latitude=52.5&longitude=13.4';
 const speak=(life,text,at)=>{const e=life.ingestText(text,at);return life.encounter(at,e.id);};
+
+test('six language entrances meet the same stable glyph identities and prior earthquake',()=>{
+  const phrases={en:'earth stone now dream',he:'אדמה אבן עכשיו חלום',ru:'земля камень сейчас мечта',fr:'terre pierre maintenant rêve',de:'Erde Stein jetzt Traum',es:'tierra piedra ahora soñar'};
+  const expected=['earth','stone','now','dream'].map(g=>VOICE.names.indexOf(g));
+  for(const [language,text] of Object.entries(phrases)){
+    const parsed=VOICE.tokenize(text);assert.equal(parsed.language,language);assert.deepEqual(Array.from(parsed.ids),expected);assert.ok(parsed.tokens.every(t=>t.via==='lexicon'));
+    const life=new AMOS2.WorldLab();life.ingestQuakes(feed(),T);life.encounter(T);
+    const trace=speak(life,text,T+1);assert.equal(trace.associations.matches[0].tick,1);
+    assert.deepEqual(Array.from(trace.associations.matched),expected.slice(0,3));assert.deepEqual(Array.from(trace.associations.unmatched),expected.slice(3));
+    assert.equal(life.ledger.entries().find(f=>f.subject===trace.event.subject&&f.predicate==='text').value,text);
+  }
+});
+test('all 88 seed concepts have six captions; captions and recursive compounds leave acquired state untouched',()=>{
+  const life=new AMOS2.WorldLab();speak(life,'earth stone now',T);const before=life.dump();
+  for(const code of LANGUAGES.codes){for(let id=0;id<88;id++)assert.ok(typeof LANGUAGES.caption(id,code)==='string'&&LANGUAGES.caption(id,code).length);
+    const name=LANGUAGES.caption(89,code,[[2,3],[88,59]]);assert.ok(name.includes('+'));assert.ok(!name.includes('?'));}
+  assert.equal(LANGUAGES.caption(2,'fr'),'terre');assert.equal(LANGUAGES.caption(2,'he'),'אדמה');assert.equal(life.dump(),before);
+  // Detached comparison lives can grow a different compound with the same ID.
+  assert.equal(LANGUAGES.localizeName('(earth+stone)+dream','fr'),'(terre+pierre)+rêve');
+});
+test('language-specific homographs, stopwords, niqqud and mixed words retain the shared concept field',()=>{
+  const g=name=>VOICE.names.indexOf(name);
+  assert.equal(VOICE.tokenize('pain','en').ids[0],g('pain'));assert.equal(VOICE.tokenize('pain','fr').ids[0],g('food'));
+  assert.equal(VOICE.tokenize('die','en').ids[0],g('death'));assert.equal(VOICE.tokenize('die','de').ids.length,0);
+  assert.equal(VOICE.tokenize('מַיִם','he').ids[0],g('water'));
+  assert.deepEqual(Array.from(VOICE.tokenize('earth אדמה земля terre Erde tierra').ids),Array(6).fill(g('earth')));
+  assert.throws(()=>VOICE.tokenize('earth','xx'),/Unsupported/);
+});
+test('a genuine v4 life retains its original read membrane, acquired organs and forecast when entering the six-language heart',()=>{
+  const saved=gunzipSync(readFileSync(new URL('../../tests/fixtures/amos2-v4.json.gz',import.meta.url))).toString(),old=JSON.parse(saved),life=AMOS2.WorldLab.load(saved);
+  assert.equal(old.version,4);assert.equal(life.model.dumps(),old.model);assert.equal(JSON.stringify(life.voice.dump()),JSON.stringify(old.voice));
+  assert.equal(JSON.stringify(life.history),JSON.stringify(old.history));assert.equal(JSON.stringify(life.pending),JSON.stringify(old.pending));
+  assert.equal(JSON.stringify(life.mind.dump()),JSON.stringify(old.mind));assert.equal(JSON.stringify(life.sonar.dump()),JSON.stringify(old.sonar));
+  assert.equal(VOICE.tokenize('terre pierre maintenant').ids[0],VOICE.names.indexOf('earth'));
+  assert.notEqual(JSON.stringify(VOICE.tokenizeLegacy('terre pierre maintenant').ids),JSON.stringify(VOICE.tokenize('terre pierre maintenant').ids));
+  const trace=speak(life,'terre pierre maintenant',T+100);assert.equal(trace.reading.policy,'amos/read-indices-v2');
+  assert.equal(JSON.parse(life.dump()).version,5);assert.equal(AMOS2.WorldLab.load(life.dump()).dump(),life.dump());
+});
 
 test('the standalone file embeds the original AMOS body and every runtime organ',()=>{
   assert.ok(code.includes(readFileSync(new URL('../../web/amos.js',import.meta.url),'utf8')));
@@ -336,7 +374,7 @@ test('a real v2 24-neuron life grows with its acquired weights, pending forecast
   assert.equal(JSON.stringify(life.pending.predicted),JSON.stringify(old.pending.predicted));
   assert.equal(JSON.stringify(life.voice.neural.map(row=>row.slice(0,24))),JSON.stringify(old.voice.neural));
   assert.equal(life.model.subject.rng.state.toString(16),body.subject.rng.random64.replace(/^0+/,''));
-  const checkpoint=life.dump();assert.equal(JSON.parse(checkpoint).version,4);assert.equal(AMOS2.WorldLab.load(checkpoint).dump(),checkpoint);
+  const checkpoint=life.dump();assert.equal(JSON.parse(checkpoint).version,5);assert.equal(AMOS2.WorldLab.load(checkpoint).dump(),checkpoint);
   const trace=life.encounter(T+70);assert.equal(trace.after.length,40);assert.equal(life.count,6);
   assert.equal(AMOS2.WorldLab.load(life.dump()).dump(),life.dump());
 });

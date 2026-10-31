@@ -3,6 +3,84 @@
 Project changes and working notes. Milestones belong in README.md; implementation
 history and verification belong here. The Arianna Method Manifesto governs both.
 
+## 2026-10-31 — six language entrances, one acquired glyph field
+
+The Russian text in the earlier screenshot was a browser test address. The
+interface now presents the six language entrances symmetrically under the hood:
+English, Hebrew, Russian, French, German and Spanish. `languages.js` maps seed
+words and aliases into the original 88 glyph IDs. The 88 names and actually.life
+word map remain unchanged. Every seed concept has a caption in every language;
+recursive compound captions follow the same acquired compound tree.
+
+The detector scores dictionary hits and language-specific function words, with
+script evidence for Hebrew and Cyrillic. Each input selects its lexical context;
+exact mixed-language hits can enter through another pack. Word-shape fallback
+uses the selected pack's trigrams, followed by the existing deterministic hash.
+`VOICE.tokenize(text, language)` also accepts an explicit language for homographs:
+English `pain` maps to pain, French `pain` to food; German `die` is filtered as a
+function word while English `die` maps to death. Hebrew niqqud stays within a word
+and is removed for matching. New human/LLM event details retain the lexical
+language and semantic-policy ID; the inspector shows this provenance.
+
+**Glyph captions** lives in the life-settings dialog, default English. It changes
+the expression, associations, compound names, history captions, inspector and
+accessible glyph names. Hebrew captions and glyph order use RTL. This preference
+is local presentation state, outside the acquired life and its random streams.
+The interface labels stay English, and recorded source words stay as received.
+The main screenshot uses an English address; languages add no new main-panel row.
+Detached history comparisons localize each continuation's own canonical compound
+names, including signs that exist only in that continuation.
+
+### Language lineage and design
+
+Read Klaus at `6fad88329538f0a820d5266796d456c9133559c6`, particularly
+`detect_language`, `GHOST_WEIGHT`, `cross_affinity_build` and `metaklaus_compute`.
+It discovers inhale/exhale packs, routes the input and weights the other languages'
+affective candidates using the current dominant chamber, a 6×6×6 sensitivity
+tensor and cross-affinity dot products. The supplied state/language priors include
+FEAR→Hebrew ×1.8, LOVE→French ×1.7, RAGE→Russian ×1.8, VOID→Hebrew ×1.6,
+FLOW→French ×1.5 and COMPLEX→Hebrew ×1.7. These coefficients seed its language
+weighting; actual chamber state and candidate affinities enter each computation.
+
+Read [Brodsky](https://github.com/ariannamethod/brodsky) at
+`501d617d5da8f9f00ff194ce6765d6749647bda8`: five languages (EN/RU/HE/FR/ES),
+UTF-8 plus vocabulary-based detection, and a planetary ghost language. The language
+selected by `ghost_language` can contribute one foreign word to the second line;
+word mass, emotions, learned associations and verse constraints participate in
+generation. Klaus's and Brodsky's languages therefore take part in their internal
+selection dynamics. Their multilingual organs supplied the inspiration for
+AMOS's shared representation entrance. This change imports no corpus, planetary
+language assignment or state/language weight matrix into AMOS.
+
+### Continuation and verification
+
+World format **5** records `semanticPolicy: amos/semantic-six-v1` and accepts
+formats 1–4. New chosen reads use `amos/read-indices-v2`. The previous tokenizer
+is retained as `VOICE.tokenizeLegacy`; old read receipts are checked through
+their original membrane. Adding a dictionary entry must not reinterpret an old
+hash/orthographic reading. Migration retains the learned body, voice, self-head,
+sonar, pending forecast and historical traces. `tests/fixtures/amos2-v4.json.gz`
+was generated from PR9's first commit `1e9256c`: three learned encounters, including
+a French string that the earlier membrane projected differently.
+
+`make check`: **70 passing standalone gates**, **1,600** matching C/Python/JS
+reference choices, restart/checkpoint exchange and exact HTML regeneration. Four
+new gates cover six equivalent language entrances recalling the same earthquake,
+all captions/recursive compounds without state mutation, homographs and mixed
+scripts/niqqud, and genuine v4 migration with its old readings intact. The fixed
+40-neuron width and original 24-neuron reference bodies are retained.
+
+Browser: the actual saved v4 life continued at encounter 37 from French
+`terre pierre maintenant rêve`, recalling Russian encounter 36, another address
+and a sourced earthquake. Changing English captions to French left both exports
+byte-identical at **912,696 bytes**; Hebrew captions persisted through reload
+without an added encounter. The HTML then completed five English encounters with
+no optional worlds folder, reaching **42 encounters / 360 receipts / 8 grown
+signs**. The new README screenshot records that life, `music` unmatched in recent
+context, and expression `remember · earth · stone · tired · now+earth`.
+The actual 42-encounter browser export loads in Node and dumps byte-identically,
+preserving both the old v1 and new v2 read membranes in the same history.
+
 ## 2026-10-31 — reflective facts, emotional sonar and 40 neurons
 
 The fact heart now registers its own operations alongside what reaches it. A fact
@@ -267,6 +345,8 @@ RMS activation separation 0.039252 and forecast separation 0.238075 at the recor
   reference: tape, slit, inertia and inspectable past. No Janus corpus is imported.
 - `cognition.js` and `sonar.js` implement AMOS's acquired attention, self-prediction
   and somatic loop; Klaus's pinned source and adaptation are recorded above.
+- `languages.js` provides six lexical entrances and captions over the unchanged
+  seed IDs. `voice.js` retains the earlier membrane for historical validation.
 - Browser JavaScript is the complete runtime. Python builds the HTML; Node runs
   development checks. AML and NoTorch are not runtime dependencies of this heart.
 

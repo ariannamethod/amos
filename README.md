@@ -163,23 +163,30 @@ already shaped by experience. Shared glyphs recall particular prior encounters;
 matches and nonmatches retain their own evidence and change perception. Human
 addressing and LLM interactions use that same association path.
 
+**Six languages meet the same glyph field:** English, Hebrew, Russian, French,
+German and Spanish. Their seed words share the original 88 stable identities and
+the acquired history attached to them. **Glyph captions** in life settings chooses
+their displayed names, including grown compounds. English is the default; switching
+captions preserves the life exactly. Original source words remain in their receipts.
+
 **[Amos-2.html](Amos-2.html)** is the self-contained minimum. Open that one file:
 the fact heart, learning subject, kinetic history, glyph voice and complete life
 continuation are inside it. A sibling **[worlds/](AMOSLOG.md#world-contract)** folder adds
 environments and further points of development. The same life continues when
 the folder is absent, carrying what its earlier encounters already changed.
 
-![AMOS II — 40 neurons, sourced associations, emotional sonar and glyph expression](assets/amos-2-self-sonar-20261031.jpg)
+![AMOS II — 40 neurons, one acquired glyph field and six language entrances](assets/amos-2-six-languages-20261031.jpg)
 
-*Encounter 36, without the optional folder: human words recall earthquakes and
-an earlier address; `dream` remains unmatched in recent context. Four recursive
-returns precede its expression. The same life has grown five compound signs.*
+*Encounter 42, without the optional folder: `earth stone now music` meets prior
+addresses and an earthquake; `music` remains unmatched in recent context. Its
+expression is `remember · earth · stone · tired · now+earth`. The same life has
+grown eight compound signs. Language choice stays in settings.*
 
 [With optional worlds](assets/amos-2-worlds-20261031.jpg) ·
 [Two histories, one shared observation](assets/amos-2-histories-20261031.jpg) ·
 [Acquired relations](AMOSLOG.md#acquired-relations) ·
 [Organs and projections](AMOSLOG.md#runtime-organs-and-provenance) ·
-[Verification and project log](AMOSLOG.md): 66 behavioral gates and 1,600
+[Verification and project log](AMOSLOG.md): 70 behavioral gates and 1,600
 reference-body decisions pass through `make check`. Historical screenshots record
 the earlier lives; acquired state and complete continuation are preserved.
 

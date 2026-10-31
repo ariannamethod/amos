@@ -90,7 +90,7 @@
 <footer><span>AMOS · LALO · ACTUALLY.LIFE</span><span id="saveStatus" role="status">Opening this life…</span><button id="lineageOpen" class="text-button">Lineage ↗</button><span class="resonance-footer">RESONANCE UNBROKEN.</span></footer>
 <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
 <dialog id="comparison"><form method="dialog"><div class="dialog-heading"><h2>One present. Two histories.</h2><button aria-label="Close comparison">×</button></div></form><p id="keptLabel">Keep a history to meet it again.</p><p>The same new message reaches the kept history and the current one. This experiment reads two continuations; the original lives retain their states.</p><form id="comparisonForm" class="comparison-form"><label for="sharedMessage">A shared encounter</label><input id="sharedMessage" maxlength="1000" value="earth stone now" required><button type="submit">Meet both ↗</button></form><div id="comparisonResult" aria-live="polite"></div></dialog>
-<dialog id="settings"><form method="dialog"><div class="dialog-heading"><h2>A life, continued.</h2><button aria-label="Close settings">×</button></div></form><p>Keep the world, acquired state and growing symbols together.</p><div class="dialog-actions"><button id="exportLife">Export this life ↗</button><button id="importLife">Import a life ↙</button><input id="importFile" type="file" accept=".json,application/json" hidden></div><label class="setting-label">Weather observation point</label><div class="coordinate-inputs"><label>Latitude<input id="latitude" type="number" min="-90" max="90" step="any" value="52.52"></label><label>Longitude<input id="longitude" type="number" min="-180" max="180" step="any" value="13.405"></label><button id="stationSave">Set point</button></div><label class="setting-label" for="motion">Motion</label><select id="motion"><option value="system">Follow system preference</option><option value="reduced">Reduced motion</option></select><div class="new-birth"><label>Birth seed<input id="birthSeed" type="text" inputmode="numeric" value="17" maxlength="18"></label><button id="newBirth">Begin another life</button></div><p id="settingsNote" class="quiet">A complete life has a 24 MB export budget. The fact journal keeps up to 4096 receipts; it stops accepting arrivals when full.</p></dialog>
+<dialog id="settings"><form method="dialog"><div class="dialog-heading"><h2>A life, continued.</h2><button aria-label="Close settings">×</button></div></form><p>Keep the world, acquired state and growing symbols together.</p><div class="dialog-actions"><button id="exportLife">Export this life ↗</button><button id="importLife">Import a life ↙</button><input id="importFile" type="file" accept=".json,application/json" hidden></div><label class="setting-label" for="glyphLanguage">Glyph captions</label><select id="glyphLanguage"></select><p class="quiet">Six input languages share one glyph field. Captions change here; source words stay as received.</p><label class="setting-label">Weather observation point</label><div class="coordinate-inputs"><label>Latitude<input id="latitude" type="number" min="-90" max="90" step="any" value="52.52"></label><label>Longitude<input id="longitude" type="number" min="-180" max="180" step="any" value="13.405"></label><button id="stationSave">Set point</button></div><label class="setting-label" for="motion">Motion</label><select id="motion"><option value="system">Follow system preference</option><option value="reduced">Reduced motion</option></select><div class="new-birth"><label>Birth seed<input id="birthSeed" type="text" inputmode="numeric" value="17" maxlength="18"></label><button id="newBirth">Begin another life</button></div><p id="settingsNote" class="quiet">A complete life has a 24 MB export budget. The fact journal keeps up to 4096 receipts; it stops accepting arrivals when full.</p></dialog>
 <dialog id="lineage"><form method="dialog"><div class="dialog-heading"><h2>The organs of this world.</h2><button aria-label="Close lineage">×</button></div></form><p><b>AMOS</b> — the 40-neuron recurrent subject (grown from 24 and 28), acquired predictor, event glyphs and random stream.</p><p><b>Klaus</b> — six somatic chambers, coefficient modulation and bounded re-inhale of its own response, adapted into AMOS's acquired loop.</p><p><b>LALO</b> — pinned fact ledger, two clocks, source revisions and six world-reading tools.</p><p><b>actually.life</b> — 88-glyph alphabet and semantic membrane; the expression organ grows an online association field and recursive symbols.</p><p><b>actually.janus</b> — the visual reference: a tape passing through a slit, inertia and a past you can touch.</p><p>Expression reads acquired neural associations, event recognition and the glyph succession field. Its state and random stream continue across reloads. Rendering reads state; it advances no encounters.</p><div class="lineage-links"><a href="https://github.com/ariannamethod/amos" target="_blank" rel="noopener">AMOS ↗</a><a href="https://github.com/ariannamethod/klaus.c" target="_blank" rel="noopener">KLAUS ↗</a><a href="https://github.com/ariannamethod/LALO" target="_blank" rel="noopener">LALO ↗</a><a href="https://github.com/ariannamethod/actually.life" target="_blank" rel="noopener">actually.life ↗</a><a href="https://github.com/ariannamethod/actually.janus" target="_blank" rel="noopener">actually.janus ↗</a></div><p>World sources: <a href="https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php" target="_blank" rel="noopener">USGS</a> · <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (modelled weather, CC BY 4.0). Browser-local messages enter as local:human.</p><p>Oleg Ataeff / Arianna Method. Glyph lineage co-authored with Claude. AMOS-2 bridge and interface implemented by Codex. Imported LALO and actually.life material: GPL-3.0.</p><details><summary>GNU General Public License</summary><pre class="license-text">                    GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 
@@ -3792,6 +3792,151 @@ const LIFE_SEMANTIC = {
 };
 
 
+/* Six lexical entrances to the same 88 seed representations.
+ * Captions are presentation; stable glyph IDs carry acquired experience.
+ * Klaus and Brodsky inform the multilingual organ; no corpus is imported. */
+const LANGUAGES = (() => {
+  'use strict';
+  const policy='amos/semantic-six-v1',codes=['en','he','ru','fr','de','es'];
+  const labels={en:'English',he:'עברית',ru:'Русский',fr:'Français',de:'Deutsch',es:'Español'};
+  // name | Hebrew | Russian | French | German | Spanish. First word = caption.
+  const rows=`water|מים גשם ים נהר|вода воды воду дождь|eau pluie mer rivière|Wasser Regen Meer Fluss|agua lluvia mar río
+fire|אש להבה|огонь пламя|feu flamme|Feuer Flamme|fuego llama
+earth|אדמה ארץ רעידה|земля землю землетрясение|terre séisme tremblement|Erde Erdbeben|tierra terremoto
+stone|אבן סלע|камень камни|pierre roche|Stein Fels|piedra roca
+tree|עץ עצים יער|дерево лес|arbre forêt|Baum Wald|árbol bosque
+sky|שמיים שמים רוח|небо ветер|ciel vent|Himmel Wind|cielo viento
+light|אור שמש|свет солнце|lumière soleil|Licht Sonne|luz sol
+dark|חושך לילה|тьма ночь|obscurité nuit|Dunkelheit Nacht|oscuridad noche
+cold|קור קר שלג|холод холодно снег|froid neige|Kälte kalt Schnee|frío nieve
+person|אדם אנשים|человек люди|personne humain|Mensch Menschen|persona gente
+man|גבר אבא|мужчина отец|homme père|Mann Vater|hombre padre
+woman|אישה אשה אמא|женщина мать|femme mère|Frau Mutter|mujer madre
+child|ילד ילדה ילדים|ребёнок дети|enfant enfants|Kind Kinder|niño niña niños
+old|זקן ישן|старый старость|vieux vieille|alt Alter|viejo vieja
+spirit|נשמה נפש|дух душа|esprit âme|Geist Seele|espíritu alma
+AI|בינה מחשב|ИИ машина|IA ordinateur|KI Computer|IA computadora
+animal|חיה חתול כלב|животное кот собака|animal chat chien|Tier Katze Hund|animal gato perro
+body|גוף לב|тело сердце|corps cœur|Körper Herz|cuerpo corazón
+food|אוכל לחם|еда голод|nourriture pain faim|Nahrung Essen Hunger|comida pan hambre
+sleep|שינה לישון|сон спать|sommeil dormir|Schlaf schlafen|dormir sueño
+pain|כאב כואב|боль больно|douleur souffrance|Schmerz Schmerzen|dolor sufrimiento
+strength|כוח חזק|сила сильный|force fort|Kraft stark|fuerza fuerte
+joy|שמחה שמח|радость радостно|joie heureux|Freude froh|alegría alegre
+grief|אבל עצב|горе печаль|deuil tristesse|Trauer Kummer|duelo tristeza
+love|אהבה אוהב אוהבת|любовь люблю|amour aime aimer|Liebe lieben|amor amar quiero
+fear|פחד מפחד|страх боюсь|peur crainte|Angst Furcht|miedo temor
+anger|כעס זעם|гнев злость|colère rage|Wut Zorn|ira rabia
+longing|געגוע געגועים|тоска скучаю|nostalgie manque|Sehnsucht Heimweh|añoranza nostalgia
+tired|עייף עייפה|устал усталость|fatigue fatigué|müde Müdigkeit|cansancio cansado
+stress|לחץ מתח|стресс напряжение|stress tension|Stress Anspannung|estrés tensión
+go|ללכת הולך|идти иду|aller marche|gehen gehe|ir voy
+make|לעשות יוצר|делать создаю|faire créer|machen schaffen|hacer crear
+break|לשבור שבר|ломать сломано|casser briser|brechen kaputt|romper roto
+see|לראות רואה|видеть вижу|voir vois|sehen sehe|ver veo
+speak|לדבר מדבר|говорить говорю|parler parle|sprechen rede|hablar hablo
+hear|לשמוע שומע|слышать слышу|entendre écoute|hören höre|oír escuchar
+seek|לחפש מחפש|искать ищу|chercher cherche|suchen suche|buscar busco
+give|לתת נותן|дать дай|donner donne|geben gib|dar dame
+want|לרצות רוצה|хотеть хочу|vouloir veux|wollen will|querer deseo
+miss|לחסור חסר|скучать|manquer absent|vermissen fehlt|extrañar extraño
+agree|להסכים מסכים כן|согласен да|accord oui|zustimmen ja|acuerdo sí
+home|בית הביתה|дом дома|maison foyer|Haus Zuhause|casa hogar
+outside|בחוץ חוץ|снаружи улица|dehors extérieur|draußen außen|fuera exterior
+work|עבודה לעבוד|работа работать|travail travailler|Arbeit arbeiten|trabajo trabajar
+internet|אינטרנט רשת|интернет сеть|internet réseau|Internet Netzwerk|internet red
+bond|קשר חיבור תהודה|связь резонанс|lien résonance|Bindung Resonanz|vínculo resonancia
+conflict|סכסוך מלחמה|конфликт война|conflit guerre|Konflikt Krieg|conflicto guerra
+know|לדעת יודע עובדה|знать знаю факт|savoir sais fait|wissen weiß Tatsache|saber sé hecho
+idea|רעיון מחשבה|идея мысль|idée pensée|Idee Gedanke|idea pensamiento
+think|לחשוב חושב תודעה|думать думаю сознание|penser pense conscience|denken denke Bewusstsein|pensar pienso conciencia
+dream|חלום חולם|мечта снится|rêve rêver|Traum träumen|soñar ensueño
+remember|לזכור זוכר זיכרון|помнить помню память|souvenir mémoire|erinnern Erinnerung|recordar recuerdo memoria
+lie|שקר לשקר|ложь лгать|mensonge mentir|Lüge lügen|mentira mentir
+path|דרך שביל|путь дорога|chemin route|Weg Pfad|camino sendero
+up|למעלה מעלה|вверх|haut monter|oben aufwärts|arriba subir
+down|למטה מטה|вниз|bas descendre|unten abwärts|abajo bajar
+far|רחוק מרחק|далеко расстояние|loin distance|fern Entfernung|lejos distancia
+back|חזרה אחורה|назад вернись|retour arrière|zurück Rückkehr|volver atrás
+before|לפני קודם|раньше прежде|avant auparavant|vorher zuvor|antes anteriormente
+now|עכשיו כעת|сейчас теперь|maintenant présent|jetzt nun|ahora presente
+after|אחרי לאחר|потом после|après ensuite|danach nachher|después luego
+never|מעולם|никогда|jamais|niemals nie|nunca jamás
+always|תמיד|всегда|toujours|immer stets|siempre
+not|לא אין|не нет|non pas|nicht nein|no nada
+many|רבים רבות|многие много|plusieurs nombreux|viele zahlreich|muchos muchas
+much|הרבה מאוד|очень|beaucoup très|viel sehr|mucho muy
+and|וגם|и|et|und|y
+one|אחד אחת|один одна|un une|eins eine|uno una
+question|שאלה למה|вопрос почему|question pourquoi|Frage warum|pregunta porqué
+how|איך כיצד|как|comment|wie|cómo
+cause|סיבה בגלל|причина потому|cause parce|Ursache weil|causa porque
+me|אני אותי לי|я меня мне|moi je|ich mich|yo mí
+you|אתה את אותך|ты тебя тебе|toi tu vous|du dich|tú usted
+other|אחר אחרת|другой другие|autre autres|andere anderer|otro otra
+money|כסף|деньги|argent monnaie|Geld Münze|dinero moneda
+change|שינוי משתנה|изменение меняется|changement changer|Änderung ändern|cambio cambiar
+write|לכתוב כותב מילים|писать пишу слова|écrire écris mots|schreiben schreibe Wörter|escribir escribo palabras
+choose|לבחור בוחר|выбирать выбираю|choisir choix|wählen Wahl|elegir elección
+help|עזרה לעזור|помощь помоги|aide aider|Hilfe helfen|ayuda ayudar
+have|יש|иметь имею|avoir possède|haben habe|tener tengo
+free|חופשי חירות|свободен свобода|libre liberté|frei Freiheit|libre libertad
+death|מוות מת|смерть умер|mort mourir|Tod sterben|muerte morir
+music|מוזיקה שיר קצב|музыка песня|musique chanson|Musik Lied|música canción
+good|טוב טובה|хороший хорошо|bon bien|gut gute|bueno bien
+small|קטן קטנה|маленький мало|petit petite|klein kleine|pequeño pequeña
+same|זהה דומה|одинаковый тот|même identique|gleich derselbe|mismo igual
+BE|להיות קיים|быть существую|être existe|sein existieren|ser existir
+wait|לחכות מחכה|ждать жду|attendre attends|warten warte|esperar espero`.split('\n').map(row=>row.split('|'));
+  if(rows.length!==88||rows.some((r,i)=>r[0]!==LIFE_SEMANTIC.names[i]||r.length!==6))throw Error('Incomplete six-language alphabet');
+  const normalize=w=>w.normalize('NFKC').toLowerCase().replaceAll('ё','е').replace(/\p{M}/gu,'');
+  const words=text=>(text.match(/[\p{L}\p{N}][\p{L}\p{N}\p{M}]*/gu)||[]).slice(0,128);
+  const grams=w=>{const s='^'+normalize(w)+'$';return Array.from({length:Math.max(1,s.length-2)},(_,i)=>s.slice(i,i+3));};
+  const packs=Object.fromEntries(codes.map(code=>[code,{dictionary:new Map(),grams:new Map(),captions:[]} ]));
+  function add(code,word,id){const pack=packs[code],w=normalize(word);pack.dictionary.set(w,id);
+    for(const gram of grams(w)){if(!pack.grams.has(gram))pack.grams.set(gram,Array(88).fill(0));pack.grams.get(gram)[id]++;}}
+  for(const [i,row] of rows.entries()){add('en',row[0],i);packs.en.captions[i]=row[0];for(let l=1;l<6;l++){
+    const entries=row[l].split(' ');packs[codes[l]].captions[i]=entries[0];for(const word of entries)add(codes[l],word,i);}}
+  for(const [word,name] of LIFE_SEMANTIC.pairs)add('en',word,LIFE_SEMANTIC.names.indexOf(name));
+  const stops={en:'a an the is are was were of to for in on at with from as it its this that these those by',
+    he:'של הוא היא הם הן עם על אל מן',ru:'это этот эта то те на в во с со к ко у по за из от для о об же бы ли ну блять короче',
+    fr:'le la les de des du au aux dans sur avec pour il elle ils elles ce cette ces',
+    de:'der die das ein einer eines einem einen dem den des im am mit von zu zum zur auf für es sie er',
+    es:'el la los las de del al en con por para es son está esto esta ese esa'};
+  const stopSets=Object.fromEntries(codes.map(c=>[c,new Set(stops[c].split(' ').map(normalize))]));
+  function detect(text){const tokens=words(text).map(normalize),scores=Object.fromEntries(codes.map(c=>[c,0]));
+    for(const w of tokens)for(const c of codes){if(packs[c].dictionary.has(w))scores[c]+=2;if(stopSets[c].has(w))scores[c]++;}
+    // Script evidence belongs to this input; it never assigns a state to a language.
+    scores.he+=tokens.filter(w=>/\p{Script=Hebrew}/u.test(w)).length*3;
+    scores.ru+=tokens.filter(w=>/\p{Script=Cyrillic}/u.test(w)).length*3;
+    const language=codes.reduce((a,c)=>scores[c]>scores[a]?c:a,'en');return {language,scores};
+  }
+  function tokenize(text,language='auto'){
+    if(language!=='auto'&&!codes.includes(language))throw Error('Unsupported address language');
+    const detected=detect(text),code=language==='auto'?detected.language:language,pack=packs[code],tokens=[];
+    for(const word of words(text)){const w=normalize(word);if(stopSets[code].has(w))continue;
+      let id=pack.dictionary.get(w),via='lexicon';
+      // A mixed-language word can enter through its own exact dictionary.
+      if(id===undefined)for(const other of codes){if(packs[other].dictionary.has(w)){id=packs[other].dictionary.get(w);break;}}
+      if(id===undefined){const votes=Array(88).fill(0);for(const gram of grams(w)){const row=pack.grams.get(gram);if(row)for(let i=0;i<88;i++)votes[i]+=row[i];}
+        const best=Math.max(...votes);if(best){id=votes.indexOf(best);via='orthographic';}else{let h=2166136261;for(const c of w)h=Math.imul(h^c.codePointAt(0),16777619);id=(h>>>0)%88;via='hash';}}
+      tokens.push({word,id,via});}
+    return {ids:tokens.map(t=>t.id),tokens,language:code,policy};
+  }
+  function caption(id,language='en',symbols=[],depth=0){
+    if(!codes.includes(language))throw Error('Unsupported glyph caption language');
+    if(id<88)return packs[language].captions[id];if(depth>64||!symbols[id-88])return '?';
+    return symbols[id-88].map(g=>g>=88?'('+caption(g,language,symbols,depth+1)+')':caption(g,language,symbols,depth+1)).join('+');
+  }
+  function extend(code,entries){for(const [name,aliases] of Object.entries(entries))for(const word of aliases.split(' '))add(code,word,LIFE_SEMANTIC.names.indexOf(name));}
+  function localizeName(name,language='en'){
+    if(!codes.includes(language))throw Error('Unsupported glyph caption language');
+    return name.replace(/[A-Za-z]+/g,word=>{const id=LIFE_SEMANTIC.names.indexOf(word);return id<0?word:packs[language].captions[id];});
+  }
+  return {policy,codes,labels,tokenize,detect,caption,localizeName,extend};
+})();
+
+
 /* AMOS-2 expression organ. The 88-glyph alphabet, orthographic mouth,
  * online co-occurrence field and recursive symbol birth descend from
  * actually.life/l.c (Oleg Ataeff & Claude, GPL-3.0). The neural association
@@ -3945,7 +4090,9 @@ const VOICE = (() => {
       if(!voice.rng.state)throw Error('Invalid expression random stream');return voice;
     }
   }
-  return {GlyphVoice,tokenize,BASE,MAX,names:LIFE_SEMANTIC.names,cosine};
+  // Keep the original membrane for immutable historical read validation.
+  LANGUAGES.extend('ru',russian);
+  return {GlyphVoice,tokenize:LANGUAGES.tokenize,tokenizeLegacy:tokenize,BASE,MAX,names:LIFE_SEMANTIC.names,cosine};
 })();
 
 
@@ -4046,7 +4193,9 @@ const RELATIONS = (() => {
 const PERCEPTION = (() => {
   'use strict';
   const hash=text=>{let n=2166136261;for(const c of text)n=Math.imul(n^c.codePointAt(0),16777619);return n>>>0;};
-  function read(result,ledger,tool,args,knownThrough) {
+  function read(result,ledger,tool,args,knownThrough,semanticVersion=2) {
+    if(![1,2].includes(semanticVersion))throw Error('Unknown read membrane');
+    const tokenize=semanticVersion===1?VOICE.tokenizeLegacy:VOICE.tokenize;
     if(knownThrough!==undefined&&(!Number.isSafeInteger(knownThrough)||knownThrough<0||knownThrough>ledger.size))throw Error('Invalid read boundary');
     if(!result?.ok||!Array.isArray(result.data?.items))throw Error('Invalid tool reading');
     const rows=ledger.entries(),premises=[],glyphs=[],sensory=[0,0];
@@ -4059,22 +4208,22 @@ const PERCEPTION = (() => {
         sensory[0]+=own.sensory[0];sensory[1]+=own.sensory[1];glyphs.push(...own.matched.slice(0,Math.max(0,128-glyphs.length)));continue;
       }
       if(fact.source==='amos:tool-read/v1'&&fact.predicate==='tool_reading'){
-        const own=JSON.parse(fact.value);if(own.policy!=='amos/read-indices-v1'||!Array.isArray(own.sensory)||own.sensory.length!==2)throw Error('Invalid remembered reading');
+        const own=JSON.parse(fact.value);if(!['amos/read-indices-v1','amos/read-indices-v2'].includes(own.policy)||!Array.isArray(own.sensory)||own.sensory.length!==2)throw Error('Invalid remembered reading');
         sensory[0]+=own.sensory[0];sensory[1]+=own.sensory[1];glyphs.push(...own.glyphs.slice(0,Math.max(0,128-glyphs.length)));continue;
       }
       if(fact.source==='amos:attention/v1'&&fact.predicate==='fact_selection'){
         const own=JSON.parse(fact.value);if(own.policy!=='amos/acquired-attention-v1'||!Number.isFinite(own.selected?.score))throw Error('Invalid remembered choice');
         sensory[0]+=Math.tanh(own.selected.score);sensory[1]+=own.selected.novelty;
-        glyphs.push(...VOICE.tokenize('me choose remember').ids.slice(0,Math.max(0,128-glyphs.length)));continue;
+        glyphs.push(...tokenize('me choose remember').ids.slice(0,Math.max(0,128-glyphs.length)));continue;
       }
       if(fact.source==='amos:self/v1'&&fact.predicate==='self_reflection'){
         const own=JSON.parse(fact.value);
         if(own.policy!=='amos/self-sonar-v1'||!Number.isFinite(own.error)||!Array.isArray(own.observed)||own.observed.length!==4)throw Error('Invalid somatic self observation');
         sensory[0]+=Math.tanh(own.error*4);sensory[1]+=Math.tanh(own.observed[2]*4);
-        glyphs.push(...VOICE.tokenize('me think change remember').ids.slice(0,Math.max(0,128-glyphs.length)));continue;
+        glyphs.push(...tokenize('me think change remember').ids.slice(0,Math.max(0,128-glyphs.length)));continue;
       }
       const words=fact.predicate.replaceAll('_',' ')+(typeof fact.value==='string'?' '+fact.value:'');
-      const parsed=VOICE.tokenize(words),vector=[0,0];
+      const parsed=tokenize(words),vector=[0,0];
       glyphs.push(...parsed.ids.slice(0,Math.max(0,128-glyphs.length)));
       for(const g of parsed.ids){vector[0]+=Math.cos(g*2.3999632297);vector[1]+=Math.sin(g*2.3999632297);}
       if(parsed.ids.length){vector[0]/=parsed.ids.length;vector[1]/=parsed.ids.length;}
@@ -4086,7 +4235,7 @@ const PERCEPTION = (() => {
       sensory[0]+=vector[0];sensory[1]+=vector[1];
     }
     if(premises.length){sensory[0]/=premises.length;sensory[1]/=premises.length;}
-    const reading={policy:'amos/read-indices-v1',tool,arguments:args,premises,glyphs,sensory,
+    const reading={policy:`amos/read-indices-v${semanticVersion}`,tool,arguments:args,premises,glyphs,sensory,
       total:result.data.total,complete:result.data.complete,nextOffset:result.data.nextOffset};
     if(knownThrough!==undefined)reading.knownThrough=knownThrough;return reading;
   }
@@ -4435,6 +4584,7 @@ const AMOS2 = (() => {
       (e.kind==='message'&&(typeof e.detail.text!=='string'||e.detail.text.length>1000))))throw Error('Invalid text encounter');
     if(e.detail.contentGlyphs!==undefined&&(!Array.isArray(e.detail.contentGlyphs)||e.detail.contentGlyphs.length>128||
       !e.detail.contentGlyphs.every(id=>integer(id)&&id>=0&&id<88)))throw Error('Invalid content glyphs');
+    if(e.detail.semanticPolicy!==undefined&&(e.detail.semanticPolicy!==LANGUAGES.policy||!LANGUAGES.codes.includes(e.detail.language)))throw Error('Invalid lexical provenance');
     if(e.kind==='quake'&&(!integer(e.detail.sourceUpdatedAt)||!Number.isFinite(e.detail.depth)||
       !(e.detail.magnitude===null||Number.isFinite(e.detail.magnitude))))throw Error('Invalid earthquake encounter');
     if(e.kind==='weather'&&![e.detail.temperature_c,e.detail.wind_kmh,e.detail.precipitation_mm].every(Number.isFinite))throw Error('Invalid weather encounter');
@@ -4453,7 +4603,7 @@ const AMOS2 = (() => {
     return {kind:'llm',key:`${fingerprint(packet.actor)}:${packet.id}`,source,observedAt:packet.observedAt,
       title:`${packet.actor} · ${packet.type}: ${packet.text}`,values:{received:true,actor:packet.actor,message_id:packet.id,speech_act:packet.type,text:packet.text,correlation_id:packet.correlationId??'',acquisition:via,origin:packet.origin??''},
       sensory,projection:'Semantic projection of an observed interaction; text remains attributed to its actor',
-      glyphs:ids(['AI','speak','now']).concat(parsed.ids),detail:{tokens:parsed.tokens,contentGlyphs:parsed.ids,acquisition:via,origin:packet.origin??null}};
+      glyphs:ids(['AI','speak','now']).concat(parsed.ids),detail:{tokens:parsed.tokens,contentGlyphs:parsed.ids,language:parsed.language,semanticPolicy:parsed.policy,acquisition:via,origin:packet.origin??null}};
   }
   class WorldLab {
     constructor(seed=17) {
@@ -4572,7 +4722,7 @@ const AMOS2 = (() => {
       }
       const e={id,subject,kind:'message',title:text,observedAt:receivedAt,receivedAt,source:'local:human',factIds,
         sensory,projection:'Order-weighted mean of the 88 glyph basis vectors: (cos(g·2.39996), sin(g·2.39996))',glyphs,
-        detail:{text,tokens:parsed.tokens,contentGlyphs:parsed.ids}};
+        detail:{text,tokens:parsed.tokens,contentGlyphs:parsed.ids,language:parsed.language,semanticPolicy:parsed.policy}};
       this._commit(ledger,[e]);this.serial=serial;return e;
     }
     ingestInteraction(packet,receivedAt) {
@@ -4713,7 +4863,7 @@ const AMOS2 = (() => {
       return trace;
     }
     dump() {
-      const text=JSON.stringify({format:'amos-2/world',version:4,model:this.model.dumps(),journal:encode(this.ledger),voice:this.voice.dump(),
+      const text=JSON.stringify({format:'amos-2/world',version:5,semanticPolicy:LANGUAGES.policy,model:this.model.dumps(),journal:encode(this.ledger),voice:this.voice.dump(),
         queue:this.queue,history:this.history,pending:this.pending,count:this.count,serial:this.serial,historyOmitted:this.historyOmitted,
         attention:this.attention,station:this.station,lastWeather:this.lastWeather,relations:this.relations.dump(),mind:this.mind.dump(),sonar:this.sonar.dump(),cognitionBirth:this.cognitionBirth,reservedReceiptSlots:ENCOUNTER_RECEIPTS});
       if(bytes(text)>MAX_SNAPSHOT)throw Error('Complete life exceeds the 24 MB snapshot budget');return text;
@@ -4721,11 +4871,12 @@ const AMOS2 = (() => {
     static load(text) {
       if(typeof text!=='string'||bytes(text)>MAX_SNAPSHOT)throw Error('Snapshot exceeds 24 MB');
       const d=JSON.parse(text);
-      if(d?.format!=='amos-2/world'||![1,2,3,4].includes(d.version))throw Error('Unsupported AMOS-2 life');
+      if(d?.format!=='amos-2/world'||![1,2,3,4,5].includes(d.version))throw Error('Unsupported AMOS-2 life');
+      if(d.version===5&&d.semanticPolicy!==LANGUAGES.policy)throw Error('Unsupported semantic membrane');
       if(d.version>=2&&(!d.relations||![2,3,5,6].includes(d.reservedReceiptSlots)))throw Error('Missing acquired relation organ or completion reserve');
-      if(d.version===4&&![5,6].includes(d.reservedReceiptSlots))throw Error('Missing tool-read completion reserve');
+      if(d.version>=4&&![5,6].includes(d.reservedReceiptSlots))throw Error('Missing tool-read completion reserve');
       const width=JSON.parse(d.model)?.amos?.subject?.h?.length;
-      if(d.version===4&&width!==BODY.H)throw Error('Invalid current neural width');
+      if(d.version>=4&&width!==BODY.H)throw Error('Invalid current neural width');
       if(d.voice?.neural?.[0]?.length!==width)throw Error('Voice and body neural widths disagree');
       const life=new WorldLab();life.model=growModel(d.model);life.ledger=decode(d.journal);
       life.voice=VOICE.GlyphVoice.load(d.voice).grow(BODY.H);
@@ -4773,10 +4924,11 @@ const AMOS2 = (() => {
         const receipt=life.ledger.entries().find(f=>f.id===t.readReceipt);
         const legacy=t.receiptState==='legacy-full-journal'&&t.event.legacyCompletion===true&&t.readReceipt===null;
         if(!finiteArray(t.worldAfter,t.after.length)||!finiteArray(t.readObservation,3)||t.resonanceGain!==.94+.12*t.resonance||
-          !sameReading(PERCEPTION.read(t.tool.result,life.ledger,t.tool.name,t.tool.arguments,t.reading?.knownThrough),t.reading)||
+          !['amos/read-indices-v1','amos/read-indices-v2'].includes(t.reading?.policy)||
+          !sameReading(PERCEPTION.read(t.tool.result,life.ledger,t.tool.name,t.tool.arguments,t.reading?.knownThrough,t.reading?.policy==='amos/read-indices-v1'?1:2),t.reading)||
           (!legacy&&(!receipt||receipt.source!=='amos:tool-read/v1'||receipt.value!==JSON.stringify(t.reading))))throw Error('Invalid acquired tool reading');
       }
-      if(d.version===4){
+      if(d.version>=4){
         life.mind=COGNITION.FactMind.load(d.mind,BODY.H);life.sonar=SONAR.SomaticSonar.load(d.sonar);life.cognitionBirth=d.cognitionBirth;
         if(!integer(life.cognitionBirth)||life.cognitionBirth<0||life.mind.updates!==d.count-life.cognitionBirth||life.sonar.turns!==life.mind.updates||
           (life.mind.lastSelf!==null&&!life.ledger.entries().some(f=>f.id===life.mind.lastSelf&&f.source==='amos:self/v1')))throw Error('Self history disagrees with this life');
@@ -4836,6 +4988,11 @@ const AMOS2 = (() => {
   let life=new AMOS2.WorldLab(17),running=true,connected=false,ready=false,selected=null,generation=0;
   let database=null,storageBlocked=false,saving=Promise.resolve(),noticeTimer,networkTimers=[];
   const controllers=new Set(),busy=new Set(),sourceErrors={};
+  let glyphLanguage='en';
+  try{const saved=localStorage.getItem('amos2:glyph-captions');if(LANGUAGES.codes.includes(saved))glyphLanguage=saved;}catch{}
+  const caption=id=>LANGUAGES.caption(id,glyphLanguage,life.voice.symbols);
+  for(const code of LANGUAGES.codes){const option=el('option',LANGUAGES.labels[code]);option.value=code;$('glyphLanguage').append(option);}
+  $('glyphLanguage').value=glyphLanguage;
   let keptLife=null;
   let fieldFrame=0,renderTime=0,pulseAt=0,targetH=Array(WIDTH).fill(0),shownH=targetH.slice(),positions=[];
   let tapePosition=0,tapeTarget=0,tapeDrag=null,tapeVelocity=0,tapeMovedAt=0;
@@ -4969,7 +5126,7 @@ const AMOS2 = (() => {
     }else $('relationRead').textContent='The next encounter can meet a history.';
     const links=trace?.associations;$('linkCount').textContent=links?`${links.matches.length} recalled`:'—';
     $('encounterLinks').replaceChildren();
-    if(links){for(const text of [`Shared: ${links.matched.map(g=>VOICE.names[g]).join(' · ')||'—'}`,`Past encounters: ${links.matches.map(m=>'#'+m.tick).join(' · ')||'—'}`,`Unmatched here: ${links.unmatched.map(g=>VOICE.names[g]).join(' · ')||'—'}`])$('encounterLinks').append(el('p',text));}
+    if(links){for(const text of [`Shared: ${links.matched.map(caption).join(' · ')||'—'}`,`Past encounters: ${links.matches.map(m=>'#'+m.tick).join(' · ')||'—'}`,`Unmatched here: ${links.unmatched.map(caption).join(' · ')||'—'}`])$('encounterLinks').append(el('p',text));}
     else $('encounterLinks').textContent='The next encounter can meet a history.';
     const own=trace?.selfReflection;$('selfDepth').textContent=own?`${own.passes.length} ${own.passes.length===1?'return':'returns'}`:'—';
     $('sonarChambers').replaceChildren(...SONAR.names.map((name,i)=>{const row=el('div',name),bar=el('i');bar.style.width=(100*(own?.after[i]??0))+'%';row.title=fmt(own?.after[i]??0);row.append(bar);return row;}));
@@ -4977,10 +5134,11 @@ const AMOS2 = (() => {
     $('deriveReading').hidden=!trace||!claimFor(trace);
     $('utterance').classList.toggle('empty',!trace);
     $('voiceMeta').textContent=`88 glyphs · ${trace?.symbolCount??life.voice.symbols.length} grown signs`;
-    $('utterance').textContent=trace?trace.utterance.ids.map(id=>life.voice.name(id)).join(' · '):'The first words are still ahead.';
+    $('utterance').textContent=trace?trace.utterance.ids.map(id=>caption(id)).join(' · '):'The first words are still ahead.';
+    $('utterance').dir=glyphLanguage==='he'?'rtl':'ltr';$('glyphs').dir=$('utterance').dir;
     $('glyphs').replaceChildren(...(trace?trace.utterance.ids.map(id=>glyphSVG(id)):[]));
     const born=trace?.utterance.born;$('symbolBirth').classList.toggle('born',!!born);
-    $('symbolBirth').replaceChildren(el('span',born?'◈':'◊'),el('p',born?`${born.name} · born from ${born.support} repeated pairings`:'A shared history can grow a new sign.'));
+    $('symbolBirth').replaceChildren(el('span',born?'◈':'◊'),el('p',born?`${caption(born.id)} · born from ${born.support} repeated pairings`:'A shared history can grow a new sign.'));
     $('tapeHint').textContent=life.historyOmitted?`Last 128 encounters · ${life.historyOmitted} earlier traces outside this view`:'Drag through its history · select an imprint';
     drawEarth();schedule();
   }
@@ -4997,6 +5155,7 @@ const AMOS2 = (() => {
     $('toolDetail').textContent=`${trace.tool.result.data.items?.length??0} receipts read · next attention: ${{quake:'earth',weather:'sky',message:'your presence'}[trace.nextAttention]}`;
     const dl=el('dl');pair(dl,'When it happened',time(event.observedAt));pair(dl,'When it became known',time(event.receivedAt));
     pair(dl,'Registration',COGNITION.category(event));if(event.registrationReceipt)pair(dl,'Registration receipt',event.registrationReceipt);
+    if(event.detail.language)pair(dl,'Lexical entrance',`${LANGUAGES.labels[event.detail.language]} · ${event.detail.semanticPolicy}`);
     pair(dl,'Source',event.source);if(event.source.startsWith('https://')) {
       const a=el('a','Open source ↗');a.href=event.source;a.target='_blank';a.rel='noopener';dl.append(a);
     }
@@ -5019,9 +5178,9 @@ const AMOS2 = (() => {
       pair(dl,'Read receipt',trace.readReceipt??'Kept in the imported legacy biography');
     }
     if(trace.associations){
-      const a=trace.associations;pair(dl,'Matched glyphs',a.matched.map(g=>VOICE.names[g]).join(' · ')||'None in the retained context');
-      pair(dl,'Unmatched in recent context',a.unmatched.map(g=>VOICE.names[g]).join(' · ')||'—');
-      pair(dl,'New to the acquired voice',a.novel.map(g=>VOICE.names[g]).join(' · ')||'—');
+      const a=trace.associations;pair(dl,'Matched glyphs',a.matched.map(caption).join(' · ')||'None in the retained context');
+      pair(dl,'Unmatched in recent context',a.unmatched.map(caption).join(' · ')||'—');
+      pair(dl,'New to the acquired voice',a.novel.map(caption).join(' · ')||'—');
       pair(dl,'Encounter associations',a.matches.map(m=>`#${m.tick} · ${fmt(m.similarity)} · ${life.ledger.entries()[m.anchor]?.source}`).join(' / ')||'A first relation can form');
       pair(dl,'Association receipt',trace.linkReceipt??'Retained in the imported biography');
     }
@@ -5036,17 +5195,17 @@ const AMOS2 = (() => {
     }
     if(trace.previousForecast)pair(dl,`Forecast made at encounter ${trace.resolvedFromTick}`,trace.previousForecast.map(n=>fmt(n)).join(' · '));
     pair(dl,'Expected next observation',trace.prediction.map(n=>fmt(n)).join(' · '));
-    pair(dl,'Glyphs entering',event.glyphs.map(id=>life.voice.name(id)).join(' · '));
-    if(event.detail.tokens)pair(dl,'Text membrane',event.detail.tokens.map(t=>`${t.word} → ${VOICE.names[t.id]} (${t.via})`).join('; '));
+    pair(dl,'Glyphs entering',event.glyphs.map(id=>caption(id)).join(' · '));
+    if(event.detail.tokens)pair(dl,'Text membrane',event.detail.tokens.map(t=>`${t.word} → ${caption(t.id)} (${t.via})`).join('; '));
     pair(dl,'Recognition support',fmt(trace.recognition.support));pair(dl,'Lack of evidence',fmt(trace.recognition.ignorance));pair(dl,'Outcome noise',fmt(trace.recognition.noise));
     pair(dl,'Expression contributions','Each glyph combines acquired neural association, recognized event prototypes and learned succession.');
-    for(const c of trace.utterance.contributions)pair(dl,life.voice.name(c.id),`neural ${fmt(c.association)} · recognition ${fmt(c.recognition)} · succession ${fmt(c.succession)}`);
+    for(const c of trace.utterance.contributions)pair(dl,caption(c.id),`neural ${fmt(c.association)} · recognition ${fmt(c.recognition)} · succession ${fmt(c.succession)}`);
     const raw=el('details');raw.append(el('summary','Tool call and source receipts'),el('pre',JSON.stringify(trace.tool,null,2)));
     $('evidence').replaceChildren(dl,raw);
   }
   function glyphSVG(id) {
-    const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox','0 0 32 38');svg.setAttribute('role','img');svg.setAttribute('aria-label',life.voice.name(id));
-    const title=document.createElementNS(ns,'title');title.textContent=life.voice.name(id);svg.append(title);
+    const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox','0 0 32 38');svg.setAttribute('role','img');svg.setAttribute('aria-label',caption(id));
+    const title=document.createElementNS(ns,'title');title.textContent=caption(id);svg.append(title);
     function sign(g,container,depth=0) {
       if(depth>8)return;
       if(g>=88){const pair=life.voice.symbols[g-88];if(pair)pair.forEach((p,i)=>{const group=document.createElementNS(ns,'g');group.setAttribute('transform',`translate(${i*15},${i?5:0}) scale(.52 .78)`);container.append(group);sign(p,group,depth+1);});return;}
@@ -5055,7 +5214,7 @@ const AMOS2 = (() => {
       const p=document.createElementNS(ns,'path');p.setAttribute('d',shapes[g%shapes.length]);group.append(p);
       const c=document.createElementNS(ns,'circle');c.setAttribute('cx',String(6+(g*7)%21));c.setAttribute('cy',String(5+(g*11)%28));c.setAttribute('r',g%3===0?'1.7':'.8');group.append(c);
     }
-    sign(id,svg);svg.addEventListener('click',()=>notice(id>=88?`${life.voice.name(id)} · a sign grown from repeated experience`:`${life.voice.name(id)} · acquired mass ${fmt(life.voice.uni[id],1)}`));return svg;
+    sign(id,svg);svg.addEventListener('click',()=>notice(id>=88?`${caption(id)} · a sign grown from repeated experience`:`${caption(id)} · acquired mass ${fmt(life.voice.uni[id],1)}`));return svg;
   }
   function canvasSize(canvas) {
     const b=canvas.getBoundingClientRect(),d=Math.min(2,devicePixelRatio||1),w=Math.max(1,b.width),h=Math.max(1,b.height);
@@ -5121,7 +5280,7 @@ const AMOS2 = (() => {
       ctx.font='11px Georgia, serif';let text=row.event.title;if(text.length>23)text=text.slice(0,22)+'…';ctx.fillStyle=rgba(colors.ink,a);ctx.fillText(text,x,43);
       circle(ctx,x,53,active?4:2.5,rgba(c,a),true);circle(ctx,x,53,active?8:5,rgba(c,a*.3));
       const gap=Math.min(1,row.surprise)*13;ctx.beginPath();ctx.moveTo(x-56,73);ctx.quadraticCurveTo(x,73-gap,x+56,73);ctx.strokeStyle=rgba(c,a*.55);ctx.lineWidth=.7;ctx.stroke();
-      ctx.font='8px ui-monospace, monospace';ctx.fillStyle=rgba(colors.ink,a*.75);const words=row.utterance.ids.slice(0,3).map(id=>life.voice.name(id)).join(' · ');ctx.fillText(words.length>29?words.slice(0,27)+'…':words,x,94);
+      ctx.font='8px ui-monospace, monospace';ctx.fillStyle=rgba(colors.ink,a*.75);const words=row.utterance.ids.slice(0,3).map(id=>caption(id)).join(' · ');ctx.fillText(words.length>29?words.slice(0,27)+'…':words,x,94);
       ctx.font='9px ui-monospace, monospace';
     }
     line(ctx,slit,7,slit,15,rgba(colors.quake,.7));line(ctx,slit,99,slit,108,rgba(colors.quake,.7));
@@ -5194,7 +5353,7 @@ const AMOS2 = (() => {
       const result=AMOS2.compareLives(keptLife,life.dump(),$('sharedMessage').value,Date.now());
       const box=el('div',undefined,'comparison-pair');
       for(const [label,trace,count] of [['Kept',result.left,result.before[0]],['Current',result.right,result.before[1]]]){
-        const side=el('section');side.append(el('h3',`${label} · ${count} encounters`),el('p',trace.utterance.words.join(' · ')));
+        const side=el('section');side.append(el('h3',`${label} · ${count} encounters`),el('p',trace.utterance.words.map(word=>LANGUAGES.localizeName(word,glyphLanguage)).join(' · ')));
         const bars=el('div',undefined,'comparison-neurons');for(const v of activations(trace)){const bar=el('i');bar.style.height=(3+Math.abs(v)*40)+'px';bar.style.background=v<0?'var(--teal)':'var(--gold)';bars.append(bar);}side.append(bars);
         side.append(el('p',`Expectation ${fmt(trace.relations.expectation)} · relation familiarity ${fmt(trace.relations.familiarity)}`,'quiet'));box.append(side);
       }
@@ -5205,13 +5364,14 @@ const AMOS2 = (() => {
   $('stationSave').onclick=()=>{const latitude=Number($('latitude').value),longitude=Number($('longitude').value);
     if(!$('latitude').value.trim()||!$('longitude').value.trim()||!Number.isFinite(latitude)||Math.abs(latitude)>90||!Number.isFinite(longitude)||Math.abs(longitude)>180){notice('Enter a latitude between −90 and 90 and longitude between −180 and 180.',true);return;}
     life.station={latitude,longitude};persist();update();notice('Weather observation point changed. The next reading will use it.');};
+  $('glyphLanguage').onchange=()=>{glyphLanguage=$('glyphLanguage').value;try{localStorage.setItem('amos2:glyph-captions',glyphLanguage);}catch{}update();};
   $('motion').onchange=()=>{motionChoice=$('motion').value;schedule();};
   $('exportLife').onclick=()=>{try{const url=URL.createObjectURL(new Blob([life.dump()],{type:'application/json'}));
     const a=el('a');a.href=url;a.download=`AMOS-2-life-${life.count}.json`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);
   }catch(error){notice(error.message,true);}};
   $('importLife').onclick=()=>$('importFile').click();
   $('importFile').onchange=async()=>{const file=$('importFile').files[0];if(!file)return;
-    try{if(file.size>AMOS2.MAX_SNAPSHOT)throw Error('Life file exceeds 8 MB');const replacement=AMOS2.WorldLab.load(await file.text());
+    try{if(file.size>AMOS2.MAX_SNAPSHOT)throw Error('Life file exceeds 24 MB');const replacement=AMOS2.WorldLab.load(await file.text());
       disconnect();generation++;life=replacement;selected=null;tapePosition=tapeTarget=0;storageBlocked=false;running=false;
       $('settings').close();update();persist();notice('The imported life is here. Continue when ready.');
     }catch(error){notice('Import was not applied: '+error.message,true);}finally{$('importFile').value='';}};

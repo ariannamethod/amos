@@ -30,7 +30,7 @@ def lalo_bundle():
 html = (HERE / 'shell.html').read_text()
 html = html.replace('/* AMOS2_STYLE */', (HERE / 'style.css').read_text())
 html = html.replace('/* AMOS2_LICENSE */', (HERE / 'vendor/lalo/LICENSE').read_text().replace('&', '&amp;').replace('<', '&lt;'))
-sources = [ROOT/'web/amos.js', HERE/'vendor/life-semantic.js', HERE/'voice.js', HERE/'relations.js', HERE/'perception.js', HERE/'cognition.js', HERE/'sonar.js', HERE/'engine.js', HERE/'ui.js']
+sources = [ROOT/'web/amos.js', HERE/'vendor/life-semantic.js', HERE/'languages.js', HERE/'voice.js', HERE/'relations.js', HERE/'perception.js', HERE/'cognition.js', HERE/'sonar.js', HERE/'engine.js', HERE/'ui.js']
 scripts = [sources[0].read_text(), lalo_bundle()] + [p.read_text() for p in sources[1:]]
 html = html.replace('/* AMOS2_SCRIPTS */', '\n\n'.join(scripts).replace('</script', '<\\/script'))
 target = ROOT/'Amos-2.html'
