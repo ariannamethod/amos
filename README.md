@@ -116,6 +116,16 @@ Original AMOS-ZERO snapshots still load and reproduce their old continuations. T
 
 ## Build it
 
+**[Amos-2.html](Amos-2.html)** is the single-file world laboratory: LALO brings
+earthquakes, weather and human writing into AMOS; acquired state finds expression
+through growing glyphs. Open it directly. Kinetic encounter history, source
+receipts and complete life continuation live in the file.
+The optional [worlds/](worlds/README.md) folder adds environments alongside
+the self-contained fact heart.
+[Organs, projections and verification](worlds/lalo/README.md).
+
+![AMOS II — the world, acquired state and a grown earth+stone glyph](assets/amos-2-world-20261031.jpg)
+
 ```bash
 cc -O2 -std=c99 amos.c -lm -o amos
 ./amos demo --seed 7 --steps 1600 --explore 1 --state life.state
