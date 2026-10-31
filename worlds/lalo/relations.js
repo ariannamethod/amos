@@ -17,7 +17,7 @@ const RELATIONS = (() => {
     const facts=event.factIds.map(id=>ledger.entries().find(f=>f.id===id));
     const values=Object.fromEntries(facts.map(f=>[f.predicate,f.value]));
     const geo=Number.isFinite(values.latitude)&&Math.abs(values.latitude)<=90&&Number.isFinite(values.longitude)&&Math.abs(values.longitude)<=180?[values.latitude,values.longitude]:null;
-    return {id:event.id,kind:event.kind,subject:event.subject,at:event.observedAt,receivedAt:event.receivedAt,
+    return {id:event.id,kind:event.kind,subject:event.subject,source:event.source,at:event.observedAt,receivedAt:event.receivedAt,
       anchor:event.factIds[0],geo,glyphs:[...new Set(event.detail.contentGlyphs??event.glyphs)],
       magnitude:typeof values.magnitude==='number'?values.magnitude:null,
       revised:facts.some(f=>f.supersedes!==null),part:Number.isSafeInteger(values.part)?values.part:null,
@@ -27,7 +27,7 @@ const RELATIONS = (() => {
     constructor(){this.patterns=[];this.transitions=rows();this.recent=[];this.lastPattern=null;this.seen=0;}
     observe(event,ledger) {
       const c=context(event,ledger),previous=this.recent.at(-1),same=this.recent.findLast(x=>x.kind===c.kind);
-      const priorVersion=this.recent.findLast(x=>x.subject===c.subject);
+      const priorVersion=this.recent.findLast(x=>x.subject===c.subject&&x.source===c.source);
       const device=this.recent.findLast(x=>x.kind==='device'&&x.geo);
       const spatial=(c.geo&&same?.geo)?distance(same.geo,c.geo):null;
       const deviceDistance=c.geo&&device?.geo?distance(device.geo,c.geo):null;
@@ -77,8 +77,8 @@ const RELATIONS = (() => {
         !d.patterns.every(p=>p&&vector(p.center)&&Number.isSafeInteger(p.mass)&&p.mass>0)||
         !Array.isArray(d.transitions)||d.transitions.length!==LIMIT||!d.transitions.every(r=>Array.isArray(r)&&r.length===LIMIT&&r.every(n=>Number.isSafeInteger(n)&&n>=0))||
         !Array.isArray(d.recent)||d.recent.length>WINDOW||d.recent.length!==Math.min(WINDOW,d.seen)||
-        !d.recent.every(c=>c&&typeof c.id==='string'&&typeof c.kind==='string'&&typeof c.subject==='string'&&Number.isSafeInteger(c.at)&&Number.isSafeInteger(c.receivedAt)&&
-          ledger.entries().some(f=>f.id===c.anchor&&f.subject===c.subject&&f.recordedAt===c.receivedAt)&&
+        !d.recent.every(c=>c&&typeof c.id==='string'&&typeof c.kind==='string'&&typeof c.subject==='string'&&typeof c.source==='string'&&Number.isSafeInteger(c.at)&&Number.isSafeInteger(c.receivedAt)&&
+          ledger.entries().some(f=>f.id===c.anchor&&f.subject===c.subject&&f.source===c.source&&f.recordedAt===c.receivedAt)&&
           (c.geo===null||Array.isArray(c.geo)&&c.geo.length===2&&c.geo.every(Number.isFinite)&&Math.abs(c.geo[0])<=90&&Math.abs(c.geo[1])<=180)&&
           Array.isArray(c.glyphs)&&c.glyphs.length<=132&&c.glyphs.every(g=>Number.isSafeInteger(g)&&g>=0&&g<88))||
         (d.seen===0?d.lastPattern!==null:!Number.isSafeInteger(d.lastPattern)||d.lastPattern<0||d.lastPattern>=d.patterns.length)||

@@ -3,6 +3,8 @@
 (() => {
   'use strict';
   const $=id=>document.getElementById(id),el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
+  const WIDTH=AMOS2.WIDTH;
+  const activations=trace=>trace?trace.after.concat(Array(Math.max(0,WIDTH-trace.after.length)).fill(0)):life.model.subject.h.slice();
   const fmt=(n,d=3)=>Number.isFinite(n)?n.toFixed(d):'—';
   const time=n=>new Date(n).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'});
   const colors={quake:[212,174,108],weather:[137,181,170],message:[187,137,117],ink:[222,214,196]};
@@ -14,7 +16,7 @@
   let database=null,storageBlocked=false,saving=Promise.resolve(),noticeTimer,networkTimers=[];
   const controllers=new Set(),busy=new Set(),sourceErrors={};
   let keptLife=null;
-  let fieldFrame=0,renderTime=0,pulseAt=0,targetH=Array(24).fill(0),shownH=targetH.slice(),positions=[];
+  let fieldFrame=0,renderTime=0,pulseAt=0,targetH=Array(WIDTH).fill(0),shownH=targetH.slice(),positions=[];
   let tapePosition=0,tapeTarget=0,tapeDrag=null,tapeVelocity=0,tapeMovedAt=0;
   const reducedMedia=matchMedia('(prefers-reduced-motion: reduce)');let motionChoice='system';
   const reduced=()=>reducedMedia.matches||motionChoice==='reduced';
@@ -97,13 +99,13 @@
   }
   function update() {
     if(selected!==null&&!life.history.some(t=>t.tick===selected)){selected=null;tapeTarget=0;}
-    const trace=current();targetH=trace?.after.slice()??life.model.subject.h.slice();
+    const trace=current();targetH=activations(trace);
     $('encounterCount').textContent=String(life.count).padStart(3,'0');
     $('lifeDot').classList.toggle('paused',!running);
     $('lifeStatus').textContent=!running?'Time paused':life.queue.length?'Meeting the world':life.count?'Listening for another encounter':'Awaiting a first encounter';
     $('pause').replaceChildren(document.createTextNode(running?'Ⅱ ':'▷ '),el('span',running?'Pause':'Continue'));
     $('queueCount').textContent=life.queue.length;$('factCount').textContent=life.ledger.size;
-    document.querySelector('.world-storage').title=`${life.queue.length*2} receipt slots reserved for pending attention and relations`;
+    document.querySelector('.world-storage').title=`${life.queue.length*AMOS2.ENCOUNTER_RECEIPTS} receipt slots reserved for pending attention, relations and reads`;
     $('queue').replaceChildren();
     if(!life.queue.length)$('queue').append(el('p',life.count?'The world can arrive again.':'Facts arrive here. Your words can arrive, too.','quiet'));
     for(const event of life.queue.slice(0,8)) {
@@ -172,10 +174,18 @@
     if(trace.relations){const r=trace.relations;
       pair(dl,'Raw world coordinates',r.rawSensory.map(n=>fmt(n)).join(' · '));
       pair(dl,'Acquired relation projection',r.projection.map(n=>fmt(n)).join(' · '));
-      pair(dl,'Perception rule','clamp(raw + 0.35 × relation projection, −1, 1)');
+      pair(dl,'World perception','clamp(clamp(raw + 0.35 × relation projection) × resonance gain)');
       pair(dl,'Relation receipt',trace.relationReceipt??'Kept in this biography: the imported journal had no reserved completion space');
       pair(dl,'Relation premises',r.evidence.join(' · '));
       const record=el('details');record.append(el('summary','Relation reading and source anchors'),el('pre',JSON.stringify(r,null,2)));dl.append(record);
+    }
+    if(trace.reading){
+      pair(dl,'Prior resonance gain',fmt(trace.resonanceGain,6));
+      pair(dl,'Chosen read premises',trace.reading.premises.map(i=>life.ledger.entries()[i]?.id??'?').join(' · '));
+      pair(dl,'Read perception','clamp(world perception + 0.15 × returned-content projection)');
+      pair(dl,'Returned-content projection',trace.reading.sensory.map(n=>fmt(n)).join(' · '));
+      pair(dl,'After chosen read [x, y, load]',trace.readObservation.map(n=>fmt(n)).join(' · '));
+      pair(dl,'Read receipt',trace.readReceipt??'Kept in the imported legacy biography');
     }
     if(trace.previousForecast)pair(dl,`Forecast made at encounter ${trace.resolvedFromTick}`,trace.previousForecast.map(n=>fmt(n)).join(' · '));
     pair(dl,'Expected next observation',trace.prediction.map(n=>fmt(n)).join(' · '));
@@ -209,20 +219,20 @@
   function circle(ctx,x,y,r,color,fill=false,width=1){ctx.beginPath();ctx.arc(x,y,Math.max(.1,r),0,Math.PI*2);ctx.lineWidth=width;if(fill){ctx.fillStyle=color;ctx.fill();}else{ctx.strokeStyle=color;ctx.stroke();}}
   function drawField(ts) {
     const {ctx,w,h}=canvasSize($('field')),cx=w/2,cy=h*.49,r=Math.min(w*.35,h*.39),trace=current();
-    const blend=reduced()?1:.13;for(let i=0;i<24;i++)shownH[i]+=(targetH[i]-shownH[i])*blend;
+    const blend=reduced()?1:.13;for(let i=0;i<WIDTH;i++)shownH[i]+=(targetH[i]-shownH[i])*blend;
     const energy=AMOS2.magnitude(shownH),pulse=reduced()?0:Math.exp(-(ts-pulseAt)/1250),t=reduced()?0:ts*.00009;
     const glow=ctx.createRadialGradient(cx,cy,5,cx,cy,r*1.8);glow.addColorStop(0,rgba(colors.quake,.045+energy*.07));glow.addColorStop(1,rgba(colors.quake,0));circle(ctx,cx,cy,r*1.8,glow,true);
     for(let ring=0;ring<3;ring++) {
-      ctx.beginPath();for(let i=0;i<=120;i++){const angle=i/120*Math.PI*2,neuron=shownH[Math.floor(i/120*24)%24];
+      ctx.beginPath();for(let i=0;i<=120;i++){const angle=i/120*Math.PI*2,neuron=shownH[Math.floor(i/120*WIDTH)%WIDTH];
         const radius=r*(.55+ring*.24)*(1+.032*Math.sin(5*angle+t+ring)+.075*neuron);
         const x=cx+Math.cos(angle)*radius,y=cy+Math.sin(angle)*radius*.87;if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y);}
       ctx.strokeStyle=rgba(ring%2?colors.weather:colors.quake,.10+energy*.1);ctx.lineWidth=.6;ctx.stroke();
     }
     line(ctx,cx-r*1.4,cy,cx-r*1.19,cy,rgba(colors.ink,.18));line(ctx,cx+r*1.19,cy,cx+r*1.4,cy,rgba(colors.ink,.18));
     line(ctx,cx,cy-r*1.13,cx,cy-r*1.02,rgba(colors.ink,.15));line(ctx,cx,cy+r*1.02,cx,cy+r*1.13,rgba(colors.ink,.15));
-    positions=shownH.map((v,i)=>{const angle=i*2.3999632297-Math.PI/2,rr=r*(.29+.62*Math.sqrt((i+.7)/24));return {x:cx+Math.cos(angle+t*.12)*rr,y:cy+Math.sin(angle+t*.12)*rr*.86};});
+    positions=shownH.map((v,i)=>{const angle=i*2.3999632297-Math.PI/2,rr=r*(.29+.62*Math.sqrt((i+.7)/WIDTH));return {x:cx+Math.cos(angle+t*.12)*rr,y:cy+Math.sin(angle+t*.12)*rr*.86};});
     const weights=life.model.subject.recurrent;
-    for(let i=0;i<24;i++){
+    for(let i=0;i<WIDTH;i++){
       const edges=weights[i].map((v,j)=>({v,j})).filter(e=>e.j!==i).sort((a,b)=>Math.abs(b.v)-Math.abs(a.v)).slice(0,2);
       for(const edge of edges){const a=positions[i],b=positions[edge.j];line(ctx,a.x,a.y,b.x,b.y,rgba(edge.v<0?colors.weather:colors.quake,.035+.11*Math.abs(shownH[i])),.55);}
     }
@@ -231,7 +241,7 @@
       ctx.beginPath();ctx.moveTo(0,cy);ctx.bezierCurveTo(w*.13,cy,w*.2,p.y,p.x,p.y);ctx.strokeStyle=rgba(c,.025+strength*.12+pulse*.12);ctx.lineWidth=.5+strength;ctx.stroke();
       if(pulse>.015){const f=1-pulse,x=p.x*f,y=cy+(p.y-cy)*f;circle(ctx,x,y,1.7,rgba(c,pulse*.8),true);}
     }}
-    for(let i=0;i<24;i++){
+    for(let i=0;i<WIDTH;i++){
       const p=positions[i],v=shownH[i],a=Math.min(1,Math.abs(v)),c=v>=0?colors.quake:colors.weather;
       const g=ctx.createRadialGradient(p.x,p.y,1,p.x,p.y,15+a*10);g.addColorStop(0,rgba(c,.05+a*.19));g.addColorStop(1,rgba(c,0));circle(ctx,p.x,p.y,15+a*10,g,true);
       circle(ctx,p.x,p.y,4+a*5,rgba(c,.18+a*.42),false,.65);circle(ctx,p.x,p.y,1.7+a*2.1,rgba(c,.4+a*.6),true);
@@ -281,7 +291,7 @@
   $('field').addEventListener('pointerup',event=>{
     const b=$('field').getBoundingClientRect(),x=event.clientX-b.left,y=event.clientY-b.top;
     const nearest=positions.map((p,i)=>({i,d:Math.hypot(p.x-x,p.y-y)})).sort((a,b)=>a.d-b.d)[0];
-    if(nearest&&nearest.d<30){const trace=current(),i=nearest.i;$('neuralHint').textContent=`h${String(i+1).padStart(2,'0')} · ${fmt(targetH[i],5)}${trace?' · Δ '+fmt(trace.after[i]-trace.before[i],5):''}`;}
+    if(nearest&&nearest.d<30){const trace=current(),i=nearest.i;$('neuralHint').textContent=`h${String(i+1).padStart(2,'0')} · ${fmt(targetH[i],5)}${trace&&i<trace.after.length?' · Δ '+fmt(trace.after[i]-trace.before[i],5):trace?' · born after this encounter':''}`;}
   });
   const tape=$('tape');
   tape.addEventListener('pointerdown',e=>{tapeDrag={x:e.clientX,start:tapePosition,time:performance.now(),last:e.clientX,moved:false};tapeVelocity=0;tape.classList.add('dragging');tape.setPointerCapture(e.pointerId);});
@@ -325,7 +335,7 @@
       const box=el('div',undefined,'comparison-pair');
       for(const [label,trace,count] of [['Kept',result.left,result.before[0]],['Current',result.right,result.before[1]]]){
         const side=el('section');side.append(el('h3',`${label} · ${count} encounters`),el('p',trace.utterance.words.join(' · ')));
-        const bars=el('div',undefined,'comparison-neurons');for(const v of trace.after){const bar=el('i');bar.style.height=(3+Math.abs(v)*40)+'px';bar.style.background=v<0?'var(--teal)':'var(--gold)';bars.append(bar);}side.append(bars);
+        const bars=el('div',undefined,'comparison-neurons');for(const v of activations(trace)){const bar=el('i');bar.style.height=(3+Math.abs(v)*40)+'px';bar.style.background=v<0?'var(--teal)':'var(--gold)';bars.append(bar);}side.append(bars);
         side.append(el('p',`Expectation ${fmt(trace.relations.expectation)} · relation familiarity ${fmt(trace.relations.familiarity)}`,'quiet'));box.append(side);
       }
       $('comparisonResult').replaceChildren(box,el('p',`State separation RMS Δh: ${fmt(result.activationGap,6)} · forecast separation: ${fmt(result.forecastGap,6)}`,'quiet'));
@@ -396,7 +406,7 @@
   optional.onerror=()=>optional.remove();document.head.append(optional);
   // Read-only QA surface: no alternate model, hidden training or rendered scores.
   Object.defineProperty(window,'AMOS2Inspect',{value:()=>({count:life.count,queue:life.queue.length,receipts:life.ledger.size,
-    h:life.model.subject.h.slice(),last:current()?JSON.parse(JSON.stringify(current())):null,symbols:life.voice.symbols.length,
+    h:life.model.subject.h.slice(),neuronWidth:WIDTH,last:current()?JSON.parse(JSON.stringify(current())):null,symbols:life.voice.symbols.length,
     snapshot:life.dump(),running,connected,ready}),writable:false});
   start();
 })();

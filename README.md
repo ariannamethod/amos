@@ -134,6 +134,11 @@ anchors. **Keep this history** and **Compare histories** let a kept life and
 its later continuation meet the same new observation, with both perspectives
 visible together.
 
+**AMOS II now has 28 recurrent neurons and 186 acquired predictive coefficients.**
+Its chosen LALO reads feed actual returned content back into perception and glyph
+associations. Prior resonance changes the incoming signal. Existing 24-neuron
+lives grow with their acquired weights, memories and pending forecasts retained.
+
 **The glyphs are its expression.** The alphabet comes from actually.life;
 associations with recurrent state and recognized events are acquired during this
 life. Ordinary signs — `earth`, `stone`, `now` — can grow into a new compound.
@@ -144,20 +149,19 @@ already shaped by experience. That meeting has a measurable resonance.
 
 **[Amos-2.html](Amos-2.html)** is the self-contained minimum. Open that one file:
 the fact heart, learning subject, kinetic history, glyph voice and complete life
-continuation are inside it. A sibling **[worlds/](worlds/README.md)** folder adds
+continuation are inside it. A sibling **[worlds/](AMOSLOG.md#world-contract)** folder adds
 environments and further points of development. The same life continues when
 the folder is absent, carrying what its earlier encounters already changed.
 
-![AMOS II — facts, acquired relations and glyph expression](assets/amos-2-relations-20261031.jpg)
+![AMOS II — 28 neurons, acquired reads and glyph expression](assets/amos-2-28-neurons-20261031.jpg)
 
 [With optional worlds](assets/amos-2-worlds-20261031.jpg) ·
 [Two histories, one shared observation](assets/amos-2-histories-20261031.jpg) ·
-[Acquired relations](worlds/lalo/RELATIONS.md) ·
-[Organs and projections](worlds/lalo/README.md) ·
-[Verification](worlds/lalo/VERIFICATION.md): 26 behavioral gates passed; live
-USGS and Open-Meteo reads, phone-width layout and exact exported-life continuation
-checked. The relational screenshot records 25 encounters, 196 receipts and three
-grown signs; the kept/current comparison shows two histories meeting one message.
+[Acquired relations](AMOSLOG.md#acquired-relations) ·
+[Organs and projections](AMOSLOG.md#runtime-organs-and-provenance) ·
+[Verification and project log](AMOSLOG.md): 38 behavioral gates and 1,600
+reference-body decisions pass through `make check`. Historical screenshots record
+the earlier lives; acquired state and complete continuation are preserved.
 
 ---
 
@@ -247,13 +251,13 @@ predictors ask whose movement explains internal load. Attribution succeeds on
 when the two channels are observationally identical. This is an embodiment
 diagnostic, separate from the action policy; its history is not imported by a scar.
 
-The complete protocol and limits are in [AMOS-2 design](docs/AMOS2_DESIGN.md),
-[protocol](docs/AMOS2_PROTOCOL.md) and [report](docs/AMOS2_REPORT.md).
+The reproducible checks and current implementation record are in
+[AMOSLOG.md](AMOSLOG.md).
 
 ## Three bodies, one experiment
 
-**C remains a single runtime file:** `amos.c`. `tests/`, `docs/` and `examples/`
-are the court, its record and saved lives, not runtime dependencies.
+**C remains a single runtime file:** `amos.c`. The `tests/` court and
+`AMOSLOG.md` hold verification and the project record.
 
 The readable Python body uses only the standard library:
 
@@ -274,9 +278,11 @@ Python and JavaScript exchange complete JSON checkpoints. C writes `AMOS0003`
 binary snapshots and reads the older v1/v2 formats. JSON and C binary are distinct
 formats. PRNGs match across all three implementations; forecasts and learning
 are checked with a 1e-8 numerical tolerance, and sampled decisions are checked
-exactly. `make check` requires Python 3 and Node.js for the two reference bodies.
-C itself still needs only libc and libm. `make lab` creates one portable offline HTML in `dist/`. Browser automation is a separate optional
-`make check-browser` target; see [web/README.md](web/README.md).
+exactly. `make check` runs the reference-body and standalone-heart checks with
+Python 3, Node.js and a C compiler. C itself still needs only libc and libm.
+`make lab` creates one portable offline laboratory in `dist/`; `make world`
+rebuilds `Amos-2.html`. The original reference bodies use 24 neurons; AMOS II
+selects the expanded 28-neuron JavaScript body.
 
 ---
 
@@ -297,9 +303,14 @@ C itself still needs only libc and libm. `make lab` creates one portable offline
 | Retrieval with landmark order swapped | 0 / 3,072 |
 | Changed law after relearning | 3,072 / 3,072 |
 
-The table above records the AMOS-0/1 courts; they still pass with AMOS-2. The historical AMOS-1 timing was 33.1 microseconds per sequence step on its x86-64 host. Current measurements, compiler and scope are in [reports/performance.json](reports/performance.json).
+The table records the historical AMOS-0/1 courts. The recorded AMOS-1 timing
+was 33.1 microseconds per sequence step on its x86-64 host. Current verification
+commands and their scope are in [AMOSLOG.md](AMOSLOG.md).
 
-The subject itself needs no Python. The repository's verification layer does. `make check` runs the C evaluation and Python court, including deliberate breakage of recurrence, scar transfer, restored randomness, glyph order, uncertainty and sequence-state restoration. The point of the court is simple: if the mechanism we claim matters is broken, the corresponding gate has to fail.
+The subject itself needs no Python. `make check` runs C/Python/JavaScript parity,
+restart and checkpoint-exchange checks, then the standalone heart's behavioral
+gates: source corrections, causal interventions, acquired reads, glyph growth,
+ordered relations, neural expansion and complete life continuation.
 
 ---
 
