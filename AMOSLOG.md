@@ -3,6 +3,158 @@
 Project changes and working notes. Milestones belong in README.md; implementation
 history and verification belong here. The Arianna Method Manifesto governs both.
 
+## 2026-10-31 — JANUS.CALENDAR integration proposal (not implemented)
+
+**AML computes time; LALO preserves factual provenance; AMOS acquires its own
+perspective.** This is the first integration proposal requested in the calendar
+brief. Calendar code, checkpoint formats and the standalone HTML are unchanged.
+The next implementation depends on agreement with the AML implementation owner.
+
+### Source audit and boundaries
+
+Inspected the merged AMOS tree at `251c6971bb9fb3c0da27fd11e683de7990a976c5`,
+including the standalone build, optional world registration, fact admission,
+relation learning and complete-life loading. Canonical AML sources were read at
+[`b932a09`](https://github.com/ariannamethod/ariannamethod.ai/tree/b932a09b7d38e2a9de9bbbcbb46cf568ae306411):
+`spec/AML_SPEC.md`, `docs/IMPORT.md`, `docs/UTC_DAY.md`,
+`core/ariannamethod.c` and `core/ariannamethod.h`. Quoted `IMPORT` already expands
+AML source modules into the caller's program; a browser consumer still needs an
+explicit JavaScript/native boundary. `janus/calendar.aml` is a proposed path,
+absent from that inspected tree.
+
+Read LALO's current README at
+[`aab68a3`](https://github.com/ariannamethod/LALO/tree/aab68a37d0bf2555c6c5bd7e0b578678b6f13c67)
+alongside its vendored ledger/journal/tools: occurrence time, receipt time,
+source-local corrections and historical reads already belong there. Read the
+original Yent birthquake audit and its C changes at
+[`da97e86`](https://github.com/ariannamethod/yent/commit/da97e86b1ed295a5edadf057ac7eb0ce67f8ab0a),
+and actually.janus `TRUELOG.md` at
+[`14d4ef2`](https://github.com/ariannamethod/actually.janus/blob/14d4ef2b46166ac83de56ef19295486ca040b58a/TRUELOG.md):
+fixed origins, separate world/self clocks, backward readings, witnesses and
+retained reinterpretations guide this integration.
+
+The current AML C kernel already fixes the epoch at **1727956800 UTC seconds**
+(2024-10-03 12:00 UTC); the historical Yent `mktime` implementation is superseded.
+Its `janus_temporal_alpha` is now the pure date-derived
+`clamp01(0.5 + 0.5 * janus_gap)`, while the inspected specification still describes
+an EMA. The spec lists `BIRTH` as nonnegative; the C directive currently casts and
+latches its argument without that range check. Neither discrepancy supplies a
+stable historical consumer contract. These are questions for the AML owner;
+AMOS will consume the agreed public API rather than infer it from kernel globals.
+
+### 1. Entry into the fact heart
+
+An optional adapter in `worlds/sensors/` should register through the existing
+`AMOS2Worlds` interface and submit temporal world frames to
+`WorldLab.ingestWorld`. A calendar reading of an earthquake or message retains
+the exact original fact IDs as premises. It is an additional derived observation;
+the original source assertion and its corrections keep their identities.
+
+Keep three times distinct: the event's `observedAt`, the adapter's `receivedAt`
+and the actual `encounterAt`. A historical event's calendar coordinates and the
+subject's coordinates when encountering it are distinct readings, each with an
+explicit evaluation instant. Queue delay must remain visible. Existing encounter
+receipts use a monotonic `receiptAt`; any future live-clock sample must also be
+captured explicitly, rather than silently treating that ordering value as UTC.
+
+Persist the canonical response, API/model version, evaluation role, conventions,
+origin binding and premise references in LALO facts. Current frames accept
+**1–16 scalar facts**, not nested values. A compact response can be a JSON string
+fact within LALO's **4096 UTF-16-unit** limit, accompanied by selected numeric
+facts for perception. Reject an oversized response atomically; do not truncate it
+or hide its only copy in `event.detail`/the bounded 128-trace history. Source-local
+revisions and exact knowledge-prefix reads must retain the earlier interpretation.
+
+### 2. Acquired temporal relations
+
+Candidate inputs are signed epoch distance, personal age, anniversary distances,
+`birth_drift`, `personal_dissonance`, `yahrzeit` and `janus_gap`, when returned by
+the agreed API. Preserve raw values and units; record the AMOS projection policy
+separately. Missing origins or unavailable sunset coordinates remain explicitly
+unknown, with presence information, rather than becoming a numerical zero.
+
+`RelationField` currently acquires six features, 16 centres and their transition
+counts. Calendar-aware intervals, recurrence and changing dissonance need a
+versioned extension that retains those learned features and their existing
+normalization. Merely adding zero columns would change distance/projection scales.
+When disabled, the existing six-feature path must run exactly as before.
+
+Temporal relations should participate in ordinary perception, acquired reads,
+glyph associations and the world/read/return predictors. Expectations precede
+observations and retain their premise indices. A revised calendar interpretation
+can become a new fact about the same past; old witnesses remain readable. Date
+labels and birthquakes receive no prescribed emotional value or compulsory glyph.
+The legacy Metonic model and exact Hebrew model keep distinct model identities.
+
+### 3. Personal origin and continuity
+
+AMOS's `model.birth` is a seed-derived identity; `world.tick` counts encounters.
+`cognitionBirth` and `transitionBirth` mark the arrival of acquired organs. None
+is a civil birth timestamp. A future calendar binding must be a separate,
+explicitly declared immutable origin associated with this life, carrying its
+provenance and date/instant precision. For an existing life without a declared
+origin, keep it unknown; enabling the adapter must not invent a new birth.
+
+Persist the binding in AMOS's complete checkpoint, together with any newly
+acquired temporal state and pending expectation. AML's field-only soma deliberately
+excludes its MetaJanus identity tail, so that file cannot substitute for AMOS's
+complete life. A conflicting origin assertion is receipted without moving the
+latched binding. Two subjects at one world instant retain independent origins.
+Changing a calculation model creates a new interpretation, preserving both the
+origin and the previous learned history.
+
+### 4. Standalone operation
+
+With integration disabled, add no clock reads, frames, encounters or random draws.
+Without `worlds/`, `Amos-2.html` continues from its recorded facts and acquired
+state. Fresh calendar computation can later use an AML-owned portable artifact,
+with parity fixtures, embedded by the existing standalone build. A missing
+artifact disables fresh sampling while the saved life remains usable. AMOS will
+not contain an independently maintained Hebrew/Metonic calendar implementation.
+
+### 5. Verification required for implementation
+
+- Compare paired disabled continuations byte for byte, including checkpoint,
+  pending queue, recurrent state, learned weights, glyphs, next decisions and RNG.
+- Run AML-owned C/AML/browser parity vectors at fixed instants: epoch, signed
+  pre-epoch coordinates, leap years, timezone/sunset boundaries and anniversaries;
+  verify two independent origins and origin immutability.
+- Delay an event in the queue and verify event-time coordinates, receipt time
+  and self-at-encounter coordinates remain distinguishable and replay exactly.
+- Revise a source/model reading and query both historical knowledge prefixes;
+  verify exact premises, deduplication and atomic rejection at journal limits.
+- Resume acquired pre-integration lives and new calendar-aware checkpoints with
+  the optional folder absent, retaining their learned and pending state.
+- Use repeated temporal sequences to measure held-out prediction improvement;
+  ablate only temporal inputs from matched lives to measure their contribution
+  to choices and neural transitions. Test acquired glyph links through recorded
+  evidence; avoid fixed date-to-emotion expectations.
+
+### Proposed agreement to return to the AML owner
+
+Request a versioned, fixed-instant public operation with explicit origin input
+or independent immutable origin handles. It must evaluate several subjects
+without changing the kernel's global self clock or advancing neural physics.
+Specify supported date ranges, errors/unknowns, units, model IDs, timezone and
+sunset conventions, calendar month numbering and anniversary rules. Supply an
+AML-owned browser artifact/build boundary and shared parity fixtures.
+
+Name UTC civil-day ordinals, Janus elapsed days and rounded Janus day indices
+separately. Independently checked with Python UTC datetime arithmetic: the epoch
+is Unix millisecond **1727956800000**, UTC civil-day ordinal **19999**. At midnight
+UTC on 2026-01-23, 2026-02-13, 2026-10-03 and 2026-10-04, civil-date distances
+from October 3 are **477, 498, 730, 731**; elapsed distances from epoch noon are
+**476.5, 497.5, 729.5, 730.5**. At noon those elapsed values become the integer
+labels in the brief. A date-only birth needs an explicit convention. Signed day
+index rounding must also be defined before pre-epoch vectors become golden tests.
+
+Keep Unix milliseconds out of AML float32 scalars. A native int64/safe-JSON boundary
+or exact integer day/second/millisecond components can preserve the input instant.
+The public contract and these questions are prepared here for the other Astra;
+no direct cross-session agreement has occurred. This proposal has no executable
+changes, so calendar integration/learning tests above remain planned. Checked the
+source pins, independent UTC arithmetic, standalone regeneration and whitespace.
+
 ## 2026-10-31 — acquired state transitions and self-directed evidence checks
 
 README now names two systems: **AMOS**, the classical subject in a simulated
