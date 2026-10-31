@@ -7,8 +7,8 @@ import vm from 'node:vm';
 const html=readFileSync(new URL('../../Amos-2.html',import.meta.url),'utf8');
 const code=html.match(/<script>([\s\S]*?)<\/script>/)[1].split('/* Kinetic instrument:')[0];
 const context=vm.createContext({TextEncoder,TextDecoder,console,AbortController,fetch,ReadableStream});
-vm.runInContext(code+';globalThis.organs={AMOS,LALO,VOICE,AMOS2};',context);
-const {AMOS,LALO,VOICE,AMOS2}=context.organs;
+vm.runInContext(code+';globalThis.organs={AMOS,LALO,VOICE,RELATIONS,AMOS2};',context);
+const {AMOS,LALO,VOICE,RELATIONS,AMOS2}=context.organs;
 const T=1793400000000;
 const feed=(mag=2.9,updated=T-1000)=>({type:'FeatureCollection',features:[{type:'Feature',id:'amosSynthetic1',geometry:{type:'Point',coordinates:[13,52,8]},properties:{mag,magType:'ml',place:'Synthetic test fixture',type:'earthquake',time:T-10000,updated}}]});
 const weather=(temperature=12)=>({latitude:52.5,longitude:13.4,current:{time:T/1000,interval:900,temperature_2m:temperature,wind_speed_10m:9,precipitation:0,is_day:1},current_units:{temperature_2m:'°C',wind_speed_10m:'km/h',precipitation:'mm'}});
@@ -48,7 +48,7 @@ test('the same present inherits different meanings from different ordered histor
   speak(a,'earth stone',T);speak(a,'water sky',T+10);
   speak(b,'water sky',T);speak(b,'earth stone',T+10);
   const aa=speak(a,'I remember you',T+20),bb=speak(b,'I remember you',T+20);
-  assert.equal(JSON.stringify(aa.observed.slice(0,2)),JSON.stringify(bb.observed.slice(0,2)));
+  assert.equal(JSON.stringify(aa.event.sensory),JSON.stringify(bb.event.sensory));
   assert.ok(aa.after.some((v,i)=>Math.abs(v-bb.after[i])>1e-5));
   assert.notEqual(JSON.stringify(aa.prediction),JSON.stringify(bb.prediction));
 });
@@ -120,10 +120,10 @@ test('backdated or invalid arrivals and damaged snapshots do not replace a life'
   assert.equal(life.dump(),prior);
 });
 
-test('the optional folder registers two lazy instruments and text becomes sourced encounters',async()=>{
+test('the optional folder registers three lazy instruments and text becomes sourced encounters',async()=>{
   const definitions=[],worldContext=vm.createContext({window:{AMOS2Worlds:{version:1,register:def=>definitions.push(def)}}});
   vm.runInContext(readFileSync(new URL('../worlds.js',import.meta.url),'utf8'),worldContext);
-  assert.equal(definitions.length,2);
+  assert.equal(definitions.length,3);
   const fileWorld=definitions.find(d=>d.id==='world-text-file');
   const text='earth stone now\n'.repeat(150),file={name:'synthetic-fixture.txt',size:text.length,lastModified:T,text:async()=>text};
   const frames=await fileWorld.read({file,tokenize:VOICE.tokenize,glyph:name=>VOICE.names.indexOf(name)});
@@ -142,4 +142,90 @@ test('an invalid optional-world batch preserves the accepted world and acquired 
   assert.throws(()=>life.ingestWorld([frame,{...frame,key:'bad',sensory:[Infinity,0]}],T+1));assert.equal(life.dump(),prior);
   assert.equal(life.ingestWorld([frame],T+2),1);
   const saved=life.dump();assert.throws(()=>life.ingestWorld([{...frame,values:{value:1},observedAt:T+1}],T+3));assert.equal(life.dump(),saved);
+});
+
+test('review: arrivals reserve completion receipts for the entire pending queue',()=>{
+  const life=new AMOS2.WorldLab();for(let i=0;i<1009;i++)life.ledger.add({id:`reserve:${i}`,subject:'fixture:reserve',predicate:'value',value:i,source:'synthetic:test',validFrom:T,validTo:null,recordedAt:T,supersedes:null});
+  const e=life.ingestText('earth',T+1);life.ingestQuakes(feed(),T+2);
+  assert.equal(life.ledger.size,1020);assert.equal(life.queue.length,2);
+  const before=life.dump();assert.throws(()=>life.ingestText('overflow',T+3),/reserve/);assert.equal(life.dump(),before);
+  life.encounter(T+4,e.id);life.encounter(T+5);assert.equal(life.ledger.size,1024);assert.equal(life.queue.length,0);
+});
+test('review: a compressed phrase counts surviving base pairs once',()=>{
+  const voice=new VOICE.GlyphVoice(),g=name=>VOICE.names.indexOf(name),h=Array(24).fill(.1),mix=[1,0,0,0,0,0,0,0];
+  for(let i=0;i<14;i++)voice.ingest(['earth','stone'].map(g),h,mix);assert.ok(voice.consolidate());
+  for(let i=0;i<7;i++)voice.ingest(['earth','stone','water','sky'].map(g),h,mix);
+  assert.equal(voice.cooc[g('water')][g('sky')],7);assert.equal(voice.bi[g('water')][g('sky')],7);
+  assert.equal(voice.cooc[88][g('water')],7);assert.equal(voice.consolidate(),null);
+});
+test('geographic relations change perception of an identical external fact',()=>{
+  const a=new AMOS2.WorldLab(17),b=new AMOS2.WorldLab(17),near=feed(),far=feed();
+  far.features[0].geometry.coordinates=[-60,-30,8];
+  a.ingestQuakes(near,T);b.ingestQuakes(far,T);const firstA=a.encounter(T+1),firstB=b.encounter(T+1);
+  assert.equal(JSON.stringify(firstA.after),JSON.stringify(firstB.after));
+  const next=feed();next.features[0].id='syntheticNext';next.features[0].properties.time=T+10000;next.features[0].geometry.coordinates=[13.1,52.1,8];
+  a.ingestQuakes(next,T+11000);b.ingestQuakes(next,T+11000);
+  const aa=a.encounter(T+11001),bb=b.encounter(T+11001);
+  assert.equal(JSON.stringify(aa.event.sensory),JSON.stringify(bb.event.sensory));
+  assert.ok(aa.relations.spatialKm<20);assert.ok(bb.relations.spatialKm>5000);
+  assert.ok(aa.after.some((v,i)=>Math.abs(v-bb.after[i])>1e-5));
+  for(const life of [a,b]){const t=life.history.at(-1),f=life.ledger.entries().find(f=>f.id===t.relationReceipt);assert.equal(f.value,JSON.stringify(t.relations));assert.ok(t.relations.evidence.every(id=>life.ledger.entries().some(f=>f.id===id)));}
+});
+test('relation familiarity and transition expectations are acquired before the next encounter',()=>{
+  const life=new AMOS2.WorldLab();const readings=[];
+  for(let i=0;i<10;i++)readings.push(speak(life,'earth stone now',T+i*10).relations);
+  assert.equal(readings[0].priorSupport,0);assert.equal(readings[0].expectation,0);
+  assert.ok(readings.at(-1).priorSupport>0);assert.ok(readings.at(-1).transitionSupport>0);assert.ok(readings.at(-1).expectation>0);
+  assert.equal(life.relations.seen,10);assert.equal(life.relations.transitions.flat().reduce((s,v)=>s+v,0),9);
+  const copy=AMOS2.WorldLab.load(life.dump());assert.equal(copy.dump(),life.dump());
+});
+test('source revision has a measured relation to the previously encountered version',()=>{
+  const life=new AMOS2.WorldLab();life.ingestQuakes(feed(2.9),T);life.encounter(T+1);
+  life.ingestQuakes(feed(3.4,T+10),T+20);const t=life.encounter(T+21);
+  assert.ok(Math.abs(t.relations.revisionDelta-.5)<1e-12);assert.equal(t.relations.gapMs,0);
+  assert.equal(JSON.stringify(AMOS2.WorldLab.load(life.dump()).history.at(-1).relations),JSON.stringify(t.relations));
+});
+test('a shared observation meets two histories without modifying either original life',()=>{
+  const a=new AMOS2.WorldLab(17),b=new AMOS2.WorldLab(17);
+  speak(a,'earth stone',T);speak(a,'water sky',T+10);speak(b,'water sky',T);speak(b,'earth stone',T+10);
+  const left=a.dump(),right=b.dump(),result=AMOS2.compareLives(left,right,'I remember you',T+100);
+  assert.ok(result.activationGap>1e-5);assert.equal(JSON.stringify(result.left.event.sensory),JSON.stringify(result.right.event.sensory));
+  assert.equal(a.dump(),left);assert.equal(b.dump(),right);
+  const same=AMOS2.compareLives(left,left,'I remember you',T+100);assert.equal(same.activationGap,0);assert.equal(same.forecastGap,0);
+});
+test('old snapshots acquire the new relation organ while retaining their existing acquired body',()=>{
+  const life=new AMOS2.WorldLab();speak(life,'earth',T);const data=JSON.parse(life.dump());data.version=1;delete data.relations;
+  for(const t of data.history){delete t.relations;delete t.relationReceipt;}
+  const restored=AMOS2.WorldLab.load(JSON.stringify(data));assert.equal(restored.model.dumps(),life.model.dumps());assert.equal(restored.relations.seen,0);
+  speak(restored,'stone',T+10);assert.equal(restored.relations.seen,1);assert.equal(AMOS2.WorldLab.load(restored.dump()).count,2);
+});
+
+test('optional dated facts supply spatial relations that remain in the standalone life',async()=>{
+  const definitions=[],wc=vm.createContext({window:{AMOS2Worlds:{version:1,register:d=>definitions.push(d)}}});
+  vm.runInContext(readFileSync(new URL('../worlds.js',import.meta.url),'utf8'),wc);
+  const data={format:'amos/world-facts',version:1,events:[
+    {id:'a',time:T,values:{latitude:52,longitude:13,magnitude:2},glyphs:['earth','stone']},
+    {id:'b',time:T+60000,values:{latitude:52.1,longitude:13.1,magnitude:2},glyphs:['earth','stone']},
+  ]},file={name:'synthetic-world.json',size:1000,text:async()=>JSON.stringify(data)};
+  const frames=await definitions.find(d=>d.id==='world-facts').read({file,glyph:n=>VOICE.names.indexOf(n)});
+  const life=new AMOS2.WorldLab();life.ingestWorld(frames,T+100000);life.encounter(T+100001);const last=life.encounter(T+100002);
+  assert.equal(last.relations.gapMs,60000);assert.ok(last.relations.spatialKm>10&&last.relations.spatialKm<20);
+  assert.equal(AMOS2.WorldLab.load(life.dump()).dump(),life.dump());
+  assert.ok(life.ledger.entries().some(f=>f.predicate==='original_source'&&f.source==='local:world-facts'));
+});
+test('a revised relation context cannot be imported against different source coordinates',()=>{
+  const life=new AMOS2.WorldLab();life.ingestQuakes(feed(),T);life.encounter(T+1);
+  const data=JSON.parse(life.dump());data.relations.recent[0].geo=[0,0];
+  assert.throws(()=>AMOS2.WorldLab.load(JSON.stringify(data)),/source receipts/);
+});
+
+test('review: an already full legacy journal can finish its accepted earthquake',()=>{
+  const life=new AMOS2.WorldLab();for(let i=0;i<1016;i++)life.ledger.add({id:`legacy:${i}`,subject:'fixture:legacy',predicate:'value',value:i,source:'synthetic:test',validFrom:T,validTo:null,recordedAt:T,supersedes:null});
+  const fresh=new AMOS2.WorldLab();fresh.ingestQuakes(feed(),T+1);
+  life.ledger=LALO.ingestUSGS(life.ledger,feed(),{receivedAt:T+1}).ledger;life.queue=fresh.queue;
+  const data=JSON.parse(life.dump());data.version=1;delete data.reservedReceiptSlots;delete data.relations;
+  const restored=AMOS2.WorldLab.load(JSON.stringify(data));const trace=restored.encounter(T+2);
+  assert.equal(restored.ledger.size,1024);assert.equal(restored.queue.length,0);assert.equal(restored.count,1);
+  assert.equal(trace.receiptState,'legacy-full-journal');assert.ok(trace.relations.evidence.length>0);
+  assert.equal(AMOS2.WorldLab.load(restored.dump()).dump(),restored.dump());
 });

@@ -87,7 +87,9 @@ const VOICE = (() => {
       }
       for(let i=1;i<ids.length;i++){this.bi[ids[i-1]][ids[i]]++;this.cooc[ids[i-1]][ids[i]]++;}
       if(compressed.some(id=>id>=BASE))for(let i=1;i<compressed.length;i++){
-        this.bi[compressed[i-1]][compressed[i]]++;this.cooc[compressed[i-1]][compressed[i]]++;
+        if(compressed[i-1]>=BASE||compressed[i]>=BASE){
+          this.bi[compressed[i-1]][compressed[i]]++;this.cooc[compressed[i-1]][compressed[i]]++;
+        }
       }
       this.recent=this.recent.concat(compressed).slice(-24);
     }

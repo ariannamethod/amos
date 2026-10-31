@@ -126,10 +126,18 @@ its own history; the subject has the history of when it learned about it.
 Earthquakes, weather and human writing enter that heart, become encounters,
 reshape acquired expectations and change how the next present is met.
 
+**Relations enter its perception.** Time gaps, spatial proximity, source
+revisions and recurring sequences meet an acquired field of relation patterns.
+The same external fact can reach a different internal present because of what
+the subject has already encountered. Each derived reading retains its source
+anchors. **Keep this history** and **Compare histories** let a kept life and
+its later continuation meet the same new observation, with both perspectives
+visible together.
+
 **The glyphs are its expression.** The alphabet comes from actually.life;
 associations with recurrent state and recognized events are acquired during this
 life. Ordinary signs — `earth`, `stone`, `now` — can grow into a new compound.
-In the recorded life below, `earth+stone` was born from fourteen observed pairings
+In the [first recorded life](assets/amos-2-world-20261031.jpg), `earth+stone` was born from fourteen observed pairings
 and entered the subject's own expression. Human addressing belongs to the same
 world: the act of writing is itself a fact, and its content meets the glyph field
 already shaped by experience. That meeting has a measurable resonance.
@@ -140,13 +148,16 @@ continuation are inside it. A sibling **[worlds/](worlds/README.md)** folder add
 environments and further points of development. The same life continues when
 the folder is absent, carrying what its earlier encounters already changed.
 
-![AMOS II — the world, acquired state and a grown earth+stone glyph](assets/amos-2-world-20261031.jpg)
+![AMOS II — facts, acquired relations and glyph expression](assets/amos-2-relations-20261031.jpg)
 
 [With optional worlds](assets/amos-2-worlds-20261031.jpg) ·
+[Two histories, one shared observation](assets/amos-2-histories-20261031.jpg) ·
+[Acquired relations](worlds/lalo/RELATIONS.md) ·
 [Organs and projections](worlds/lalo/README.md) ·
-[Verification](worlds/lalo/VERIFICATION.md): 16 behavioral gates passed; live
+[Verification](worlds/lalo/VERIFICATION.md): 26 behavioral gates passed; live
 USGS and Open-Meteo reads, phone-width layout and exact exported-life continuation
-checked. The screenshot records 17 encounters, 126 receipts and a grown sign.
+checked. The relational screenshot records 25 encounters, 196 receipts and three
+grown signs; the kept/current comparison shows two histories meeting one message.
 
 ---
 
