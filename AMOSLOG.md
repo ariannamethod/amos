@@ -3,6 +3,131 @@
 Project changes and working notes. Milestones belong in README.md; implementation
 history and verification belong here. The Arianna Method Manifesto governs both.
 
+## 2026-11-01 — acquired experience across chapters and native glyph return
+
+Continued from merged `0b878de`. Read NETTA itself at
+[`896a768`](https://github.com/ariannamethod/netta/tree/896a7686dbe9027c26e975a446398e854dda6a72):
+`README.md`, `TRANSFER_PROTOCOL.md`, `transfer.c`, `NETTALOG0.md`,
+`BANK_PROPOSAL.md`, `portable_recurrence/recurrence.h`,
+`portable_recurrence/recurrence.c` and `court4/transfer4.c`. Also revisited
+NETTA.SONAR's engine/core at `47d999b`. The portable recurrence archive keeps 877
+acquired counts in 7032 bytes; its recipient has a separate local life and quote
+chronology. The bank document explicitly labels its larger construction as a
+proposal. AMOS adopts the separation between acquired structure and the detailed
+stream that formed it. No NETTA counts, foreign authority or transfer verdict is
+imported into AMOS. Here the same subject continues with its own acquired state.
+
+### The journal bound was a chapter bound
+
+`WorldLab.continueWithExperience(at)` returns an exact full archive and a
+continued life, leaving the original unchanged. The active ledger starts a new
+chapter; the lifetime count, identity, recurrent body, learned predictor,
+covariance, event memory, glyph inventory/associations, voice RNG, sonar, scars,
+self-model weights, phase-model heads, acquired relation centres and transition
+counts all remain. The pending next-encounter prediction is retained and resolved
+by the next actual observation. `cognitionBirth` and `transitionBirth` retain
+their original lifetime coordinates.
+
+This is an explicit operation after waiting encounters have been met. A chapter
+without a new acquired encounter cannot be closed. Its boundary has the previous
+encounter count, accumulated receipt count, closure time and a deterministic
+fingerprint of the exact exported archive. A carried self-memory receipt keeps
+the previous measured self-error/response available to the same read loop.
+
+The working tape and direct lookup contexts start afresh. Their detailed witnesses
+remain in the full archived chapter. `historyOmitted` keeps the lifetime coordinate;
+`relations.recentBirth` separates a fresh lookup window from its retained learned
+centres/counts. Phase probes pointing into the sealed ledger are cleared while
+their trained heads and error statistics stay. New reads explicitly declare
+`amos/current-chapter-v1`; earlier knowledge-time queries direct the caller to the
+archive. New named conclusions retain their chapter scope as a fact. An absent
+old premise is never silently remapped onto a reused numerical index.
+
+A bounded memory of **128** recent source heads carries their source, subject,
+version digest, original fact reference and archive fingerprint. Repeated generic
+world inputs, weather samples and USGS versions remain unchanged across a chapter
+boundary. USGS validates the full poll before consulting those fingerprints;
+stale updates stay stale and changed content without a new version rejects
+atomically. A genuine correction carries an explicit reference to the archived
+version rather than forging a predecessor in the new ledger. The retained index
+is bounded recent recognition, not an unbounded replacement fact database.
+
+### Browser continuation
+
+Life settings adds **Archive chapter & continue** and **Download previous chapter**.
+The first offers the exact old chapter as a download, and, when IndexedDB is
+available, stores the archive and the continued current life in one transaction.
+Failure leaves the current life in place. Without browser storage, the user keeps
+the offered archive download and the continued life can be exported normally.
+No automatic truncation or background chapter reset is introduced.
+
+Incoming sources and interaction entry are held during the archive transaction;
+generation tokens prevent an old asynchronous read/import from replacing the
+continued life. The interface shows chapter and lifetime counts, retained glyph
+expression/somatic state and the archived-history boundary. It clears obsolete
+probe captions instead of displaying a probe whose source belongs to the old book.
+The optional folder remains unnecessary.
+
+### Representations return without a text round trip
+
+The recursive draft now enters `SomaticSonar.reinhale` as its actual IDs and
+compound inventory. Base concepts have the existing six semantic anchors;
+compound meaning is the average of its two parent representations, evaluated
+with memoization. Nested structure therefore participates without a caption
+being parsed as new external language. A draft's provisional new pair is recorded
+alongside its base inventory size, so its identity remains interpretable even
+when the final expression consolidates another pair. The final voice still
+commits one actual utterance per encounter.
+
+`amos/glyph-return-v1` records this path. Validation checks IDs, backward parent
+references and the somatic projection used by each neural return. Changing the
+voice's captions to unrelated words leaves the acquired body and sonar identical
+in the matched intervention test.
+
+Canonical English seed names now take precedence over imported aliases, fixing
+`much` (65) becoming `many` (64). The current lexical policy is
+`amos/semantic-six-v2`, with `amos/read-indices-v3` for new reads. The old six-language
+membrane remains available for immutable v2 reads, alongside the original v1
+EN/RU read membrane. World format **7** accepts formats 1–6 and preserves their
+received words, glyph identities, recorded reads and pending expectations. A
+genuine learned v6 fixture was captured from merged main before these edits,
+including the old `much` interpretation and a queued message.
+
+### Verification
+
+The acquired-life test reaches **336 encounters across 21 chapters**, beyond the
+former 315-message slot ceiling, with 335 predictive updates, 336 utterances and
+336 updates per self/phase model. Acquired state restores exactly and the next
+encounter matches its continued counterpart. Tests also cover unchanged
+source polls/corrections across two boundaries, archive immutability, pending
+facts, damaged chapter/self-memory records, all 88 canonical seed identities,
+native compound composition and genuine v3/v4/v5/v6 continuation.
+
+Browser QA used the standalone file with `dist/worlds` absent. The existing life
+continued from 49 encounters/451 receipts to chapter 2 at the same 49 encounters
+with two active memory receipts and 20 remembered source versions. The archived
+export was **1,371,699 bytes**, the continued export **502,918 bytes**. Body, voice,
+sonar, pending forecast, main/self/phase weights and acquired relation patterns
+were unchanged. The previous chapter reopened through the actual import control;
+the locally retained archive downloaded byte-identically. Encounter **50** then
+met `much earth stone remember`, retained prior resonance **0.490**, made four
+native returns and expressed `stone · write+now · now · earth · (earth+stone)+now`.
+A final 50-encounter export, including the source-version index, was byte-identical
+before/after browser restart (**551,723 bytes**) and loaded/dumped exactly by the
+same standalone engine in Node.
+The screenshot is `assets/amos-2-chapters-20261101.jpg`.
+
+Final `make check`: **86 standalone gates pass** and **1600** reference decisions
+match across C/Python/JavaScript, including restart/checkpoint exchange at abs/rel
+1e-8. Nine targeted continuation, source-memory, native-representation and
+historical-migration gates also pass. After archived corrections were connected
+to the existing revision/attention signal, seven targeted chapter/correction/
+attention gates pass. The **317,545-byte** HTML regenerates exactly and whitespace
+checks pass. The five forecast heads retain their different observation boundaries
+and their existing causal tests; acquired heads are not deleted on the basis of
+overlapping output statistics. Calendar implementation remains with AML; no
+calendar engine or runtime dependency is introduced here.
+
 ## 2026-11-01 — dependency and abstraction audit; internal-source admission fix
 
 Reviewed merged main `4c67ff4343f8b2078cfe9b59ad6916d8e219d0bb`: the standalone

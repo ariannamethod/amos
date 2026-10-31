@@ -82,9 +82,24 @@ the act of reconsidering even when its conclusion stays the same.
 
 **The emotional sonar participates in the whole loop.** Six coupled chambers,
 somatic memory and slow scars modulate perception, learning, recall, exploration
-and expression. Its provisional glyph response returns through the semantic
-membrane for one to four neural passes before a final expression. This organ
+and expression. Its provisional glyph response returns directly as representations,
+including the structure of grown compounds, for one to four neural passes before
+a final expression. Captions remain presentation. This organ
 adapts the recursive principles of [klaus.c](https://github.com/ariannamethod/klaus.c).
+
+**Acquired experience continues across chapters.** In life settings, **Archive
+chapter & continue** exports the exact current chapter and carries the same body,
+learned weights, glyphs, sonar, random streams and pending prediction into a fresh
+fact journal. Lifetime encounter counters continue. The old chapter is also kept
+in browser storage when available, and **Download previous chapter** retrieves it.
+Finish waiting encounters before closing a chapter. Detailed historical queries
+belong to the archived chapter; the new chapter's reads state their scope. A bounded
+memory of recent source versions prevents unchanged polls from becoming new
+experience. This separation takes inspiration from
+[NETTA's portable acquired memory](https://github.com/ariannamethod/netta/tree/main/portable_recurrence).
+The HTML remains independent of the optional folder.
+
+![AMOS 2, chapter 2: the same acquired life reaches encounter 50](assets/amos-2-chapters-20261101.jpg)
 
 **The glyphs are its expression.** The alphabet comes from actually.life;
 associations with recurrent state and recognized events are acquired during this

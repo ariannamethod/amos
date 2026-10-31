@@ -3,9 +3,9 @@
 const PERCEPTION = (() => {
   'use strict';
   const hash=text=>{let n=2166136261;for(const c of text)n=Math.imul(n^c.codePointAt(0),16777619);return n>>>0;};
-  function read(result,ledger,tool,args,knownThrough,semanticVersion=2) {
-    if(![1,2].includes(semanticVersion))throw Error('Unknown read membrane');
-    const tokenize=semanticVersion===1?VOICE.tokenizeLegacy:VOICE.tokenize;
+  function read(result,ledger,tool,args,knownThrough,semanticVersion=3) {
+    if(![1,2,3].includes(semanticVersion))throw Error('Unknown read membrane');
+    const tokenize=semanticVersion===1?VOICE.tokenizeLegacy:semanticVersion===2?VOICE.tokenizePrevious:VOICE.tokenize;
     if(knownThrough!==undefined&&(!Number.isSafeInteger(knownThrough)||knownThrough<0||knownThrough>ledger.size))throw Error('Invalid read boundary');
     if(!result?.ok||!Array.isArray(result.data?.items))throw Error('Invalid tool reading');
     const rows=ledger.entries(),premises=[],glyphs=[],sensory=[0,0];
@@ -23,13 +23,18 @@ const PERCEPTION = (() => {
         sensory[0]+=own.sensory[0];sensory[1]+=own.sensory[1];glyphs.push(...own.matched.slice(0,Math.max(0,128-glyphs.length)));continue;
       }
       if(fact.source==='amos:tool-read/v1'&&fact.predicate==='tool_reading'){
-        const own=JSON.parse(fact.value);if(!['amos/read-indices-v1','amos/read-indices-v2'].includes(own.policy)||!Array.isArray(own.sensory)||own.sensory.length!==2)throw Error('Invalid remembered reading');
+        const own=JSON.parse(fact.value);if(!['amos/read-indices-v1','amos/read-indices-v2','amos/read-indices-v3'].includes(own.policy)||!Array.isArray(own.sensory)||own.sensory.length!==2)throw Error('Invalid remembered reading');
         sensory[0]+=own.sensory[0];sensory[1]+=own.sensory[1];glyphs.push(...own.glyphs.slice(0,Math.max(0,128-glyphs.length)));continue;
       }
       if(fact.source==='amos:attention/v1'&&fact.predicate==='fact_selection'){
         const own=JSON.parse(fact.value);if(own.policy!=='amos/acquired-attention-v1'||!Number.isFinite(own.selected?.score))throw Error('Invalid remembered choice');
         sensory[0]+=Math.tanh(own.selected.score);sensory[1]+=own.selected.novelty;
         glyphs.push(...tokenize('me choose remember').ids.slice(0,Math.max(0,128-glyphs.length)));continue;
+      }
+      if(fact.source==='amos:experience/v1'&&fact.predicate==='self_memory'){
+        const own=JSON.parse(fact.value);if(own.policy!=='amos/carried-self-v1'||!Number.isFinite(own.error)||!Array.isArray(own.observed)||own.observed.length!==4)throw Error('Invalid carried self observation');
+        sensory[0]+=Math.tanh(own.error*4);sensory[1]+=Math.tanh(own.observed[2]*4);
+        glyphs.push(...tokenize('me think change remember').ids.slice(0,Math.max(0,128-glyphs.length)));continue;
       }
       if(fact.source==='amos:self/v1'&&fact.predicate==='self_reflection'){
         const own=JSON.parse(fact.value);
@@ -52,7 +57,8 @@ const PERCEPTION = (() => {
     if(premises.length){sensory[0]/=premises.length;sensory[1]/=premises.length;}
     const reading={policy:`amos/read-indices-v${semanticVersion}`,tool,arguments:args,premises,glyphs,sensory,
       total:result.data.total,complete:result.data.complete,nextOffset:result.data.nextOffset};
-    if(knownThrough!==undefined)reading.knownThrough=knownThrough;return reading;
+    if(knownThrough!==undefined)reading.knownThrough=knownThrough;
+    if(result.data.scope)reading.scope=JSON.parse(JSON.stringify(result.data.scope));return reading;
   }
   return {read};
 })();

@@ -20,7 +20,7 @@ const RELATIONS = (() => {
     return {id:event.id,kind:event.kind,subject:event.subject,source:event.source,at:event.observedAt,receivedAt:event.receivedAt,
       anchor:event.factIds[0],geo,glyphs:[...new Set(event.detail.contentGlyphs??event.glyphs)],
       magnitude:typeof values.magnitude==='number'?values.magnitude:null,
-      revised:facts.some(f=>f.supersedes!==null),part:Number.isSafeInteger(values.part)?values.part:null,
+      revised:!!event.detail.archivedVersion||facts.some(f=>f.supersedes!==null),part:Number.isSafeInteger(values.part)?values.part:null,
       document:typeof values.name==='string'?`${values.name}:${values.modified_at??''}`:null};
   }
   class RelationField {
@@ -76,7 +76,8 @@ const RELATIONS = (() => {
       if(!d||!Number.isSafeInteger(d.seen)||d.seen<0||!Array.isArray(d.patterns)||d.patterns.length>LIMIT||
         !d.patterns.every(p=>p&&vector(p.center)&&Number.isSafeInteger(p.mass)&&p.mass>0)||
         !Array.isArray(d.transitions)||d.transitions.length!==LIMIT||!d.transitions.every(r=>Array.isArray(r)&&r.length===LIMIT&&r.every(n=>Number.isSafeInteger(n)&&n>=0))||
-        !Array.isArray(d.recent)||d.recent.length>WINDOW||d.recent.length!==Math.min(WINDOW,d.seen)||
+        !Number.isSafeInteger(d.recentBirth??0)||(d.recentBirth??0)<0||(d.recentBirth??0)>d.seen||
+        !Array.isArray(d.recent)||d.recent.length>WINDOW||d.recent.length!==Math.min(WINDOW,d.seen-(d.recentBirth??0))||
         !d.recent.every(c=>c&&typeof c.id==='string'&&typeof c.kind==='string'&&typeof c.subject==='string'&&typeof c.source==='string'&&Number.isSafeInteger(c.at)&&Number.isSafeInteger(c.receivedAt)&&
           ledger.entries().some(f=>f.id===c.anchor&&f.subject===c.subject&&f.source===c.source&&f.recordedAt===c.receivedAt)&&
           (c.geo===null||Array.isArray(c.geo)&&c.geo.length===2&&c.geo.every(Number.isFinite)&&Math.abs(c.geo[0])<=90&&Math.abs(c.geo[1])<=180)&&

@@ -26,7 +26,10 @@ const AMOS2 = (() => {
   }
   const encode=ledger=>LALO.encodeJournal(ledger,{maxBytes:MAX_JOURNAL});
   const decode=text=>LALO.decodeJournal(text,{capacity:CAPACITY,maxBytes:MAX_JOURNAL});
-  const makeHost=ledger=>LALO.createToolHost(ledger,{capacity:CAPACITY,maxBytes:MAX_JOURNAL});
+  const scope=chapter=>chapter?.number>1?{policy:'amos/current-chapter-v1',chapter:chapter.number,fromCount:chapter.fromCount,archive:chapter.archive}:null;
+  const makeHost=(ledger,chapter)=>{const host=LALO.createToolHost(ledger,{capacity:CAPACITY,maxBytes:MAX_JOURNAL});return {call:(name,args)=>{
+    const result=host.call(name,args),boundary=scope(chapter);return result.ok&&boundary?{...result,data:{...result.data,scope:boundary}}:result;
+  }};};
   const featureMap=(i,width)=>i<5+width?i:i<5+2*width?i+BODY.H-width:BODY.F-1;
   const growFeatures=(a,width)=>{const next=Array(BODY.F).fill(0);a.forEach((v,i)=>next[featureMap(i,width)]=v);return next;};
   function growModel(text) {
@@ -55,6 +58,19 @@ const AMOS2 = (() => {
   const latestReceipt=ledger=>ledger.entries().at(-1)?.recordedAt??0;
   const worldKind=kind=>typeof kind==='string'&&/^[a-z][a-z0-9-]{0,31}$/.test(kind);
   const fingerprint=text=>{let n=14695981039346656037n;for(const c of text)n=BigInt.asUintN(64,(n^BigInt(c.codePointAt(0)))*1099511628211n);return n.toString(16);};
+  const versionDigest=(values,from,to)=>fingerprint(JSON.stringify([from,to,Object.entries(values).sort(([a],[b])=>a<b?-1:a>b?1:0)]));
+  const archivedVersion=(life,subject,source)=>life.sourceMemory.find(m=>m.subject===subject&&m.source===source);
+  function sourceMemories(life,archive){
+    const out=life.sourceMemory.slice(),groups=new Map();
+    for(const f of life.ledger.entries())if(!f.source.startsWith('amos:')&&f.source!=='local:human')groups.set(JSON.stringify([f.subject,f.source]),[f.subject,f.source]);
+    for(const [subject,source] of groups.values()){
+      const facts=currentVersion(life.ledger,subject,source);if(!facts.length)continue;
+      const values=Object.fromEntries(facts.map(f=>[f.predicate,f.value])),first=facts[0],old=out.findIndex(m=>m.subject===subject&&m.source===source);
+      if(old>=0)out.splice(old,1);out.push({subject,source,digest:versionDigest(values,first.validFrom,first.validTo),fromFact:first.id,archive,
+        revision:Number.isSafeInteger(values.source_updated_at)?values.source_updated_at:null});
+    }
+    return out.slice(-128);
+  }
   function prefixLedger(ledger,count){
     if(count===undefined)return ledger;
     const rows=ledger.entries();if(!integer(count)||count<0||count>rows.length)throw Error('Invalid knowledge boundary');
@@ -84,7 +100,7 @@ const AMOS2 = (() => {
     if(d.evaluationReceipt){const evaluation=all.find(f=>f.id===d.evaluationReceipt);
       if(!evaluation||evaluation.source!=='amos:evaluation/v1'||JSON.stringify(validateEvaluation(evaluation,ledger).query)!==JSON.stringify(d.query))throw Error('Missing inference evaluation');}
   }
-  function validateReflection(t,ledger){
+  function validateReflection(t,ledger,voice){
     const r=t.selfReflection,all=ledger.entries(),legacy=t.receiptState==='legacy-full-journal'&&t.event.legacyCompletion===true;
     const expectedFeatures=[1,...t.worldAfter,t.action,t.load,t.resonance,t.relations.familiarity,Math.tanh(t.surprise)];
     if(!r||r.policy!=='amos/self-sonar-v1'||!finiteArray(r.forecast?.features,BODY.H+6)||!finiteArray(r.forecast?.expected,4)||
@@ -104,6 +120,16 @@ const AMOS2 = (() => {
       !t.selection||t.selection.selected?.id!==t.event.id||!['explicit','acquired'].includes(t.selection.mode)||
       !Array.isArray(t.selection.alternatives)||t.selection.alternatives.length>3||
       ![t.selection.selected,...t.selection.alternatives].every(c=>typeof c.id==='string'&&Number.isFinite(c.score)))throw Error('Invalid self-reflection or attention decision');
+    if(r.returnPolicy!==undefined){
+      if(r.returnPolicy!=='amos/glyph-return-v1')throw Error('Unknown representation return');
+      for(const p of r.passes){const g=p.representations;
+        if(!g||!integer(g.base)||g.base<0||g.base>voice.symbols.length||
+          (g.born!==null&&(!Array.isArray(g.born)||g.born.length!==2||!g.born.every(id=>integer(id)&&id>=0&&id<88+g.base))))throw Error('Invalid returned representation inventory');
+        SONAR.semantic(p.draft,voice.symbols.slice(0,g.base).concat(g.born?[g.born]:[]));
+        const xy=[0,0];for(let c=0;c<6;c++){xy[0]+=p.after[c]*Math.cos((c+1)*2.3999632297)/6;xy[1]+=p.after[c]*Math.sin((c+1)*2.3999632297)/6;}
+        if(!closeArray(p.observation,[...t.readObservation.slice(0,2).map((v,i)=>bounded(v+.1*xy[i],-1,1)),t.readObservation[2]]))throw Error('Representation return differs from its somatic projection');
+      }
+    }
     for(const [id,source,value] of [[t.selfReceipt,'amos:self/v1',r],[t.selectionReceipt,'amos:attention/v1',t.selection]]){
       const fact=all.find(f=>f.id===id);
       if(!legacy&&(!fact||fact.source!==source||fact.recordedAt!==t.encounterAt||fact.value!==JSON.stringify(value)))throw Error('Missing self-observation receipt');
@@ -151,7 +177,7 @@ const AMOS2 = (() => {
       (e.kind==='message'&&(typeof e.detail.text!=='string'||e.detail.text.length>1000))))throw Error('Invalid text encounter');
     if(e.detail.contentGlyphs!==undefined&&(!Array.isArray(e.detail.contentGlyphs)||e.detail.contentGlyphs.length>128||
       !e.detail.contentGlyphs.every(id=>integer(id)&&id>=0&&id<88)))throw Error('Invalid content glyphs');
-    if(e.detail.semanticPolicy!==undefined&&(e.detail.semanticPolicy!==LANGUAGES.policy||!LANGUAGES.codes.includes(e.detail.language)))throw Error('Invalid lexical provenance');
+    if(e.detail.semanticPolicy!==undefined&&(![LANGUAGES.policy,LANGUAGES.previousPolicy].includes(e.detail.semanticPolicy)||!LANGUAGES.codes.includes(e.detail.language)))throw Error('Invalid lexical provenance');
     if(e.kind==='quake'&&(!integer(e.detail.sourceUpdatedAt)||!Number.isFinite(e.detail.depth)||
       !(e.detail.magnitude===null||Number.isFinite(e.detail.magnitude))))throw Error('Invalid earthquake encounter');
     if(e.kind==='weather'&&![e.detail.temperature_c,e.detail.wind_kmh,e.detail.precipitation_mm].every(Number.isFinite))throw Error('Invalid weather encounter');
@@ -180,6 +206,8 @@ const AMOS2 = (() => {
       this.station={latitude:52.52,longitude:13.405};this.lastWeather=null;
       this.relations=new RELATIONS.RelationField();this.mind=new COGNITION.FactMind(BODY.H);this.sonar=new SONAR.SomaticSonar();this.cognitionBirth=0;
       this.transitions=new TRANSITIONS.TransitionMind(BODY.H);this.transitionBirth=0;
+      this.chapter={number:1,fromCount:0,at:null,archive:null,closedReceipts:0};
+      this.sourceMemory=[];
     }
     _stage(at) {
       if(!integer(at)||at<latestReceipt(this.ledger))throw Error('Receipt time precedes the accepted world');
@@ -218,7 +246,8 @@ const AMOS2 = (() => {
         if(frame.source.startsWith('amos:')&&!(frame.kind==='inference'&&frame.source==='amos:inference/v1'))
           throw Error('The amos: source namespace is reserved for internal receipts');
         const subject=`world:${frame.kind}:${frame.key}`;
-        if(unchanged(currentVersion(ledger,subject,frame.source),frame.values,frame.observedAt,frame.observedAt+1))continue;
+        const current=currentVersion(ledger,subject,frame.source),remembered=!current.length&&archivedVersion(this,subject,frame.source);
+        if(unchanged(current,frame.values,frame.observedAt,frame.observedAt+1)||remembered&&remembered.digest===versionDigest(frame.values,frame.observedAt,frame.observedAt+1))continue;
         const id=`${subject}:r${ledger.size+1}`;
         const all=ledger.entries(),previous=all.filter(f=>f.subject===subject&&f.source===frame.source),replaced=new Set(all.map(f=>f.supersedes)),factIds=[];
         for(const [predicate,value] of Object.entries(frame.values)){
@@ -227,28 +256,45 @@ const AMOS2 = (() => {
             validTo:frame.observedAt+1,recordedAt:receivedAt,supersedes:old?.id??null});factIds.push(factId);
         }
         events.push({id,subject,kind:frame.kind,title:frame.title,source:frame.source,observedAt:frame.observedAt,receivedAt,
-          factIds,sensory:clone(frame.sensory),projection:frame.projection,glyphs:clone(frame.glyphs),detail:clone(frame.detail??{})});
+          factIds,sensory:clone(frame.sensory),projection:frame.projection,glyphs:clone(frame.glyphs),detail:{...clone(frame.detail??{}),...(remembered?{archivedVersion:clone(remembered)}:{})}});
       }
       return this._commit(ledger,events);
     }
     ingestQuakes(feed,receivedAt) {
       this._stage(receivedAt);
+      let skippedUnchanged=0,skippedStale=0,accepted=feed;
+      if(this.sourceMemory.some(m=>m.subject.startsWith('usgs:'))){
+        // Validate the entire source poll before consulting archived fingerprints.
+        const validated=LALO.ingestUSGS(new LALO.FactLedger({capacity:CAPACITY}),feed,{receivedAt,capacity:CAPACITY,maxBytes:MAX_JOURNAL,maxEvents:64}).ledger;
+        const features=feed.features.filter(feature=>{
+          const subject=`usgs:${feature.id}`,source=`https://earthquake.usgs.gov/earthquakes/eventpage/${feature.id}`,m=archivedVersion(this,subject,source);
+          if(!m||currentVersion(this.ledger,subject,source).length)return true;
+          if(feature.properties.updated<m.revision){skippedStale++;return false;}
+          if(feature.properties.updated===m.revision){
+            const rows=validated.entries().filter(f=>f.subject===subject),values=Object.fromEntries(rows.map(f=>[f.predicate,f.value]));
+            if(m.digest!==versionDigest(values,rows[0].validFrom,rows[0].validTo))throw Error('USGS changed an event without changing its source version');
+            skippedUnchanged++;return false;
+          }return true;
+        });accepted={...feed,features};
+      }
       const old=new Set(this.ledger.entries().map(f=>f.id));
-      const {ledger,summary}=LALO.ingestUSGS(this.ledger,feed,{receivedAt,capacity:CAPACITY,maxBytes:MAX_JOURNAL,maxEvents:64});
+      const {ledger,summary}=LALO.ingestUSGS(this.ledger,accepted,{receivedAt,capacity:CAPACITY,maxBytes:MAX_JOURNAL,maxEvents:64});
       const events=[];
       for(const feature of [...feed.features].sort((a,b)=>a.properties.time-b.properties.time||a.id.localeCompare(b.id))) {
         const p=feature.properties,subject=`usgs:${feature.id}`,id=`${subject}:${p.updated}`;
         if(old.has(`${id}:magnitude`)||!ledger.entries().some(f=>f.id===`${id}:magnitude`))continue;
         const facts=ledger.entries().filter(f=>f.subject===subject&&f.recordedAt===receivedAt&&f.id.startsWith(id+':'));
+        const remembered=archivedVersion(this,subject,facts[0].source),revised=!!facts[0].supersedes||!!remembered;
+        if(remembered&&!facts[0].supersedes){summary.added--;summary.revised++;}
         const [longitude,latitude,depth]=feature.geometry.coordinates;
         events.push({id,subject,kind:'quake',title:`M ${p.mag===null?'?':p.mag.toFixed(1)} · ${p.place||feature.id}`,
           observedAt:p.time,receivedAt,source:facts[0].source,factIds:facts.map(f=>f.id),
           sensory:[Math.tanh((p.mag??0)/6),Math.tanh(depth/100)],
           projection:'x = tanh(magnitude / 6); y = tanh(depth_km / 100)',
-          glyphs:ids(facts[0].supersedes?['earth','stone','change','before','now']:['earth','stone','now']),
-          detail:{magnitude:p.mag,depth,longitude,latitude,sourceUpdatedAt:p.updated,revised:!!facts[0].supersedes}});
+          glyphs:ids(revised?['earth','stone','change','before','now']:['earth','stone','now']),
+          detail:{magnitude:p.mag,depth,longitude,latitude,sourceUpdatedAt:p.updated,revised,...(remembered?{archivedVersion:clone(remembered)}:{})}});
       }
-      const added=this._commit(ledger,events);return {...summary,encounters:added};
+      const added=this._commit(ledger,events);return {...summary,events:feed.features.length,unchanged:summary.unchanged+skippedUnchanged,stale:summary.stale+skippedStale,encounters:added};
     }
     ingestWeather(data,receivedAt,source) {
       const ledger=this._stage(receivedAt),c=data?.current;
@@ -262,7 +308,8 @@ const AMOS2 = (() => {
       if(!integer(observedAt)||!integer(validTo))throw Error('Invalid weather time');
       const subject=`weather:${data.latitude.toFixed(4)}:${data.longitude.toFixed(4)}:${c.time}`;
       const values={temperature_c:c.temperature_2m,wind_kmh:c.wind_speed_10m,precipitation_mm:c.precipitation,is_day:c.is_day,latitude:data.latitude,longitude:data.longitude};
-      if(unchanged(currentVersion(ledger,subject,source),values,observedAt,validTo))return 0;
+      const current=currentVersion(ledger,subject,source),remembered=!current.length&&archivedVersion(this,subject,source);
+      if(unchanged(current,values,observedAt,validTo)||remembered&&remembered.digest===versionDigest(values,observedAt,validTo))return 0;
       const id=`${subject}:r${ledger.size+1}`,all=ledger.entries();
       const replaced=new Set(all.map(f=>f.supersedes)),factIds=[];
       for(const [predicate,value] of Object.entries(values)) {
@@ -274,7 +321,7 @@ const AMOS2 = (() => {
       const e={id,subject,kind:'weather',title:`${c.temperature_2m.toFixed(1)}°C · wind ${c.wind_speed_10m.toFixed(1)} km/h`,observedAt,receivedAt,source,factIds,
         sensory:[Math.tanh(c.temperature_2m/30),-Math.tanh(c.wind_speed_10m/40)],
         projection:'x = tanh(temperature_c / 30); y = −tanh(wind_kmh / 40)',glyphs,
-        detail:{...values,interval:c.interval,kind:'Open-Meteo model sample'}};
+        detail:{...values,interval:c.interval,kind:'Open-Meteo model sample',...(remembered?{archivedVersion:clone(remembered)}:{})}};
       const added=this._commit(ledger,[e]);this.lastWeather=e;return added;
     }
     ingestText(text,receivedAt) {
@@ -313,7 +360,8 @@ const AMOS2 = (() => {
     deriveReading(query,receivedAt) {
       const ledger=this._stage(receivedAt),{knownThrough,...input}=query,boundary=knownThrough??ledger.size,known=prefixLedger(ledger,boundary),args={...input,knownAt:query.knownAt??receivedAt,offset:0,limit:64};
       if(!integer(args.knownAt)||args.knownAt>receivedAt)throw Error('Inference cutoff exceeds its receipt time');
-      const toolHost=makeHost(known),first=toolHost.call('lalo_reading',args);
+      if(this.chapter.number>1&&args.knownAt<this.chapter.at)throw Error('Earlier knowledge belongs to the archived chapter');
+      const toolHost=makeHost(known,this.chapter),first=toolHost.call('lalo_reading',args);
       if(!first.ok)throw Error(first.error.message);
       const measured=inference(args,known),all=ledger.entries(),premises=measured.premises.map(id=>all.findIndex(f=>f.id===id));
       if(premises.length>128)throw Error('A registered inference has at most 128 premises');
@@ -324,12 +372,13 @@ const AMOS2 = (() => {
       const parsed=VOICE.tokenize(`${q.subject} ${q.predicate}`),state=measured.state;
       const states={supported:'agree',contradicted:'not',contested:'conflict',unsettled:'seek'};
       const values={state,rule:q.rule,query_subject:q.subject,query_predicate:q.predicate,premise_indices:JSON.stringify(premises)};
+      if(scope(this.chapter))values.knowledge_scope=`chapter:${this.chapter.number}`;
       if(q.expected!==undefined)values.expected=q.expected;if(q.threshold!==undefined)values.threshold=q.threshold;
       const evaluation={id:`agent:amos:evaluation:${ledger.size+1}`,subject:`world:inference:${key}`,predicate:'named_evaluation',
-        value:JSON.stringify({policy:'amos/named-evaluation-v1',query:{...q,knownAt:args.knownAt,knownThrough:boundary},premises,state}),
+        value:JSON.stringify({policy:'amos/named-evaluation-v1',query:{...q,knownAt:args.knownAt,knownThrough:boundary},premises,state,...(scope(this.chapter)?{scope:scope(this.chapter)}:{})}),
         source:'amos:evaluation/v1',validFrom:receivedAt,validTo:receivedAt+1,recordedAt:receivedAt,supersedes:null};
       return this.ingestWorld([{kind:'inference',key,source:'amos:inference/v1',observedAt:q.validAt,
-        title:`${q.predicate}: ${state}`,values,
+        title:`${q.predicate}: ${state}${scope(this.chapter)?' · chapter '+this.chapter.number:''}`,values,
         sensory:[(measured.supporting.length-measured.opposing.length)/Math.max(1,premises.length),(measured.unknown?.length??0)/Math.max(1,premises.length)],
         projection:'Named LALO reading: signed support fraction and explicit unknown fraction',
         glyphs:ids(['think','know',states[state]]).concat(parsed.ids.slice(0,125)),
@@ -354,7 +403,7 @@ const AMOS2 = (() => {
       const contextual=relations.sensory.map((v,i)=>bounded(v+.12*associations.sensory[i],-1,1));
       const priorGap=this.pending?magnitude(contextual.map((v,k)=>v-this.pending.predicted[k])):0;
       const sonarBefore=sonar.act.slice(),inhaled=sonar.inhale(event.glyphs,{surprise:priorGap,resonance:(resonance+associations.strength)/2,unmatched:associations.unmatched.length/Math.max(1,associations.incoming.length),
-        familiarity:relations.familiarity,revision:event.factIds.some(id=>ledger.entries().find(f=>f.id===id).supersedes!==null)?1:0,selfError:mind.lastError});
+        familiarity:relations.familiarity,revision:event.detail.archivedVersion||event.factIds.some(id=>ledger.entries().find(f=>f.id===id).supersedes!==null)?1:0,selfError:mind.lastError});
       const controls=sonar.coefficients(),resonanceGain=.94+.12*resonance;
       const sensory=contextual.map(v=>bounded(v*resonanceGain*controls.perception,-1,1));
       const before=s.h.slice(),oldLoad=model.world.load;
@@ -372,7 +421,7 @@ const AMOS2 = (() => {
       }
       const worldTransition=transitionMind.forecast('world',before,o,s.previous_action,associations.strength);
       s.glyph.learning=1;s.observe(o);
-      const worldAfter=s.h.slice(),action=s.action(0,controls.exploration),toolHost=makeHost(ledger);
+      const worldAfter=s.h.slice(),action=s.action(0,controls.exploration),toolHost=makeHost(ledger,this.chapter);
       trajectory.push({name:'world',h:worldAfter.slice()});
       transitionRecords.push(transitionMind.learn(worldTransition,worldAfter,[...new Set(sourceIndices.concat(associations.evidence.map(e=>e[1])))]));
       const scope=mind.readScope(action),selfFact=scope==='self'?ledger.entries().find(f=>f.id===mind.lastSelf):null;
@@ -395,11 +444,11 @@ const AMOS2 = (() => {
       for(let depth=1;depth<=4;depth++){
         const draftVoice=VOICE.GlyphVoice.load(clone(voice.dump())),mix=s.glyph.sequence.slice(-8),c=sonar.coefficients();
         draftVoice.ingest(event.glyphs,s.h,mix,c.plasticity);draftVoice.ingest(evidenceGlyphs,s.h,mix,c.plasticity);draftVoice.ingest(reading.glyphs,s.h,mix,c.plasticity);
-        const draft=draftVoice.express(s.h,mix,errorBefore,c.temperature),meta=sonar.reinhale(VOICE.tokenize(draft.words.join(' ')).ids);
+        const draft=draftVoice.express(s.h,mix,errorBefore,c.temperature),meta=sonar.reinhale(draft.ids,draftVoice.symbols);
         const hBefore=s.h.slice();finalObservation=[...readObservation.slice(0,2).map((v,i)=>bounded(v+.1*meta.projection[i],-1,1)),load];
         s.observe(finalObservation);
         returnTwin.observe(readObservation);trajectory.push({name:'return-'+depth,h:s.h.slice()});
-        passes.push({depth,draft:draft.ids,after:meta.after,gate:meta.gate,observation:finalObservation.slice(),shift:magnitude(s.h.map((v,i)=>v-hBefore[i]))});
+        passes.push({depth,draft:draft.ids,representations:{base:voice.symbols.length,born:draft.born?.pair??null},after:meta.after,gate:meta.gate,observation:finalObservation.slice(),shift:magnitude(s.h.map((v,i)=>v-hBefore[i]))});
         if(Math.abs(meta.gate-previousGate)<.005)break;previousGate=meta.gate;
       }
       transitionRecords.push(transitionMind.learn(returnTransition,s.h,reading.premises,{observation:readObservation,after:returnTwin.h,steps:passes.length}));
@@ -416,6 +465,7 @@ const AMOS2 = (() => {
       model.world.pos=finalObservation.slice(0,2);model.world.load=load;model.world.tick=tick;
       const encounterSubject=`agent:amos:encounter:${tick}`,all=ledger.entries(),rawPremises=event.factIds.map(id=>all.findIndex(f=>f.id===id));
       const selfReflection={policy:'amos/self-sonar-v1',forecast:selfForecast,observed:selfObserved,error:selfError,
+        returnPolicy:'amos/glyph-return-v1',
         before:sonarBefore,after:sonar.act.slice(),controls,passes,scope:investigation?.scope??(selfFact?'self':'world'),registrationPremise:all.findIndex(f=>f.id===event.registrationReceipt),sourcePremises:rawPremises,associationPremise:all.length+4};
       const additions=[{id:`agent:amos:attention:${tick}`,subject:encounterSubject,predicate:'attention_subject',value:event.subject,
         source:'amos:encounter',validFrom:receiptAt,validTo:receiptAt+1,recordedAt:receiptAt,supersedes:null},
@@ -454,8 +504,30 @@ const AMOS2 = (() => {
       if(this.history.length>MAX_HISTORY){this.history.shift();this.historyOmitted++;}
       return trace;
     }
+    continueWithExperience(at) {
+      if(!integer(at)||at<latestReceipt(this.ledger))throw Error('Chapter time precedes its recorded history');
+      if(this.queue.length)throw Error('Encounter the waiting facts before closing this chapter');
+      if(this.count===this.chapter.fromCount)throw Error('This chapter has no acquired encounters to carry');
+      const archive=this.dump(),next=WorldLab.load(archive),chapter={number:this.chapter.number+1,fromCount:this.count,at,
+        archive:fingerprint(archive),closedReceipts:this.chapter.closedReceipts+this.ledger.size};
+      const ledger=new LALO.FactLedger({capacity:CAPACITY});
+      ledger.add({id:`agent:amos:chapter:${chapter.number}`,subject:'agent:amos',predicate:'experience_boundary',value:JSON.stringify(chapter),
+        source:'amos:experience/v1',validFrom:at,validTo:null,recordedAt:at,supersedes:null});
+      const self=this.ledger.entries().find(f=>f.id===this.mind.lastSelf);
+      if(self){const previous=JSON.parse(self.value),id=`agent:amos:chapter:${chapter.number}:self`;
+        ledger.add({id,subject:'agent:amos:experience',predicate:'self_memory',value:JSON.stringify({policy:'amos/carried-self-v1',fromFact:self.id,
+          archive:chapter.archive,error:previous.error,observed:previous.observed}),source:'amos:experience/v1',validFrom:at,validTo:null,recordedAt:at,supersedes:null});
+        next.mind.lastSelf=id;
+      }
+      next.ledger=ledger;next.chapter=chapter;next.history=[];next.historyOmitted=this.count;next.lastWeather=null;
+      next.sourceMemory=sourceMemories(this,chapter.archive);
+      next.relations.recent=[];next.relations.recentBirth=next.relations.seen;
+      // Targets in the sealed journal stay there; forecasts, weights and errors travel.
+      next.transitions.last=[];
+      return {archive,life:WorldLab.load(next.dump())};
+    }
     dump() {
-      const text=JSON.stringify({format:'amos-2/world',version:6,semanticPolicy:LANGUAGES.policy,model:this.model.dumps(),journal:encode(this.ledger),voice:this.voice.dump(),
+      const text=JSON.stringify({format:'amos-2/world',version:7,semanticPolicy:LANGUAGES.policy,chapter:this.chapter,sourceMemory:this.sourceMemory,model:this.model.dumps(),journal:encode(this.ledger),voice:this.voice.dump(),
         queue:this.queue,history:this.history,pending:this.pending,count:this.count,serial:this.serial,historyOmitted:this.historyOmitted,
         attention:this.attention,station:this.station,lastWeather:this.lastWeather,relations:this.relations.dump(),mind:this.mind.dump(),sonar:this.sonar.dump(),cognitionBirth:this.cognitionBirth,
         transitions:this.transitions.dump(),transitionBirth:this.transitionBirth,reservedReceiptSlots:ENCOUNTER_RECEIPTS});
@@ -464,17 +536,42 @@ const AMOS2 = (() => {
     static load(text) {
       if(typeof text!=='string'||bytes(text)>MAX_SNAPSHOT)throw Error('Snapshot exceeds 24 MB');
       const d=JSON.parse(text);
-      if(d?.format!=='amos-2/world'||![1,2,3,4,5,6].includes(d.version))throw Error('Unsupported AMOS 2 life');
-      if(d.version>=5&&d.semanticPolicy!==LANGUAGES.policy)throw Error('Unsupported semantic membrane');
+      if(d?.format!=='amos-2/world'||![1,2,3,4,5,6,7].includes(d.version))throw Error('Unsupported AMOS 2 life');
+      if(d.version>=5&&d.semanticPolicy!==(d.version>=7?LANGUAGES.policy:LANGUAGES.previousPolicy))throw Error('Unsupported semantic membrane');
       if(d.version>=2&&(!d.relations||![2,3,5,6,9].includes(d.reservedReceiptSlots)))throw Error('Missing acquired relation organ or completion reserve');
       if(d.version>=4&&![5,6,9].includes(d.reservedReceiptSlots))throw Error('Missing tool-read completion reserve');
-      if(d.version===6&&d.reservedReceiptSlots!==9)throw Error('Missing transition completion reserve');
+      if(d.version>=6&&d.reservedReceiptSlots!==9)throw Error('Missing transition completion reserve');
       const width=JSON.parse(d.model)?.amos?.subject?.h?.length;
       if(d.version>=4&&width!==BODY.H)throw Error('Invalid current neural width');
       if(d.voice?.neural?.[0]?.length!==width)throw Error('Voice and body neural widths disagree');
       const life=new WorldLab();life.model=growModel(d.model);life.ledger=decode(d.journal);
+      if(d.version===7){
+        const c=d.chapter;
+        if(!c||!integer(c.number)||c.number<1||!integer(c.fromCount)||c.fromCount<0||c.fromCount>d.count||c.fromCount>d.historyOmitted||
+          !integer(c.closedReceipts)||c.closedReceipts<0||
+          (c.number===1?(c.fromCount!==0||c.at!==null||c.archive!==null||c.closedReceipts!==0):
+            (!integer(c.at)||!c.fromCount||typeof c.archive!=='string'||!/^[0-9a-f]{1,16}$/.test(c.archive)||c.closedReceipts<c.number-1||
+              !life.ledger.entries().some(f=>f.id===`agent:amos:chapter:${c.number}`&&f.source==='amos:experience/v1'&&f.predicate==='experience_boundary'&&f.recordedAt===c.at&&f.value===JSON.stringify(c)))))throw Error('Invalid acquired chapter boundary');
+        life.chapter=clone(c);
+        const memory=d.sourceMemory??[];
+        if(!Array.isArray(memory)||memory.length>128||new Set(memory.map(m=>JSON.stringify([m?.subject,m?.source]))).size!==memory.length||
+          !memory.every(m=>m&&typeof m.subject==='string'&&m.subject.length>0&&m.subject.length<=512&&typeof m.source==='string'&&m.source.length>0&&m.source.length<=4096&&
+            typeof m.fromFact==='string'&&m.fromFact.length>0&&m.fromFact.length<=512&&typeof m.digest==='string'&&/^[0-9a-f]{1,16}$/.test(m.digest)&&
+            typeof m.archive==='string'&&/^[0-9a-f]{1,16}$/.test(m.archive)&&(m.revision===null||integer(m.revision))&&
+            (!m.subject.startsWith('usgs:')||integer(m.revision))))throw Error('Invalid remembered source versions');
+        life.sourceMemory=clone(memory);
+      }
       life.voice=VOICE.GlyphVoice.load(d.voice).grow(BODY.H);
-      for(const f of life.ledger.entries())if(f.source==='amos:evaluation/v1')validateEvaluation(f,life.ledger);
+      for(const f of life.ledger.entries()){
+        if(f.source==='amos:evaluation/v1'){const evaluation=validateEvaluation(f,life.ledger);
+          if(JSON.stringify(evaluation.scope??null)!==JSON.stringify(scope(life.chapter)))throw Error('Evaluation differs from its chapter scope');}
+        if(f.source==='amos:experience/v1'&&f.predicate==='self_memory'){
+          const m=JSON.parse(f.value);
+          if(life.chapter.number===1||m.policy!=='amos/carried-self-v1'||m.archive!==life.chapter.archive||typeof m.fromFact!=='string'||!m.fromFact||
+            !Number.isFinite(m.error)||m.error<0||!finiteArray(m.observed,4)||f.recordedAt!==life.chapter.at||f.validFrom!==life.chapter.at||f.validTo!==null)
+            throw Error('Invalid carried self memory');
+        }
+      }
       if(width!==BODY.H&&d.pending?.features?.length===2*width+6)d.pending.features=growFeatures(d.pending.features,width);
       if(d.version<3&&Array.isArray(d.relations?.recent))for(const c of d.relations.recent){
         if(c.source===undefined)c.source=d.history?.find(t=>t.event.id===c.id)?.event.source;
@@ -494,6 +591,7 @@ const AMOS2 = (() => {
       if(d.queue.some(e=>!e.legacyCompletion)&&(life.ledger.size+ENCOUNTER_RECEIPTS*d.queue.length>CAPACITY||bytes(d.journal)+RESERVE_BYTES*d.queue.length>MAX_JOURNAL))throw Error('Pending encounters have no completion reserve');
       for(const t of d.history) {
         eventValid(t.event,life.ledger);
+        if(JSON.stringify(t.tool?.result?.data?.scope??null)!==JSON.stringify(scope(life.chapter)))throw Error('Reading differs from its chapter scope');
         if(t.relations){const receipt=life.ledger.entries().find(f=>f.id===t.relationReceipt);
           const legacy=t.receiptState==='legacy-full-journal'&&t.event.legacyCompletion===true&&t.relationReceipt===null;
           if((!legacy&&(!receipt||receipt.source!=='amos:relations/v1'||receipt.value!==JSON.stringify(t.relations)))||
@@ -518,18 +616,18 @@ const AMOS2 = (() => {
         const receipt=life.ledger.entries().find(f=>f.id===t.readReceipt);
         const legacy=t.receiptState==='legacy-full-journal'&&t.event.legacyCompletion===true&&t.readReceipt===null;
         if(!finiteArray(t.worldAfter,t.after.length)||!finiteArray(t.readObservation,3)||t.resonanceGain!==.94+.12*t.resonance||
-          !['amos/read-indices-v1','amos/read-indices-v2'].includes(t.reading?.policy)||
-          !sameReading(PERCEPTION.read(t.tool.result,life.ledger,t.tool.name,t.tool.arguments,t.reading?.knownThrough,t.reading?.policy==='amos/read-indices-v1'?1:2),t.reading)||
+          !['amos/read-indices-v1','amos/read-indices-v2','amos/read-indices-v3'].includes(t.reading?.policy)||
+          !sameReading(PERCEPTION.read(t.tool.result,life.ledger,t.tool.name,t.tool.arguments,t.reading?.knownThrough,Number(t.reading?.policy?.slice(-1))),t.reading)||
           (!legacy&&(!receipt||receipt.source!=='amos:tool-read/v1'||receipt.value!==JSON.stringify(t.reading))))throw Error('Invalid acquired tool reading');
       }
       if(d.version>=4){
         life.mind=COGNITION.FactMind.load(d.mind,BODY.H);life.sonar=SONAR.SomaticSonar.load(d.sonar);life.cognitionBirth=d.cognitionBirth;
         if(!integer(life.cognitionBirth)||life.cognitionBirth<0||life.mind.updates!==d.count-life.cognitionBirth||life.sonar.turns!==life.mind.updates||
-          (life.mind.lastSelf!==null&&!life.ledger.entries().some(f=>f.id===life.mind.lastSelf&&f.source==='amos:self/v1')))throw Error('Self history disagrees with this life');
+          (life.mind.lastSelf!==null&&!life.ledger.entries().some(f=>f.id===life.mind.lastSelf&&(f.source==='amos:self/v1'||f.source==='amos:experience/v1'&&f.predicate==='self_memory'))))throw Error('Self history disagrees with this life');
       }else life.cognitionBirth=d.count;
-      for(const t of d.history)if(['amos/reflective-facts-v1','amos/reflective-facts-v2'].includes(t.policy))validateReflection(t,life.ledger);
-      for(const t of d.history)if(t.transitions)TRANSITIONS.validate(t,life.ledger,BODY.H,d.version===6?d.transitionBirth:undefined);
-      if(d.version===6){life.transitions=TRANSITIONS.TransitionMind.load(d.transitions,BODY.H);life.transitionBirth=d.transitionBirth;
+      for(const t of d.history)if(['amos/reflective-facts-v1','amos/reflective-facts-v2'].includes(t.policy))validateReflection(t,life.ledger,life.voice);
+      for(const t of d.history)if(t.transitions)TRANSITIONS.validate(t,life.ledger,BODY.H,d.version>=6?d.transitionBirth:undefined);
+      if(d.version>=6){life.transitions=TRANSITIONS.TransitionMind.load(d.transitions,BODY.H);life.transitionBirth=d.transitionBirth;
         if(!integer(life.transitionBirth)||life.transitionBirth<0||!TRANSITIONS.phases.every(p=>life.transitions.heads[p].updates===d.count-life.transitionBirth)||
           d.history.some(t=>t.tick>life.transitionBirth&&!t.transitions)||
           !life.transitions.last.every(r=>{const f=life.ledger.entries()[r.premise],record=f&&JSON.parse(f.value);return f&&r.tick===d.count&&f.id===r.id&&f.subject===`agent:amos:encounter:${r.tick}`&&f.source==='amos:transition/v1'&&record.phase===r.phase&&record.error===r.error&&(record.premises[0]??null)===r.sourcePremise;}))throw Error('Transition learning disagrees with this life');
