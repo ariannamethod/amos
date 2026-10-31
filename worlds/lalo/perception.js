@@ -13,6 +13,10 @@ const PERCEPTION = (() => {
       const index=rows.findIndex(f=>f.id===fact.id);
       if(index<0||(knownThrough!==undefined&&index>=knownThrough)||fact.recordedAt>args.knownAt||JSON.stringify(rows[index])!==JSON.stringify(fact))throw Error('Tool reading differs from its source receipt');
       premises.push(index);
+      if(fact.source===CALENDAR.source&&fact.subject.startsWith('world:temporal:')&&fact.predicate==='packet'){
+        const packet=JSON.parse(fact.value),origin=packet.origin?CALENDAR.resolveOrigin(ledger,packet.origin.receipt):null,view=CALENDAR.frame(packet,ledger,origin);
+        sensory[0]+=view.sensory[0];sensory[1]+=view.sensory[1];glyphs.push(...view.glyphs.slice(0,Math.max(0,128-glyphs.length)));continue;
+      }
       if(fact.source==='amos:transition/v1'&&fact.predicate.startsWith('transition_')){
         const own=JSON.parse(fact.value);if(own.policy!=='amos/transition-v1'||!Number.isFinite(own.error)||!Array.isArray(own.observed)||own.observed.length!==3)throw Error('Invalid remembered transition');
         sensory[0]+=Math.tanh(own.error*4);sensory[1]+=Math.tanh((own.control?.effect??own.observed[2])*4);

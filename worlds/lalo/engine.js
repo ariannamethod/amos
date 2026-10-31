@@ -150,7 +150,7 @@ const AMOS2 = (() => {
         (!legacy&&(!receipt||receipt.source!=='amos:links/v1'||receipt.value!==JSON.stringify(a)||r.associationPremise!==all.findIndex(f=>f.id===t.linkReceipt))))throw Error('Invalid encounter association');
     }
   }
-  function eventValid(e,ledger) {
+  function eventValid(e,ledger,calendarOrigin) {
     if(!e||typeof e.id!=='string'||!worldKind(e.kind)||
       !integer(e.observedAt)||!integer(e.receivedAt)||typeof e.title!=='string'||e.title.length>4096||
       typeof e.subject!=='string'||!e.subject||e.subject.length>512||typeof e.source!=='string'||
@@ -178,6 +178,16 @@ const AMOS2 = (() => {
     if(e.detail.contentGlyphs!==undefined&&(!Array.isArray(e.detail.contentGlyphs)||e.detail.contentGlyphs.length>128||
       !e.detail.contentGlyphs.every(id=>integer(id)&&id>=0&&id<88)))throw Error('Invalid content glyphs');
     if(e.detail.semanticPolicy!==undefined&&(![LANGUAGES.policy,LANGUAGES.previousPolicy].includes(e.detail.semanticPolicy)||!LANGUAGES.codes.includes(e.detail.language)))throw Error('Invalid lexical provenance');
+    if(e.kind==='temporal'){
+      const facts=e.factIds.map(id=>ledger.entries().find(f=>f.id===id)),raw=facts.find(f=>f.predicate==='packet');
+      if(!raw||e.source!==CALENDAR.source||typeof raw.value!=='string')throw Error('Missing canonical temporal receipt');
+      const packet=JSON.parse(raw.value),origin=packet.origin?CALENDAR.resolveOrigin(ledger,packet.origin.receipt):null,frame=CALENDAR.frame(packet,ledger,origin);
+      if(packet.requestedAt>e.receivedAt)throw Error('Calendar request follows its returned observation');
+      if(packet.origin!==null&&(!calendarOrigin||JSON.stringify(packet.origin)!==JSON.stringify({day:calendarOrigin.day,receipt:calendarOrigin.receipt})))throw Error('Temporal encounter differs from its immutable personal origin');
+      const values=Object.fromEntries(facts.map(f=>[f.predicate,f.value]));
+      if(e.observedAt!==frame.observedAt||JSON.stringify(values)!==JSON.stringify(frame.values)||!closeArray(e.sensory,frame.sensory)||
+        JSON.stringify(e.glyphs)!==JSON.stringify(frame.glyphs)||JSON.stringify(e.detail.calendar)!==JSON.stringify(frame.detail.calendar))throw Error('Temporal projection differs from its canonical receipt');
+    }
     if(e.kind==='quake'&&(!integer(e.detail.sourceUpdatedAt)||!Number.isFinite(e.detail.depth)||
       !(e.detail.magnitude===null||Number.isFinite(e.detail.magnitude))))throw Error('Invalid earthquake encounter');
     if(e.kind==='weather'&&![e.detail.temperature_c,e.detail.wind_kmh,e.detail.precipitation_mm].every(Number.isFinite))throw Error('Invalid weather encounter');
@@ -208,6 +218,7 @@ const AMOS2 = (() => {
       this.transitions=new TRANSITIONS.TransitionMind(BODY.H);this.transitionBirth=0;
       this.chapter={number:1,fromCount:0,at:null,archive:null,closedReceipts:0};
       this.sourceMemory=[];
+      this.calendarOrigin=null;
     }
     _stage(at) {
       if(!integer(at)||at<latestReceipt(this.ledger))throw Error('Receipt time precedes the accepted world');
@@ -216,7 +227,7 @@ const AMOS2 = (() => {
     _commit(ledger,events) {
       if(this.queue.length+events.length>MAX_QUEUE)throw Error('Encounter queue full (128); let the pending world reach AMOS first');
       for(const event of events){
-        eventValid(event,ledger);event.acceptedAtCount=this.count;
+        eventValid(event,ledger,this.calendarOrigin);event.acceptedAtCount=this.count;
         const id=`amos:registered:${event.id}`;
         ledger.add({id,subject:'agent:amos:registrations',predicate:'registered_event',value:JSON.stringify(COGNITION.registration(event,ledger)),
           source:'amos:registration/v1',validFrom:event.receivedAt,validTo:event.receivedAt+1,recordedAt:event.receivedAt,supersedes:null});
@@ -224,7 +235,7 @@ const AMOS2 = (() => {
       }
       if(ledger.size+ENCOUNTER_RECEIPTS*(this.queue.length+events.length)>CAPACITY)
         throw Error('Journal budget must reserve nine completion receipts for every pending encounter');
-      for(const event of events)eventValid(event,ledger);
+      for(const event of events)eventValid(event,ledger,this.calendarOrigin);
       const encoded=encode(ledger);
       if(bytes(encoded)+RESERVE_BYTES*(this.queue.length+events.length)>MAX_JOURNAL)throw Error('Journal byte budget must reserve pending encounter receipts');
       this.ledger=ledger;this.queue.push(...events);return events.length;
@@ -347,6 +358,17 @@ const AMOS2 = (() => {
     ingestInteraction(packet,receivedAt) {
       const frame=interactionFrame(packet);return this.ingestWorld([frame],receivedAt);
     }
+    bindCalendarOrigin(factId,coordinates,at){
+      if(this.calendarOrigin)throw Error('The personal calendar origin is already fixed');
+      const fact=this.ledger.entries().find(f=>f.id===factId);if(!fact)throw Error('Choose an existing historical receipt for the origin');
+      const origin=CALENDAR.origin(fact,coordinates),frame={kind:'calendar-origin',key:'amos',source:'local:calendar-origin',observedAt:at,
+        title:'A personal calendar origin is declared',values:{origin_header:JSON.stringify(origin),origin_day:origin.day,origin_assertion:fact.id,origin_at:fact.validFrom},
+        sensory:[Math.tanh(origin.day/1024),0],projection:'Declared personal temporal origin',glyphs:ids(['me','before','now']),detail:{contentGlyphs:ids(['me','before','now'])}};
+      this.ingestWorld([frame],at);
+      const receipt=currentVersion(this.ledger,'world:calendar-origin:amos','local:calendar-origin').find(f=>f.predicate==='origin_header');
+      this.calendarOrigin={...origin,receipt:receipt.id};return clone(this.calendarOrigin);
+    }
+    ingestCalendar(packet,at){return this.ingestWorld([CALENDAR.frame(packet,this.ledger,this.calendarOrigin)],at);}
     readingQuery(event) {
       if(event.kind==='inference'){
         const query={...event.detail.derivation.query};
@@ -519,6 +541,8 @@ const AMOS2 = (() => {
           archive:chapter.archive,error:previous.error,observed:previous.observed}),source:'amos:experience/v1',validFrom:at,validTo:null,recordedAt:at,supersedes:null});
         next.mind.lastSelf=id;
       }
+      if(this.calendarOrigin)ledger.add({id:`agent:amos:chapter:${chapter.number}:calendar-origin`,subject:'agent:amos:experience',predicate:'calendar_origin_memory',
+        value:JSON.stringify(this.calendarOrigin),source:'amos:experience/v1',validFrom:at,validTo:null,recordedAt:at,supersedes:null});
       next.ledger=ledger;next.chapter=chapter;next.history=[];next.historyOmitted=this.count;next.lastWeather=null;
       next.sourceMemory=sourceMemories(this,chapter.archive);
       next.relations.recent=[];next.relations.recentBirth=next.relations.seen;
@@ -527,7 +551,7 @@ const AMOS2 = (() => {
       return {archive,life:WorldLab.load(next.dump())};
     }
     dump() {
-      const text=JSON.stringify({format:'amos-2/world',version:7,semanticPolicy:LANGUAGES.policy,chapter:this.chapter,sourceMemory:this.sourceMemory,model:this.model.dumps(),journal:encode(this.ledger),voice:this.voice.dump(),
+      const text=JSON.stringify({format:'amos-2/world',version:8,semanticPolicy:LANGUAGES.policy,chapter:this.chapter,sourceMemory:this.sourceMemory,calendarOrigin:this.calendarOrigin,model:this.model.dumps(),journal:encode(this.ledger),voice:this.voice.dump(),
         queue:this.queue,history:this.history,pending:this.pending,count:this.count,serial:this.serial,historyOmitted:this.historyOmitted,
         attention:this.attention,station:this.station,lastWeather:this.lastWeather,relations:this.relations.dump(),mind:this.mind.dump(),sonar:this.sonar.dump(),cognitionBirth:this.cognitionBirth,
         transitions:this.transitions.dump(),transitionBirth:this.transitionBirth,reservedReceiptSlots:ENCOUNTER_RECEIPTS});
@@ -536,7 +560,7 @@ const AMOS2 = (() => {
     static load(text) {
       if(typeof text!=='string'||bytes(text)>MAX_SNAPSHOT)throw Error('Snapshot exceeds 24 MB');
       const d=JSON.parse(text);
-      if(d?.format!=='amos-2/world'||![1,2,3,4,5,6,7].includes(d.version))throw Error('Unsupported AMOS 2 life');
+      if(d?.format!=='amos-2/world'||![1,2,3,4,5,6,7,8].includes(d.version))throw Error('Unsupported AMOS 2 life');
       if(d.version>=5&&d.semanticPolicy!==(d.version>=7?LANGUAGES.policy:LANGUAGES.previousPolicy))throw Error('Unsupported semantic membrane');
       if(d.version>=2&&(!d.relations||![2,3,5,6,9].includes(d.reservedReceiptSlots)))throw Error('Missing acquired relation organ or completion reserve');
       if(d.version>=4&&![5,6,9].includes(d.reservedReceiptSlots))throw Error('Missing tool-read completion reserve');
@@ -545,7 +569,7 @@ const AMOS2 = (() => {
       if(d.version>=4&&width!==BODY.H)throw Error('Invalid current neural width');
       if(d.voice?.neural?.[0]?.length!==width)throw Error('Voice and body neural widths disagree');
       const life=new WorldLab();life.model=growModel(d.model);life.ledger=decode(d.journal);
-      if(d.version===7){
+      if(d.version>=7){
         const c=d.chapter;
         if(!c||!integer(c.number)||c.number<1||!integer(c.fromCount)||c.fromCount<0||c.fromCount>d.count||c.fromCount>d.historyOmitted||
           !integer(c.closedReceipts)||c.closedReceipts<0||
@@ -560,6 +584,15 @@ const AMOS2 = (() => {
             typeof m.archive==='string'&&/^[0-9a-f]{1,16}$/.test(m.archive)&&(m.revision===null||integer(m.revision))&&
             (!m.subject.startsWith('usgs:')||integer(m.revision))))throw Error('Invalid remembered source versions');
         life.sourceMemory=clone(memory);
+      }
+      if(d.version===8){
+        if(d.calendarOrigin!==null){
+          CALENDAR.validateOrigin(d.calendarOrigin);const actual=CALENDAR.resolveOrigin(life.ledger,d.calendarOrigin.receipt);
+          if(JSON.stringify(actual)!==JSON.stringify(d.calendarOrigin))throw Error('Personal calendar origin differs from its historical witness');
+          life.calendarOrigin=clone(d.calendarOrigin);
+        }
+        else if(life.ledger.entries().some(f=>f.source==='local:calendar-origin'&&f.predicate==='origin_header'||f.source==='amos:experience/v1'&&f.predicate==='calendar_origin_memory'))
+          throw Error('A declared personal origin cannot be removed from its life');
       }
       life.voice=VOICE.GlyphVoice.load(d.voice).grow(BODY.H);
       for(const f of life.ledger.entries()){
@@ -582,7 +615,7 @@ const AMOS2 = (() => {
         !Array.isArray(d.queue)||d.queue.length>MAX_QUEUE||new Set(d.queue.map(e=>e.id)).size!==d.queue.length||
         !Array.isArray(d.history)||d.history.length>MAX_HISTORY||d.history.length+d.historyOmitted!==d.count||
         !d.station||!Number.isFinite(d.station.latitude)||Math.abs(d.station.latitude)>90||!Number.isFinite(d.station.longitude)||Math.abs(d.station.longitude)>180)throw Error('Invalid life history');
-      for(const event of d.queue)eventValid(event,life.ledger);
+      for(const event of d.queue)eventValid(event,life.ledger,life.calendarOrigin);
       let tick=d.historyOmitted;
       if(d.reservedReceiptSlots!==undefined&&![2,3,5,6,9].includes(d.reservedReceiptSlots))throw Error('Unsupported encounter reserve');
       const needsLegacyCompletion=d.reservedReceiptSlots!==ENCOUNTER_RECEIPTS&&
@@ -590,7 +623,7 @@ const AMOS2 = (() => {
       if(needsLegacyCompletion)for(const event of d.queue)event.legacyCompletion=true;
       if(d.queue.some(e=>!e.legacyCompletion)&&(life.ledger.size+ENCOUNTER_RECEIPTS*d.queue.length>CAPACITY||bytes(d.journal)+RESERVE_BYTES*d.queue.length>MAX_JOURNAL))throw Error('Pending encounters have no completion reserve');
       for(const t of d.history) {
-        eventValid(t.event,life.ledger);
+        eventValid(t.event,life.ledger,life.calendarOrigin);
         if(JSON.stringify(t.tool?.result?.data?.scope??null)!==JSON.stringify(scope(life.chapter)))throw Error('Reading differs from its chapter scope');
         if(t.relations){const receipt=life.ledger.entries().find(f=>f.id===t.relationReceipt);
           const legacy=t.receiptState==='legacy-full-journal'&&t.event.legacyCompletion===true&&t.relationReceipt===null;

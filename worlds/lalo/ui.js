@@ -16,6 +16,8 @@
   let database=null,storageBlocked=false,saving=Promise.resolve(),noticeTimer,networkTimers=[];
   const controllers=new Set(),busy=new Set(),sourceErrors={};
   let glyphLanguage='en';
+  let calendarInstance=null,calendarBusy=false;
+  const calendar=()=>calendarInstance??=JANUS.bundledCalendar().catch(error=>{calendarInstance=null;throw error;});
   try{const saved=localStorage.getItem('amos2:glyph-captions');if(LANGUAGES.codes.includes(saved))glyphLanguage=saved;}catch{}
   const caption=id=>LANGUAGES.caption(id,glyphLanguage,life.voice.symbols);
   for(const code of LANGUAGES.codes){const option=el('option',LANGUAGES.labels[code]);option.value=code;$('glyphLanguage').append(option);}
@@ -132,6 +134,11 @@
     $('carryExperience').title=life.queue.length?'Encounter the waiting facts before closing this chapter':'Archive these facts and carry acquired experience forward';
     $('exportPrevious').disabled=!ready||!database||life.chapter.number===1;
     $('chapterStatus').textContent=`Chapter ${life.chapter.number} · ${life.count} lifetime encounters · ${life.ledger.size} current receipts. Weights, symbols and pending expectation continue; earlier detailed facts belong to their archived chapter.`;
+    const temporalTarget=current(),hasTimeTarget=!!temporalTarget&&ready&&!calendarBusy;
+    for(const id of ['readTime','calendarEvent','calendarSelf'])$(id).disabled=!hasTimeTarget;
+    $('calendarOrigin').disabled=!hasTimeTarget||!!life.calendarOrigin;
+    $('calendarStatus').textContent=life.calendarOrigin?`Personal origin: Janus civil day ${life.calendarOrigin.day} · fixed from ${life.calendarOrigin.assertion.id}. Local canonical C/WASM.`:
+      'Personal origin not declared · global dates can be read. Local canonical C/WASM · UTC, Hebrew midnight convention.';
     document.querySelector('.world-storage').title=`${life.queue.length*AMOS2.ENCOUNTER_RECEIPTS} receipt slots reserved for each encounter and its state transitions`;
     $('queue').replaceChildren();
     if(!life.queue.length)$('queue').append(el('p',life.count?'The world can arrive again.':'Facts arrive here. Your words can arrive, too.','quiet'));
@@ -182,6 +189,16 @@
     $('sonarChambers').replaceChildren(...SONAR.names.map((name,i)=>{const value=own?.after[i]??life.sonar.act[i],row=el('div',name),bar=el('i');bar.style.width=(100*value)+'%';row.title=fmt(value);row.append(bar);return row;}));
     $('selfForecast').textContent=own?`Expected own shift ${fmt(own.forecast.expected[2])} · observed ${fmt(own.observed[2])} · self prediction gap ${fmt(own.error)}`:life.count?`Acquired somatic state retained · last self prediction gap ${fmt(life.mind.lastError)}`:'The next encounter can meet its own response.';
     $('deriveReading').hidden=!trace||!claimFor(trace);
+    $('calendarReading').hidden=trace?.event.kind!=='temporal';$('calendarValues').replaceChildren();
+    if(trace?.event.kind==='temporal'){
+      const raw=trace.event.factIds.map(id=>life.ledger.entries().find(f=>f.id===id)).find(f=>f.predicate==='packet'),packet=JSON.parse(raw.value),v=packet.instant,s=packet.subject;
+      $('calendarModel').textContent=packet.role==='self'?'SELF':'EVENT';
+      for(const [label,value] of [['Gregorian',`${v.gregorian_year}-${v.gregorian_month}-${v.gregorian_day}`],['Hebrew',`${v.hebrew_year}/${v.hebrew_month}/${v.hebrew_day}`],
+        ['UTC civil day',v.utc_civil_day],['Janus epoch day',v.epoch_day],['Personal age',s?`${s.age_days} days`:'origin unknown'],['Calendar gap',s?`${s.anniversary_gap_days} days`:'—'],
+        ['Hebrew boundary',v.day_policy==='midnight'?'midnight':`supplied sunset · ${v.sunset_second}s`]]){
+        const row=el('div');row.append(el('span',label),el('b',String(value)));$('calendarValues').append(row);
+      }
+    }
     const expressed=trace?.utterance.ids??life.voice.last;
     $('utterance').classList.toggle('empty',!expressed.length);
     $('voiceMeta').textContent=`88 glyphs · ${trace?.symbolCount??life.voice.symbols.length} grown signs`;
@@ -377,6 +394,31 @@
   $('replayPath').onclick=()=>{const trace=current();if(pathFor(trace).length<2)return;phaseTick=trace.tick;phaseIndex=0;replayStart=performance.now();update();};
   $('fetchQuakes').onclick=readQuakes;$('fetchWeather').onclick=readWeather;$('connect').onclick=connect;
   $('messageSource').onchange=()=>{$('messageActor').hidden=$('messageSource').value==='human';};
+  async function readCalendar({factId,role='event',at,offset=0,sunset=-1}){
+    if(!ready)throw Error('The saved life is still opening');
+    const token=generation,fact=life.ledger.entries().find(f=>f.id===factId);if(!fact)throw Error('Select an existing source receipt');
+    const api=await calendar(),requestedAt=receiptNow(),packet=await CALENDAR.capture(api,fact,{role,at:at??(role==='event'?fact.validFrom:requestedAt),requestedAt,origin:life.calendarOrigin,offset,sunset});
+    if(token!==generation)throw Error('The life changed before the calendar reading returned');
+    const accepted=life.ingestCalendar(packet,receiptNow());update();persist();return {accepted,packet};
+  }
+  async function temporalAction(role){
+    if(!ready||calendarBusy)return;const selected=current();if(!selected)return;const token=generation;
+    calendarBusy=true;update();
+    try{
+      if(role==='origin'){
+        const id=`agent:amos:attention:${selected.tick}`,fact=life.ledger.entries().find(f=>f.id===id);if(!fact)throw Error('This encounter has no retained origin witness');
+        const api=await calendar(),split=JANUS.splitUnixMilliseconds(fact.validFrom),view=await api.local(split.unixDay,split.second,0,-1);
+        if(token!==generation)return;life.bindCalendarOrigin(id,view,receiptNow());update();persist();notice('The personal origin is fixed to this historical encounter.');
+      }else{const result=await readCalendar({factId:selected.event.factIds[0],role});notice(result.accepted?'Canonical time reading registered as a fact.':'This canonical reading is already in the world.');}
+    }catch(error){if(token===generation)notice('Calendar reading was not applied: '+error.message,true);}
+    finally{calendarBusy=false;update();}
+  }
+  $('readTime').onclick=$('calendarEvent').onclick=()=>temporalAction('event');$('calendarSelf').onclick=()=>temporalAction('self');
+  $('calendarOrigin').onclick=()=>temporalAction('origin');$('calendarImport').onclick=()=>$('calendarFile').click();
+  $('calendarFile').onchange=async()=>{const file=$('calendarFile').files[0];if(!file||!ready)return;const token=generation;
+    try{if(file.size>16384)throw Error('A captured temporal reading is at most 16 kB');const packet=JSON.parse(await file.text());
+      if(token!==generation)return;const accepted=life.ingestCalendar(packet,receiptNow());update();persist();notice(accepted?'Captured temporal observation registered.':'This captured observation is already present.');
+    }catch(error){if(token===generation)notice('Captured calendar reading was not applied: '+error.message,true);}finally{$('calendarFile').value='';}};
   $('messageForm').addEventListener('submit',e=>{
     e.preventDefault();if(!ready)return;const text=$('message').value,at=receiptNow();
     try{
@@ -508,7 +550,7 @@
   }
   // Classic scripts also load beside a file:// HTML. The folder is optional;
   // absence leaves the built-in world untouched and adds no interface warning.
-  Object.defineProperty(window,'AMOS2Worlds',{value:Object.freeze({version:1,register:registerWorld,recordInteraction:packet=>{if(!ready)throw Error('The saved life is still opening');const added=life.ingestInteraction(packet,receiptNow());update();persist();return {accepted:added,registration:added?life.queue.at(-1).registrationReceipt:null};}})});
+  Object.defineProperty(window,'AMOS2Worlds',{value:Object.freeze({version:1,register:registerWorld,readCalendar,recordInteraction:packet=>{if(!ready)throw Error('The saved life is still opening');const added=life.ingestInteraction(packet,receiptNow());update();persist();return {accepted:added,registration:added?life.queue.at(-1).registrationReceipt:null};}})});
   const optional=document.createElement('script');optional.src=new URL('worlds/worlds.js',document.baseURI).href;optional.async=true;
   optional.onerror=()=>optional.remove();document.head.append(optional);
   // Read-only QA surface: no alternate model, hidden training or rendered scores.
