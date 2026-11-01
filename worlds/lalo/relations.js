@@ -21,12 +21,13 @@ const RELATIONS = (() => {
       anchor:event.factIds[0],geo,glyphs:[...new Set(event.detail.contentGlyphs??event.glyphs)],
       magnitude:typeof values.magnitude==='number'?values.magnitude:null,
       revised:!!event.detail.archivedVersion||facts.some(f=>f.supersedes!==null),part:Number.isSafeInteger(values.part)?values.part:null,
-      document:typeof values.name==='string'?`${values.name}:${values.modified_at??''}`:null};
+      document:typeof values.name==='string'?`${values.name}:${values.modified_at??''}`:null,
+      ...(event.kind==='temporal'?{temporal:{role:values.role,gap:values.calendar_gap,daysToHebrew:values.days_to_yahrzeit,daysToGregorian:values.days_to_gregorian}}:{})};
   }
   class RelationField {
     constructor(){this.patterns=[];this.transitions=rows();this.recent=[];this.lastPattern=null;this.seen=0;}
     observe(event,ledger) {
-      const c=context(event,ledger),previous=this.recent.at(-1),same=this.recent.findLast(x=>x.kind===c.kind);
+      const c=context(event,ledger),previous=this.recent.at(-1),same=this.recent.findLast(x=>x.kind===c.kind&&(!c.temporal||x.temporal?.role===c.temporal.role));
       const priorVersion=this.recent.findLast(x=>x.subject===c.subject&&x.source===c.source);
       const device=this.recent.findLast(x=>x.kind==='device'&&x.geo);
       const spatial=(c.geo&&same?.geo)?distance(same.geo,c.geo):null;
@@ -40,6 +41,8 @@ const RELATIONS = (() => {
         previous?(previous.kind===c.kind?1:-1):0,overlap,
         revisionDelta!==null?Math.tanh(revisionDelta):fragmentGap!==null?Math.tanh(fragmentGap/2):0,
         deviceDistance===null?0:Math.exp(-deviceDistance/500)];
+      if(c.temporal){features[4]=c.temporal.gap??0;features[5]=typeof c.temporal.daysToHebrew==='number'&&typeof c.temporal.daysToGregorian==='number'?
+        Math.exp(-Math.min(c.temporal.daysToHebrew,c.temporal.daysToGregorian)/32):-1;}
       const d=this.patterns.map(p=>p.center.reduce((s,v,i)=>s+(v-features[i])**2,0)/6);
       const nearest=d.length?d.indexOf(Math.min(...d)):-1;
       const familiarity=nearest<0?0:Math.exp(-d[nearest]/.08);
@@ -65,7 +68,7 @@ const RELATIONS = (() => {
       this.lastPattern=chosen;this.seen++;this.recent.push(c);if(this.recent.length>WINDOW)this.recent.shift();
       const anchors=[c.anchor,same?.anchor,device?.anchor,previous?.anchor,priorVersion?.anchor].filter(Boolean);
       const evidence=[...new Set(anchors)];
-      return {policy:'amos/relations-v1',pattern:chosen,priorSupport,familiarity,expectation,transitionSupport,transitionMass,
+      return {policy:c.temporal?'amos/relations-time-v1':'amos/relations-v1',pattern:chosen,priorSupport,familiarity,expectation,transitionSupport,transitionMass,
         gapMs:gap,spatialKm:spatial,deviceKm:deviceDistance,glyphOverlap:overlap,revisionDelta,fragmentGap,
         features,projection,rawSensory:event.sensory.slice(),
         sensory:event.sensory.map((v,i)=>clamp(v+.35*projection[i],-1,1)),

@@ -3,6 +3,125 @@
 Project changes and working notes. Milestones belong in README.md; implementation
 history and verification belong here. The Arianna Method Manifesto governs both.
 
+## 2026-11-01 — canonical browser time becomes acquired experience
+
+Continued from merged `b293be0`. Read AML's calendar contracts, browser adapter,
+generated module, native bridge and verification at
+[`5e893f9`](https://github.com/ariannamethod/ariannamethod.ai/tree/5e893f9b36288c318254c3183e81fb78ecb097c0/janus).
+The browser update supplies the canonical C calculator as a self-contained
+generated JavaScript/WASM module. Its original `calendar_browser.mjs` and LGPL
+license are retained verbatim in `worlds/lalo/vendor/aml-calendar/`; the builder
+embeds that module and its license in the standalone HTML. There is no second
+calendar engine, full AML interpreter, server dependency or WASM sidecar.
+
+The embedded binary has zero host imports and 7,363 bytes. Its SHA-256 is
+`e2ae9554bcaff56b2e58c1ed96219398d50392c71e8dd9ee4eb963418c046c29`;
+the canonical source identity is
+`65793043ec680a2f0570a038996ccf501600915bcd085daf90cc25b497acff9b`.
+The published module owns Hebrew arithmetic, Gregorian conversion, subject
+perspectives, anniversaries and legacy Metonic drift. AMOS only validates the
+observation envelope and projects returned coordinates into its existing organs.
+
+### Facts, clocks and personal origin
+
+`CALENDAR.capture` produces a versioned `amos/janus-observation` containing the
+original assertion ID/source/occurrence/knowledge interval, event or self role,
+evaluation time, request time, implementation and binary identities, canonical
+instant, optional personal perspective and origin receipt. Receiving it and
+actually encountering it retain their separate existing clocks. Event time
+evaluates the original assertion's occurrence; self time evaluates the explicit
+request's present. Exact packet replay is idempotent; another explicit reading
+with a later request time records another act. Offset and supplied-sunset
+conventions coexist under distinct reading identities.
+
+The default is UTC with Hebrew midnight convention. Canonical UTC civil day zero
+and the Janus instant epoch at noon remain separate fields. Precise Hebrew
+`hebrew.dr/1` and legacy `metonic.legacy-trunc/1` retain their model names.
+No timestamp is silently replaced with installation time or a fabricated birth.
+
+`WorldLab.bindCalendarOrigin` fixes an origin once from an existing historical
+receipt. The UI uses the selected encounter's own attention fact. Declaring that
+choice is itself a queued, sourced encounter. It changes neither acquired body
+nor lifetime coordinates at admission. Complete checkpoints retain the origin;
+chapter continuation carries its canonical coordinates and original receipt as
+`calendar_origin_memory`. Later calculations cannot move that origin.
+
+Thirteen ordinary scalar facts retain each reading, including its complete raw
+packet. The packet budget is checked atomically rather than truncated. Unknown
+personal values stay null. Invalid assertion lineage, clocks, origin references,
+domain values or serialized event projections reject the operation or checkpoint.
+External readings remain sourced assertions; structural checks do not claim to
+authenticate a third-party transport's arithmetic.
+
+### Acquired temporal relations and native expression
+
+Temporal observations reuse the existing six-dimensional relation learner.
+Two temporal-only features carry canonical personal calendar gap and proximity
+to the next Hebrew/Gregorian anniversary. Unknown personal perspective uses a
+distinct sentinel. Existing ordinary-event features, predictors and coefficients
+stay unchanged. Raw distances are stored in context; floating exponential
+projection happens during perception, avoiding cross-engine replay comparisons
+of derived transcendental values. Temporal sequence matching also respects role.
+
+The numeric sensory projection uses temporal distance and canonical calendar
+difference. Time glyphs share the original assertion's registered content glyphs.
+The temporal packet is recognized structurally; provenance hashes and version
+strings are not tokenized as semantic content. There are no date-to-emotion or
+birthquake-to-glyph assignments. Existing recurrent learning, relation centres,
+sonar and provisional glyph return determine the acquired reaction.
+
+The calculator starts lazily on an explicit read or origin declaration, using
+only the embedded bytes. A failed computation is reported without substituting
+an approximate calendar. Stored readings, checkpoint replay and continued
+ordinary experience require no new computation, including when WebAssembly is
+unavailable. Async UI operations discard results after a life/chapter replacement.
+`AMOS2Worlds.readCalendar` exposes the same optional path without changing the
+existing world contract version. The main imprint displays a temporal panel
+only for an actual encountered calendar observation.
+
+### Netta Code's two bodies and Doom loop
+
+Inspected [netta.code at `3dbb938`](https://github.com/ariannamethod/netta.code/tree/3dbb938662791efe1f5cc58cf97f9ed59a2b9aa5):
+README, `doomer.py`, `doom.py`, `nettacode.py` and `nettalee.py`, including
+observation, control learning and complete saved state. Code is the mixed island;
+Lee keeps domain specialization. The current Doom runner imports Lee's
+`Organism`; `doom.py` is its compatibility entry point.
+
+The runner executes a generated policy against actual environment observations,
+records runtime/trace evidence and attributes consequences to the player's own
+actions. Its contract distinguishes player damage/kills from unrelated engine
+events and binds saved experience to backend, IWAD, map, skill and reward/sensor
+semantics. Frozen evaluation checks that the acquired state hash does not change.
+For AMOS the useful connection is causal attribution and retained environment
+contracts: asking about time, receiving coordinates, and experiencing their
+effect have separate evidence. No Doom reward, Netta model, policy or foreign
+learned weights are imported.
+
+### Verification
+
+`make check` passes **95 standalone behavioral gates** and **1,600 reference-body
+decisions**. Nine calendar gates cover: the embedded binary's identity and zero
+imports; all seven canonical operations against 18 responses from the matching
+native C bridge; exact ordinary continuation against a genuine pre-calendar
+v7 runtime/checkpoint; two independent immutable origins at the same world day;
+separate clocks and repeated request identity; chapter/restart continuity;
+atomic invalid-packet rejection; no network/ambient clock dependency during
+explicit-input calculation; and calendar-aware continuation without WebAssembly.
+
+The learning gate trains temporal relation centres, then clears only their two
+calendar axes in a matched acquired life. With identical incoming sensory input
+and identical pre-encounter recurrent state, the ablation changes familiarity
+and the actual world transition. Coordinates therefore participate in learned
+perception rather than merely appearing in an output panel.
+
+Browser verification used the standalone HTML with `dist/worlds` absent. A real
+50-encounter, chapter-2 v7 life migrated with only the schema version changed;
+its body, pending forecast and all acquired fields were identical. The same
+life declared an origin, encountered event time at 52 and self time at 53.
+Complete JSON before and after reload matched exactly. The screenshot
+`assets/amos2-janus-calendar.png` records encounter 52, its recalled encounters,
+canonical coordinates, measured neural path and acquired glyph expression.
+
 ## 2026-11-01 — acquired experience across chapters and native glyph return
 
 Continued from merged `0b878de`. Read NETTA itself at

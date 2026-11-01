@@ -5,17 +5,133 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {gunzipSync} from 'node:zlib';
+import {createHash} from 'node:crypto';
 const html=readFileSync(new URL('../../Amos-2.html',import.meta.url),'utf8');
 const code=html.match(/<script>([\s\S]*?)<\/script>/)[1].split('/* Kinetic instrument:')[0];
-const context=vm.createContext({TextEncoder,TextDecoder,console,AbortController,fetch,ReadableStream});
-vm.runInContext(code+';globalThis.organs={AMOS,LALO,VOICE,LANGUAGES,PERCEPTION,RELATIONS,COGNITION,SONAR,TRANSITIONS,AMOS2};',context);
-const {AMOS,LALO,VOICE,LANGUAGES,PERCEPTION,RELATIONS,COGNITION,SONAR,TRANSITIONS,AMOS2}=context.organs;
+const context=vm.createContext({TextEncoder,TextDecoder,console,AbortController,fetch,ReadableStream,WebAssembly,atob});
+vm.runInContext(code+';globalThis.organs={AMOS,LALO,VOICE,LANGUAGES,PERCEPTION,RELATIONS,COGNITION,SONAR,TRANSITIONS,AMOS2,JANUS,CALENDAR};',context);
+const {AMOS,LALO,VOICE,LANGUAGES,PERCEPTION,RELATIONS,COGNITION,SONAR,TRANSITIONS,AMOS2,JANUS,CALENDAR}=context.organs;
 const T=1793400000000;
 const feed=(mag=2.9,updated=T-1000)=>({type:'FeatureCollection',features:[{type:'Feature',id:'amosSynthetic1',geometry:{type:'Point',coordinates:[13,52,8]},properties:{mag,magType:'ml',place:'Synthetic test fixture',type:'earthquake',time:T-10000,updated}}]});
 const weather=(temperature=12)=>({latitude:52.5,longitude:13.4,current:{time:T/1000,interval:900,temperature_2m:temperature,wind_speed_10m:9,precipitation:0,is_day:1},current_units:{temperature_2m:'°C',wind_speed_10m:'km/h',precipitation:'mm'}});
 const weatherURL='https://api.open-meteo.com/v1/forecast?latitude=52.5&longitude=13.4';
 const speak=(life,text,at)=>{const e=life.ingestText(text,at);return life.encounter(at,e.id);};
 const g=name=>VOICE.names.indexOf(name);
+
+test('canonical C/WASM calendar is embedded, import-free and matches native reference responses',async()=>{
+  const module=new WebAssembly.Module(JANUS.bundledBytes());assert.equal(WebAssembly.Module.imports(module).length,0);
+  assert.equal(createHash('sha256').update(JANUS.bundledBytes()).digest('hex'),CALENDAR.binary);
+  const vendor=readFileSync(new URL('vendor/aml-calendar/calendar_browser.mjs',import.meta.url),'utf8');
+  assert.ok(vendor.includes(CALENDAR.sourceHash));assert.ok(code.includes(vendor.replace(/\bexport\s+/g,'')));
+  const cal=await JANUS.bundledCalendar(),fixture=JSON.parse(readFileSync(new URL('../../tests/fixtures/janus-calendar-native.json',import.meta.url),'utf8'));
+  for(const {op,args,response} of fixture.cases)assert.equal(JSON.stringify(await cal[op](...args)),JSON.stringify(response.value));
+  assert.equal(await cal.gregorian(2026,1,23),477);assert.equal(await cal.gregorian(2026,2,13),498);
+  assert.equal((await cal.local(19999,43199,0,-1)).epoch_day,-1);assert.equal((await cal.local(19999,43200,0,-1)).epoch_day,0);
+});
+
+test('calendar-disabled continuation preserves the genuine v7 acquired trajectory and chapter',()=>{
+  const fixture=gunzipSync(readFileSync(new URL('../../tests/fixtures/amos2-v7.json.gz',import.meta.url))).toString();
+  const oldCode=gunzipSync(readFileSync(new URL('../../tests/fixtures/amos2-v7-runtime.js.gz',import.meta.url))).toString();
+  const oldContext=vm.createContext({TextEncoder,TextDecoder,console,AbortController,fetch,ReadableStream});
+  vm.runInContext(oldCode+';globalThis.World=AMOS2.WorldLab;',oldContext);
+  const previous=oldContext.World.load(fixture),life=AMOS2.WorldLab.load(fixture);assert.equal(life.calendarOrigin,null);
+  assert.equal(life.model.dumps(),previous.model.dumps());assert.equal(JSON.stringify(life.voice.dump()),JSON.stringify(previous.voice.dump()));
+  assert.equal(JSON.stringify(life.encounter(T+50)),JSON.stringify(previous.encounter(T+50)));
+  for(let i=0;i<3;i++)assert.equal(JSON.stringify(speak(life,'earth stone remember',T+100+i)),JSON.stringify(speak(previous,'earth stone remember',T+100+i)));
+  assert.equal(life.model.dumps(),previous.model.dumps());assert.equal(JSON.stringify(life.pending),JSON.stringify(previous.pending));
+});
+
+async function timeLife(){
+  const cal=await JANUS.bundledCalendar(),life=new AMOS2.WorldLab();
+  speak(life,'earth stone',Date.UTC(2026,0,23,12));speak(life,'water sky',Date.UTC(2026,1,13,12));
+  const at=Date.UTC(2026,9,4,12);
+  life.ingestWorld([{kind:'sensor',key:'temporal-fixture',source:'synthetic:calendar',observedAt:at,title:'Synthetic dated measurement',values:{magnitude:2.9},
+    sensory:[.2,.3],projection:'Synthetic test coordinates',glyphs:[g('earth'),g('stone')],detail:{}}],T);
+  const target=life.ledger.entries().find(f=>f.subject==='world:sensor:temporal-fixture');life.encounter(T);
+  return {cal,life,target};
+}
+async function declareOrigin(life,cal,tick,at){
+  const id=`agent:amos:attention:${tick}`,fact=life.ledger.entries().find(f=>f.id===id),split=JANUS.splitUnixMilliseconds(fact.validFrom);
+  return life.bindCalendarOrigin(id,await cal.local(split.unixDay,split.second,0,-1),at);
+}
+
+test('two immutable personal origins give the same dated fact different acquired temporal perspectives',async()=>{
+  const {cal,life,target}=await timeLife(),a=AMOS2.WorldLab.load(life.dump()),b=AMOS2.WorldLab.load(life.dump());
+  await declareOrigin(a,cal,1,T+1);await declareOrigin(b,cal,2,T+1);assert.equal(a.model.dumps(),b.model.dumps());
+  const pa=await CALENDAR.capture(cal,target,{origin:a.calendarOrigin,requestedAt:T+2}),pb=await CALENDAR.capture(cal,target,{origin:b.calendarOrigin,requestedAt:T+2});
+  assert.equal(pa.subject.birth_day,477);assert.equal(pb.subject.birth_day,498);assert.equal(pa.subject.age_days,254);assert.equal(pb.subject.age_days,233);
+  a.ingestCalendar(pa,T+3);b.ingestCalendar(pb,T+3);const aa=a.encounter(T+4,a.queue.at(-1).id),bb=b.encounter(T+4,b.queue.at(-1).id);
+  assert.equal(JSON.stringify(aa.before),JSON.stringify(bb.before));assert.notEqual(JSON.stringify(aa.worldAfter),JSON.stringify(bb.worldAfter));
+  assert.equal(aa.relations.policy,'amos/relations-time-v1');assert.equal(aa.relations.features[4],pa.subject.janus_gap);
+  assert.ok(aa.relations.features[5]>0);assert.ok(aa.event.glyphs.includes(g('earth')));assert.equal(a.model.birth,life.model.birth);
+  const saved=a.dump();await assert.rejects(declareOrigin(a,cal,2,T+5),/already fixed/);assert.equal(a.dump(),saved);
+  assert.equal(AMOS2.WorldLab.load(saved).dump(),saved);
+});
+
+test('temporal observations preserve both clocks, explicit read acts and exact captured-packet replay',async()=>{
+  const {cal,life,target}=await timeLife(),packet=await CALENDAR.capture(cal,target,{requestedAt:T+1});
+  assert.equal(packet.origin,null);assert.equal(packet.subject,null);assert.equal(packet.assertion.recordedAt,T);
+  assert.equal(life.ingestCalendar(packet,T+2),1);const event=life.queue.at(-1),before=life.dump();
+  assert.equal(event.observedAt,target.validFrom);assert.equal(event.receivedAt,T+2);assert.equal(event.detail.calendar.target,target.id);
+  assert.equal(life.ingestCalendar(packet,T+3),0);assert.equal(life.dump(),before);
+  const trace=life.encounter(T+10,event.id);assert.equal(trace.encounterAt,T+10);assert.equal(trace.relations.features[5],-1);
+  const second=await CALENDAR.capture(cal,target,{requestedAt:T+11});assert.equal(life.ingestCalendar(second,T+12),1);
+  assert.notEqual(life.queue.at(-1).subject,event.subject);
+  const self=await CALENDAR.capture(cal,target,{role:'self',at:T+13,requestedAt:T+13});assert.equal(self.instant.utc_civil_day,JANUS.splitUnixMilliseconds(T+13).unixDay-19999);
+  assert.notEqual(self.instant.utc_civil_day,packet.instant.utc_civil_day);life.ingestCalendar(self,T+14);
+  const saved=life.dump();assert.equal(AMOS2.WorldLab.load(saved).dump(),saved);
+});
+
+test('origin witnesses survive chapter continuation and temporal lives restart without another calendar call',async()=>{
+  const {cal,life,target}=await timeLife();await declareOrigin(life,cal,1,T+1);while(life.queue.length)life.encounter(T+2);
+  const packet=await CALENDAR.capture(cal,target,{origin:life.calendarOrigin,requestedAt:T+3});life.ingestCalendar(packet,T+4);life.encounter(T+5);
+  const saved=life.dump(),restored=AMOS2.WorldLab.load(saved);assert.equal(restored.dump(),saved);
+  assert.equal(JSON.stringify(speak(life,'remember earth',T+6)),JSON.stringify(speak(restored,'remember earth',T+6)));
+  const origin=JSON.stringify(life.calendarOrigin),next=life.continueWithExperience(T+7).life;
+  assert.equal(JSON.stringify(next.calendarOrigin),origin);assert.equal(JSON.stringify(CALENDAR.resolveOrigin(next.ledger,next.calendarOrigin.receipt)),origin);
+  assert.ok(next.ledger.entries().some(f=>f.predicate==='calendar_origin_memory'));
+  speak(next,'earth now',T+8);const current=next.ledger.entries().findLast(f=>f.predicate==='text');
+  next.ingestCalendar(await CALENDAR.capture(cal,current,{origin:next.calendarOrigin,requestedAt:T+9}),T+10);next.encounter(T+11);
+  assert.equal(JSON.stringify(next.calendarOrigin),origin);assert.equal(AMOS2.WorldLab.load(next.dump()).dump(),next.dump());
+});
+
+test('malformed temporal values and removed origins reject atomically',async()=>{
+  const {cal,life,target}=await timeLife();await declareOrigin(life,cal,1,T+1);
+  const packet=JSON.parse(JSON.stringify(await CALENDAR.capture(cal,target,{origin:life.calendarOrigin,requestedAt:T+2}))),before=life.dump();
+  for(const change of [p=>p.instant.epoch_day++,p=>p.subject.birth_day++,p=>p.assertion.source='other',p=>p.origin.day++,p=>p.padding='x'.repeat(4096),p=>p.requestedAt=T+99]){
+    const p=JSON.parse(JSON.stringify(packet));change(p);assert.throws(()=>life.ingestCalendar(p,T+3));assert.equal(life.dump(),before);
+  }
+  const d=JSON.parse(before);d.calendarOrigin=null;assert.throws(()=>AMOS2.WorldLab.load(JSON.stringify(d)),/cannot be removed/);
+});
+
+test('the inline calendar runs with network and ambient time disabled and never trains on its own',async()=>{
+  let attempts=0;const blocked=()=>{attempts++;throw Error('No ambient source in calendar test');};
+  const isolated=vm.createContext({TextEncoder,TextDecoder,WebAssembly,atob,fetch:blocked,Date:class{constructor(){blocked();}static now(){return blocked();}}});
+  vm.runInContext(code+';globalThis.core={JANUS,AMOS2};',isolated);const a=new isolated.core.AMOS2.WorldLab(),before=a.dump();
+  const cal=await isolated.core.JANUS.bundledCalendar();await cal.subject(498,731);await cal.local(19999,43199,0,-1);
+  assert.equal(attempts,0);assert.equal(a.dump(),before);
+});
+
+test('acquired temporal relation centres change a later read with the same raw fact and neural body',async()=>{
+  const {cal,life,target}=await timeLife();await declareOrigin(life,cal,1,T+1);life.encounter(T+2);
+  for(let i=0;i<6;i++){life.ingestCalendar(await CALENDAR.capture(cal,target,{origin:life.calendarOrigin,requestedAt:T+10+i*3}),T+11+i*3);life.encounter(T+12+i*3);}
+  assert.ok(life.history.at(-1).relations.priorSupport>0);assert.ok(life.history.at(-1).relations.expectation>0);
+  const saved=life.dump(),a=AMOS2.WorldLab.load(saved),b=AMOS2.WorldLab.load(saved);
+  for(const p of b.relations.patterns){p.center[4]=0;p.center[5]=0;}
+  assert.equal(a.model.dumps(),b.model.dumps());
+  const packet=await CALENDAR.capture(cal,target,{origin:life.calendarOrigin,requestedAt:T+40});a.ingestCalendar(packet,T+41);b.ingestCalendar(packet,T+41);
+  const aa=a.encounter(T+42),bb=b.encounter(T+42);assert.equal(JSON.stringify(aa.event.sensory),JSON.stringify(bb.event.sensory));
+  assert.equal(JSON.stringify(aa.before),JSON.stringify(bb.before));assert.notEqual(aa.relations.familiarity,bb.relations.familiarity);
+  assert.notEqual(JSON.stringify(aa.worldAfter),JSON.stringify(bb.worldAfter));
+});
+
+test('an acquired temporal life continues when new WASM computations are unavailable',async()=>{
+  const {cal,life,target}=await timeLife();await declareOrigin(life,cal,1,T+1);life.encounter(T+2);
+  life.ingestCalendar(await CALENDAR.capture(cal,target,{origin:life.calendarOrigin,requestedAt:T+3}),T+4);life.encounter(T+5);
+  const isolated=vm.createContext({TextEncoder,TextDecoder,WebAssembly:undefined,atob,fetch:()=>{throw Error('No network');}});
+  vm.runInContext(code+';globalThis.World=AMOS2.WorldLab;',isolated);const saved=life.dump(),continued=isolated.World.load(saved);
+  assert.equal(continued.dump(),saved);assert.equal(JSON.stringify(speak(continued,'earth remembers time',T+6)),JSON.stringify(speak(life,'earth remembers time',T+6)));
+});
 
 test('all canonical seed names retain their identities while previous lexical receipts keep their old interpretation',()=>{
   for(let id=0;id<88;id++)assert.deepEqual(Array.from(VOICE.tokenize(VOICE.names[id],'en').ids),[id]);
@@ -217,7 +333,7 @@ test('a genuine v4 life retains its original read membrane, acquired organs and 
   assert.equal(VOICE.tokenize('terre pierre maintenant').ids[0],VOICE.names.indexOf('earth'));
   assert.notEqual(JSON.stringify(VOICE.tokenizeLegacy('terre pierre maintenant').ids),JSON.stringify(VOICE.tokenize('terre pierre maintenant').ids));
   const trace=speak(life,'terre pierre maintenant',T+100);assert.equal(trace.reading.policy,'amos/read-indices-v3');
-  assert.equal(JSON.parse(life.dump()).version,7);assert.equal(AMOS2.WorldLab.load(life.dump()).dump(),life.dump());
+  assert.equal(JSON.parse(life.dump()).version,8);assert.equal(AMOS2.WorldLab.load(life.dump()).dump(),life.dump());
 });
 
 test('the standalone file embeds the original AMOS body and every runtime organ',()=>{
@@ -540,7 +656,7 @@ test('a real v2 24-neuron life grows with its acquired weights, pending forecast
   assert.equal(JSON.stringify(life.pending.predicted),JSON.stringify(old.pending.predicted));
   assert.equal(JSON.stringify(life.voice.neural.map(row=>row.slice(0,24))),JSON.stringify(old.voice.neural));
   assert.equal(life.model.subject.rng.state.toString(16),body.subject.rng.random64.replace(/^0+/,''));
-  const checkpoint=life.dump();assert.equal(JSON.parse(checkpoint).version,7);assert.equal(AMOS2.WorldLab.load(checkpoint).dump(),checkpoint);
+  const checkpoint=life.dump();assert.equal(JSON.parse(checkpoint).version,8);assert.equal(AMOS2.WorldLab.load(checkpoint).dump(),checkpoint);
   const trace=life.encounter(T+70);assert.equal(trace.after.length,40);assert.equal(life.count,6);
   assert.equal(AMOS2.WorldLab.load(life.dump()).dump(),life.dump());
 });

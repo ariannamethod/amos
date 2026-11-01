@@ -101,6 +101,25 @@ The HTML remains independent of the optional folder.
 
 ![AMOS 2, chapter 2: the same acquired life reaches encounter 50](assets/amos-2-chapters-20261101.jpg)
 
+**Time now enters as an encounter.** JANUS.CALENDAR's canonical C/WASM calculator
+from [AML](https://github.com/ariannamethod/ariannamethod.ai/tree/5e893f9b36288c318254c3183e81fb78ecb097c0/janus)
+is embedded inside the HTML. **Read event time** registers Gregorian, Hebrew and
+Janus coordinates alongside the original assertion and both factual clocks.
+Life settings also offer **Read my present** and a personal origin fixed once
+from an existing encounter. These observations enter the existing relation
+learning, recurrent state, reflection and glyph field. Their meaning is acquired.
+The personal origin continues across chapters; it does not reset an older life.
+No server, network connection, adjacent WASM file or full language runtime is
+needed. If WebAssembly is unavailable, stored readings and the acquired life
+still work; an explicit request for a new calculation reports the failure.
+
+![AMOS 2 — a canonical temporal observation changes the same acquired life](assets/amos2-janus-calendar.png)
+
+*Chapter 2, encounter 52, without the optional folder: an event-time observation
+recalls encounters 50 and 51. The recorded neural path and glyph expression belong
+to that actual continuation. UTC civil days, the noon Janus epoch and the Hebrew
+day-boundary convention remain distinct.*
+
 **The glyphs are its expression.** The alphabet comes from actually.life;
 associations with recurrent state and recognized events are acquired during this
 life. Ordinary signs — `earth`, `stone`, `now` — can grow into a new compound.
@@ -134,7 +153,7 @@ Each state on the path can be inspected and replayed.*
 [Two histories, one shared observation](assets/amos-2-histories-20261031.jpg) ·
 [Acquired relations](AMOSLOG.md#acquired-relations) ·
 [Organs and projections](AMOSLOG.md#runtime-organs-and-provenance) ·
-[Verification and project log](AMOSLOG.md): 79 behavioral gates and 1,600
+[Verification and project log](AMOSLOG.md): 95 behavioral gates and 1,600
 reference-body decisions pass through `make check`. Historical screenshots record
 the earlier lives; acquired state and complete continuation are preserved.
 

@@ -29,9 +29,15 @@ def lalo_bundle():
 
 html = (HERE / 'shell.html').read_text()
 html = html.replace('/* AMOS2_STYLE */', (HERE / 'style.css').read_text())
-html = html.replace('/* AMOS2_LICENSE */', (HERE / 'vendor/lalo/LICENSE').read_text().replace('&', '&amp;').replace('<', '&lt;'))
-sources = [ROOT/'web/amos.js', HERE/'vendor/life-semantic.js', HERE/'languages.js', HERE/'voice.js', HERE/'relations.js', HERE/'perception.js', HERE/'cognition.js', HERE/'sonar.js', HERE/'transitions.js', HERE/'engine.js', HERE/'ui.js']
-scripts = [sources[0].read_text(), lalo_bundle()] + [p.read_text() for p in sources[1:]]
+licenses = (HERE / 'vendor/lalo/LICENSE').read_text() + '\n\nAML calendar client — LGPL-3.0\n' + (HERE / 'vendor/aml-calendar/LICENSE').read_text()
+html = html.replace('/* AMOS2_LICENSE */', licenses.replace('&', '&amp;').replace('<', '&lt;'))
+sources = [ROOT/'web/amos.js', HERE/'vendor/life-semantic.js', HERE/'languages.js', HERE/'voice.js', HERE/'vendor/aml-calendar/calendar_browser.mjs', HERE/'calendar.js', HERE/'relations.js', HERE/'perception.js', HERE/'cognition.js', HERE/'sonar.js', HERE/'transitions.js', HERE/'engine.js', HERE/'ui.js']
+def source_text(path):
+    source = path.read_text()
+    if path.name == 'calendar_browser.mjs':
+        source = 'const JANUS = (() => {\n' + re.sub(r'\bexport\s+', '', source) + '\nreturn {API, createCalendar, httpTransport, splitUnixMilliseconds, joinUnixMilliseconds, bundledBytes, bundledCalendar};\n})();'
+    return source
+scripts = [sources[0].read_text(), lalo_bundle()] + [source_text(p) for p in sources[1:]]
 html = html.replace('/* AMOS2_SCRIPTS */', '\n\n'.join(scripts).replace('</script', '<\\/script'))
 target = ROOT/'Amos-2.html'
 if '--check' in sys.argv:

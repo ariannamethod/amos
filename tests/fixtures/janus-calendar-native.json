@@ -1,0 +1,485 @@
+{
+  "implementation": "5e893f9b36288c318254c3183e81fb78ecb097c0",
+  "cases": [
+    {
+      "op": "gregorian",
+      "args": [
+        2024,
+        10,
+        3
+      ],
+      "response": {
+        "api": "janus.calendar/1",
+        "value": 0
+      }
+    },
+    {
+      "op": "gregorian",
+      "args": [
+        2026,
+        1,
+        23
+      ],
+      "response": {
+        "api": "janus.calendar/1",
+        "value": 477
+      }
+    },
+    {
+      "op": "gregorian",
+      "args": [
+        2026,
+        2,
+        13
+      ],
+      "response": {
+        "api": "janus.calendar/1",
+        "value": 498
+      }
+    },
+    {
+      "op": "hebrew",
+      "args": [
+        5785,
+        7,
+        1
+      ],
+      "response": {
+        "api": "janus.calendar/1",
+        "value": 0
+      }
+    },
+    {
+      "op": "date",
+      "args": [
+        -739161
+      ],
+      "response": {
+        "api": "janus.calendar/1",
+        "value": {
+          "schema": "janus.calendar/1",
+          "calendar_model": "hebrew.dr/1",
+          "day_policy": "midnight",
+          "drift_model": "metonic.legacy-trunc/1",
+          "day": -739161,
+          "unix_day": -719162,
+          "gregorian_year": 1,
+          "gregorian_month": 1,
+          "gregorian_day": 1,
+          "hebrew_year": 3761,
+          "hebrew_month": 10,
+          "hebrew_day": 18,
+          "gregorian_leap": 0,
+          "hebrew_leap": 0,
+          "metonic_year": 18
+        }
+      }
+    },
+    {
+      "op": "date",
+      "args": [
+        0
+      ],
+      "response": {
+        "api": "janus.calendar/1",
+        "value": {
+          "schema": "janus.calendar/1",
+          "calendar_model": "hebrew.dr/1",
+          "day_policy": "midnight",
+          "drift_model": "metonic.legacy-trunc/1",
+          "day": 0,
+          "unix_day": 19999,
+          "gregorian_year": 2024,
+          "gregorian_month": 10,
+          "gregorian_day": 3,
+          "hebrew_year": 5785,
+          "hebrew_month": 7,
+          "hebrew_day": 1,
+          "gregorian_leap": 1,
+          "hebrew_leap": 0,
+          "metonic_year": 9
+        }
+      }
+    },
+    {
+      "op": "date",
+      "args": [
+        2912897
+      ],
+      "response": {
+        "api": "janus.calendar/1",
+        "value": {
+          "schema": "janus.calendar/1",
+          "calendar_model": "hebrew.dr/1",
+          "day_policy": "midnight",
+          "drift_model": "metonic.legacy-trunc/1",
+          "day": 2912897,
+          "unix_day": 2932896,
+          "gregorian_year": 9999,
+          "gregorian_month": 12,
+          "gregorian_day": 31,
+          "hebrew_year": 13760,
+          "hebrew_month": 8,
+          "hebrew_day": 28,
+          "gregorian_leap": 0,
+          "hebrew_leap": 0,
+          "metonic_year": 4
+        }
+      }
+    },
+    {
+      "op": "subject",
+      "args": [
+        498,
+        730
+      ],
+      "response": {
+        "api": "janus.calendar/1",
+        "value": {
+          "schema": "janus.calendar/1",
+          "calendar_model": "hebrew.dr/1",
+          "day_policy": "midnight",
+          "drift_model": "metonic.legacy-trunc/1",
+          "day": 730,
+          "unix_day": 20729,
+          "gregorian_year": 2026,
+          "gregorian_month": 10,
+          "gregorian_day": 3,
+          "hebrew_year": 5787,
+          "hebrew_month": 7,
+          "hebrew_day": 22,
+          "gregorian_leap": 0,
+          "hebrew_leap": 1,
+          "metonic_year": 11,
+          "birth_day": 498,
+          "age_days": 232,
+          "birth_drift": 15.338809,
+          "legacy_drift": 22.4846001,
+          "personal_dissonance": 0.21653913,
+          "next_hebrew_day": 853,
+          "next_gregorian_day": 863,
+          "days_to_yahrzeit": 123,
+          "days_to_gregorian": 133,
+          "anniversary_gap_days": -10,
+          "janus_gap": -0.333333343,
+          "yahrzeit": 2.07183697e-11,
+          "janus_temporal_alpha": 0.333333313,
+          "legacy_step": 0.0308017731,
+          "birthquake": 0,
+          "drift_gap_days": 17.1457901
+        }
+      }
+    },
+    {
+      "op": "subject",
+      "args": [
+        498,
+        731
+      ],
+      "response": {
+        "api": "janus.calendar/1",
+        "value": {
+          "schema": "janus.calendar/1",
+          "calendar_model": "hebrew.dr/1",
+          "day_policy": "midnight",
+          "drift_model": "metonic.legacy-trunc/1",
+          "day": 731,
+          "unix_day": 20730,
+          "gregorian_year": 2026,
+          "gregorian_month": 10,
+          "gregorian_day": 4,
+          "hebrew_year": 5787,
+          "hebrew_month": 7,
+          "hebrew_day": 23,
+          "gregorian_leap": 0,
+          "hebrew_leap": 1,
+          "metonic_year": 11,
+          "birth_day": 498,
+          "age_days": 233,
+          "birth_drift": 15.338809,
+          "legacy_drift": -7.48459816,
+          "personal_dissonance": 0.691618383,
+          "next_hebrew_day": 853,
+          "next_gregorian_day": 863,
+          "days_to_yahrzeit": 122,
+          "days_to_gregorian": 132,
+          "anniversary_gap_days": -10,
+          "janus_gap": -0.333333343,
+          "yahrzeit": 2.53054938e-11,
+          "janus_temporal_alpha": 0.333333313,
+          "legacy_step": -29.9691982,
+          "birthquake": 1,
+          "drift_gap_days": -12.8234062
+        }
+      }
+    },
+    {
+      "op": "subject",
+      "args": [
+        477,
+        731
+      ],
+      "response": {
+        "api": "janus.calendar/1",
+        "value": {
+          "schema": "janus.calendar/1",
+          "calendar_model": "hebrew.dr/1",
+          "day_policy": "midnight",
+          "drift_model": "metonic.legacy-trunc/1",
+          "day": 731,
+          "unix_day": 20730,
+          "gregorian_year": 2026,
+          "gregorian_month": 10,
+          "gregorian_day": 4,
+          "hebrew_year": 5787,
+          "hebrew_month": 7,
+          "hebrew_day": 23,
+          "gregorian_leap": 0,
+          "hebrew_leap": 1,
+          "metonic_year": 11,
+          "birth_day": 477,
+          "age_days": 254,
+          "birth_drift": 14.6919918,
+          "legacy_drift": -7.48459816,
+          "personal_dissonance": 0.672017872,
+          "next_hebrew_day": 832,
+          "next_gregorian_day": 842,
+          "days_to_yahrzeit": 101,
+          "days_to_gregorian": 111,
+          "anniversary_gap_days": -10,
+          "janus_gap": -0.333333343,
+          "yahrzeit": 1.68752856e-09,
+          "janus_temporal_alpha": 0.333333313,
+          "legacy_step": -29.9691982,
+          "birthquake": 1,
+          "drift_gap_days": -12.17659
+        }
+      }
+    },
+    {
+      "op": "subject",
+      "args": [
+        -50000,
+        -10000
+      ],
+      "response": {
+        "api": "janus.calendar/1",
+        "value": {
+          "schema": "janus.calendar/1",
+          "calendar_model": "hebrew.dr/1",
+          "day_policy": "midnight",
+          "drift_model": "metonic.legacy-trunc/1",
+          "day": -10000,
+          "unix_day": 9999,
+          "gregorian_year": 1997,
+          "gregorian_month": 5,
+          "gregorian_day": 18,
+          "hebrew_year": 5757,
+          "hebrew_month": 2,
+          "hebrew_day": 11,
+          "gregorian_leap": 0,
+          "hebrew_leap": 1,
+          "metonic_year": 19,
+          "birth_day": -50000,
+          "age_days": 40000,
+          "birth_drift": -70.0410156,
+          "legacy_drift": -98.0082092,
+          "personal_dissonance": 0.847490728,
+          "next_hebrew_day": -9810,
+          "next_gregorian_day": -9823,
+          "days_to_yahrzeit": 190,
+          "days_to_gregorian": 177,
+          "anniversary_gap_days": 13,
+          "janus_gap": 0.433333337,
+          "yahrzeit": 3.13913289e-17,
+          "janus_temporal_alpha": 0.716666698,
+          "legacy_step": 0.0308227539,
+          "birthquake": 0,
+          "drift_gap_days": -40.9671936
+        }
+      }
+    },
+    {
+      "op": "local",
+      "args": [
+        19999,
+        43199,
+        0,
+        -1
+      ],
+      "response": {
+        "api": "janus.calendar/1",
+        "value": {
+          "schema": "janus.calendar/1",
+          "calendar_model": "hebrew.dr/1",
+          "day_policy": "midnight",
+          "drift_model": "metonic.legacy-trunc/1",
+          "day": 0,
+          "unix_day": 19999,
+          "gregorian_year": 2024,
+          "gregorian_month": 10,
+          "gregorian_day": 3,
+          "hebrew_year": 5785,
+          "hebrew_month": 7,
+          "hebrew_day": 1,
+          "gregorian_leap": 1,
+          "hebrew_leap": 0,
+          "metonic_year": 9,
+          "utc_second": 43199,
+          "offset_minutes": 0,
+          "sunset_second": -1,
+          "local_second": 43199,
+          "epoch_day": -1,
+          "utc_civil_day": 0,
+          "hebrew_civil_day": 0
+        }
+      }
+    },
+    {
+      "op": "local",
+      "args": [
+        19999,
+        43200,
+        0,
+        -1
+      ],
+      "response": {
+        "api": "janus.calendar/1",
+        "value": {
+          "schema": "janus.calendar/1",
+          "calendar_model": "hebrew.dr/1",
+          "day_policy": "midnight",
+          "drift_model": "metonic.legacy-trunc/1",
+          "day": 0,
+          "unix_day": 19999,
+          "gregorian_year": 2024,
+          "gregorian_month": 10,
+          "gregorian_day": 3,
+          "hebrew_year": 5785,
+          "hebrew_month": 7,
+          "hebrew_day": 1,
+          "gregorian_leap": 1,
+          "hebrew_leap": 0,
+          "metonic_year": 9,
+          "utc_second": 43200,
+          "offset_minutes": 0,
+          "sunset_second": -1,
+          "local_second": 43200,
+          "epoch_day": 0,
+          "utc_civil_day": 0,
+          "hebrew_civil_day": 0
+        }
+      }
+    },
+    {
+      "op": "local",
+      "args": [
+        19998,
+        64800,
+        0,
+        64800
+      ],
+      "response": {
+        "api": "janus.calendar/1",
+        "value": {
+          "schema": "janus.calendar/1",
+          "calendar_model": "hebrew.dr/1",
+          "day_policy": "supplied-sunset",
+          "drift_model": "metonic.legacy-trunc/1",
+          "day": -1,
+          "unix_day": 19998,
+          "gregorian_year": 2024,
+          "gregorian_month": 10,
+          "gregorian_day": 2,
+          "hebrew_year": 5785,
+          "hebrew_month": 7,
+          "hebrew_day": 1,
+          "gregorian_leap": 1,
+          "hebrew_leap": 0,
+          "metonic_year": 9,
+          "utc_second": 64800,
+          "offset_minutes": 0,
+          "sunset_second": 64800,
+          "local_second": 64800,
+          "epoch_day": -1,
+          "utc_civil_day": -1,
+          "hebrew_civil_day": 0
+        }
+      }
+    },
+    {
+      "op": "local",
+      "args": [
+        19999,
+        0,
+        -60,
+        -1
+      ],
+      "response": {
+        "api": "janus.calendar/1",
+        "value": {
+          "schema": "janus.calendar/1",
+          "calendar_model": "hebrew.dr/1",
+          "day_policy": "midnight",
+          "drift_model": "metonic.legacy-trunc/1",
+          "day": -1,
+          "unix_day": 19999,
+          "gregorian_year": 2024,
+          "gregorian_month": 10,
+          "gregorian_day": 2,
+          "hebrew_year": 5784,
+          "hebrew_month": 6,
+          "hebrew_day": 29,
+          "gregorian_leap": 1,
+          "hebrew_leap": 1,
+          "metonic_year": 8,
+          "utc_second": 0,
+          "offset_minutes": -60,
+          "sunset_second": -1,
+          "local_second": 82800,
+          "epoch_day": -1,
+          "utc_civil_day": 0,
+          "hebrew_civil_day": -1
+        }
+      }
+    },
+    {
+      "op": "add",
+      "args": [
+        0,
+        1,
+        7,
+        1,
+        1
+      ],
+      "response": {
+        "api": "janus.calendar/1",
+        "value": 563
+      }
+    },
+    {
+      "op": "anniversary",
+      "args": [
+        498,
+        5787,
+        1
+      ],
+      "response": {
+        "api": "janus.calendar/1",
+        "value": 853
+      }
+    },
+    {
+      "op": "anniversary",
+      "args": [
+        498,
+        2027,
+        0
+      ],
+      "response": {
+        "api": "janus.calendar/1",
+        "value": 863
+      }
+    }
+  ]
+}

@@ -72,9 +72,9 @@
       <div class="imprint-metrics"><div><span>Recurrent shift <small>RMS Δh</small></span><b id="shift">—</b></div><div><span>Resonance <small>prior glyph overlap</small></span><b id="resonance">—</b></div><div><span>Internal load</span><b id="load">—</b></div></div>
       <div id="neuronChanges" class="neuron-changes"></div>
       <div class="relation-reading"><div class="section-label"><span>Acquired relations</span><b id="relationPattern">—</b></div><div id="relationRead" class="relation-values">The next encounter can meet a history.</div></div>
-      <div class="encounter-links"><div class="section-label"><span>A shared past</span><b id="linkCount">—</b></div><div id="encounterLinks">The next encounter can meet a history.</div></div>
+      <div id="calendarReading" class="relation-reading" hidden><div class="section-label"><span>Temporal perspective</span><b id="calendarModel">JANUS</b></div><div id="calendarValues" class="relation-values"></div></div><div class="encounter-links"><div class="section-label"><span>A shared past</span><b id="linkCount">—</b></div><div id="encounterLinks">The next encounter can meet a history.</div></div>
       <div class="self-reading"><div class="section-label"><span>Somatic self-reflection</span><b id="selfDepth">—</b></div><div id="sonarChambers" class="sonar-chambers"></div><p id="selfForecast">The next encounter can meet its own response.</p></div>
-      <div class="source-reading"><span class="eyebrow">THE INSTRUMENT IT CHOSE</span><p id="toolName">—</p><span id="toolDetail">A read keeps its source.</span><p id="investigation" class="investigation" hidden></p><button id="deriveReading" class="text-button" hidden>Reconsider claims ↗</button></div>
+      <div class="source-reading"><span class="eyebrow">THE INSTRUMENT IT CHOSE</span><p id="toolName">—</p><span id="toolDetail">A read keeps its source.</span><p id="investigation" class="investigation" hidden></p><button id="readTime" class="text-button" disabled>Read event time ↗</button><button id="deriveReading" class="text-button" hidden>Reconsider claims ↗</button></div>
       <details id="evidenceDetails"><summary>Read the evidence <span>↗</span></summary><div id="evidence" class="evidence"><p class="quiet">Select an encounter on the tape.</p></div></details>
     </aside>
   </section>
@@ -92,7 +92,7 @@
 <footer><span>AMOS · LALO · ACTUALLY.LIFE</span><span id="saveStatus" role="status">Opening this life…</span><button id="lineageOpen" class="text-button">Lineage ↗</button><span class="resonance-footer">RESONANCE UNBROKEN.</span></footer>
 <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
 <dialog id="comparison"><form method="dialog"><div class="dialog-heading"><h2>One present. Two histories.</h2><button aria-label="Close comparison">×</button></div></form><p id="keptLabel">Keep a history to meet it again.</p><p>The same new message reaches the kept history and the current one. This experiment reads two continuations; the original lives retain their states.</p><form id="comparisonForm" class="comparison-form"><label for="sharedMessage">A shared encounter</label><input id="sharedMessage" maxlength="1000" value="earth stone now" required><button type="submit">Meet both ↗</button></form><div id="comparisonResult" aria-live="polite"></div></dialog>
-<dialog id="settings"><form method="dialog"><div class="dialog-heading"><h2>A life, continued.</h2><button aria-label="Close settings">×</button></div></form><p>Keep the world, acquired state and growing symbols together.</p><div class="dialog-actions"><button id="exportLife">Export this life ↗</button><button id="importLife">Import a life ↙</button><input id="importFile" type="file" accept=".json,application/json" hidden></div><div class="dialog-actions"><button id="carryExperience">Archive chapter &amp; continue ↗</button><button id="exportPrevious" disabled>Download previous chapter ↗</button></div><p id="chapterStatus" class="quiet">Acquired experience travels into the next chapter.</p><label class="setting-label" for="glyphLanguage">Glyph captions</label><select id="glyphLanguage"></select><p class="quiet">Six input languages share one glyph field. Captions change here; source words stay as received.</p><label class="setting-label">Weather observation point</label><div class="coordinate-inputs"><label>Latitude<input id="latitude" type="number" min="-90" max="90" step="any" value="52.52"></label><label>Longitude<input id="longitude" type="number" min="-180" max="180" step="any" value="13.405"></label><button id="stationSave">Set point</button></div><label class="setting-label" for="motion">Motion</label><select id="motion"><option value="system">Follow system preference</option><option value="reduced">Reduced motion</option></select><div class="new-birth"><label>Birth seed<input id="birthSeed" type="text" inputmode="numeric" value="17" maxlength="18"></label><button id="newBirth">Begin another life</button></div><p id="settingsNote" class="quiet">Each chapter keeps up to 4096 receipts within a 24 MB life export. Finish waiting encounters, then archive the chapter to continue with the same acquired body. Its full prior history is downloaded and kept locally when storage is available.</p></dialog>
+<dialog id="settings"><form method="dialog"><div class="dialog-heading"><h2>A life, continued.</h2><button aria-label="Close settings">×</button></div></form><p>Keep the world, acquired state and growing symbols together.</p><div class="dialog-actions"><button id="exportLife">Export this life ↗</button><button id="importLife">Import a life ↙</button><input id="importFile" type="file" accept=".json,application/json" hidden></div><div class="dialog-actions"><button id="carryExperience">Archive chapter &amp; continue ↗</button><button id="exportPrevious" disabled>Download previous chapter ↗</button></div><p id="chapterStatus" class="quiet">Acquired experience travels into the next chapter.</p><label class="setting-label" for="glyphLanguage">Glyph captions</label><select id="glyphLanguage"></select><p class="quiet">Six input languages share one glyph field. Captions change here; source words stay as received.</p><label class="setting-label">JANUS.CALENDAR · local C/WASM</label><p id="calendarStatus" class="quiet">Calendar observations are explicit reads. UTC and the midnight Hebrew convention.</p><div class="dialog-actions"><button id="calendarEvent">Read selected event time ↗</button><button id="calendarSelf">Read my present ↗</button><button id="calendarOrigin">Fix selected encounter as origin</button><button id="calendarImport">Open a captured reading ↙</button><input id="calendarFile" type="file" accept=".json,application/json" hidden></div><p class="quiet">The origin is fixed once from an existing encounter. Gregorian, Hebrew and Janus coordinates enter the same fact heart.</p><label class="setting-label">Weather observation point</label><div class="coordinate-inputs"><label>Latitude<input id="latitude" type="number" min="-90" max="90" step="any" value="52.52"></label><label>Longitude<input id="longitude" type="number" min="-180" max="180" step="any" value="13.405"></label><button id="stationSave">Set point</button></div><label class="setting-label" for="motion">Motion</label><select id="motion"><option value="system">Follow system preference</option><option value="reduced">Reduced motion</option></select><div class="new-birth"><label>Birth seed<input id="birthSeed" type="text" inputmode="numeric" value="17" maxlength="18"></label><button id="newBirth">Begin another life</button></div><p id="settingsNote" class="quiet">Each chapter keeps up to 4096 receipts within a 24 MB life export. Finish waiting encounters, then archive the chapter to continue with the same acquired body. Its full prior history is downloaded and kept locally when storage is available.</p></dialog>
 <dialog id="lineage"><form method="dialog"><div class="dialog-heading"><h2>The organs of this world.</h2><button aria-label="Close lineage">×</button></div></form><p><b>AMOS</b> — the 40-neuron recurrent subject (grown from 24 and 28), acquired predictor, event glyphs and random stream.</p><p><b>Klaus</b> — six somatic chambers, coefficient modulation and bounded re-inhale of its own response, adapted into AMOS's acquired loop.</p><p><b>LALO</b> — pinned fact ledger, two clocks, source revisions and six world-reading tools.</p><p><b>actually.life</b> — 88-glyph alphabet and semantic membrane; the expression organ grows an online association field and recursive symbols.</p><p><b>actually.janus</b> — the visual reference: a tape passing through a slit, inertia and a past you can touch.</p><p>Expression reads acquired neural associations, event recognition and the glyph succession field. Its state and random stream continue across reloads. Rendering reads state; it advances no encounters.</p><div class="lineage-links"><a href="https://github.com/ariannamethod/amos" target="_blank" rel="noopener">AMOS ↗</a><a href="https://github.com/ariannamethod/klaus.c" target="_blank" rel="noopener">KLAUS ↗</a><a href="https://github.com/ariannamethod/LALO" target="_blank" rel="noopener">LALO ↗</a><a href="https://github.com/ariannamethod/actually.life" target="_blank" rel="noopener">actually.life ↗</a><a href="https://github.com/ariannamethod/actually.janus" target="_blank" rel="noopener">actually.janus ↗</a></div><p>World sources: <a href="https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php" target="_blank" rel="noopener">USGS</a> · <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (modelled weather, CC BY 4.0). Browser-local messages enter as local:human.</p><p>Oleg Ataeff / Arianna Method. Glyph lineage co-authored with Claude. AMOS-2 bridge and interface implemented by Codex. Imported LALO and actually.life material: GPL-3.0.</p><details><summary>GNU General Public License</summary><pre class="license-text">                    GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 
@@ -767,6 +767,174 @@ may consider it more useful to permit linking proprietary applications with
 the library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.  But first, please read
 &lt;https://www.gnu.org/licenses/why-not-lgpl.html>.
+
+
+AML calendar client — LGPL-3.0
+                   GNU LESSER GENERAL PUBLIC LICENSE
+                       Version 3, 29 June 2007
+
+ Copyright (C) 2007 Free Software Foundation, Inc. &lt;https://fsf.org/>
+ Everyone is permitted to copy and distribute verbatim copies
+ of this license document, but changing it is not allowed.
+
+
+  This version of the GNU Lesser General Public License incorporates
+the terms and conditions of version 3 of the GNU General Public
+License, supplemented by the additional permissions listed below.
+
+  0. Additional Definitions.
+
+  As used herein, "this License" refers to version 3 of the GNU Lesser
+General Public License, and the "GNU GPL" refers to version 3 of the GNU
+General Public License.
+
+  "The Library" refers to a covered work governed by this License,
+other than an Application or a Combined Work as defined below.
+
+  An "Application" is any work that makes use of an interface provided
+by the Library, but which is not otherwise based on the Library.
+Defining a subclass of a class defined by the Library is deemed a mode
+of using an interface provided by the Library.
+
+  A "Combined Work" is a work produced by combining or linking an
+Application with the Library.  The particular version of the Library
+with which the Combined Work was made is also called the "Linked
+Version".
+
+  The "Minimal Corresponding Source" for a Combined Work means the
+Corresponding Source for the Combined Work, excluding any source code
+for portions of the Combined Work that, considered in isolation, are
+based on the Application, and not on the Linked Version.
+
+  The "Corresponding Application Code" for a Combined Work means the
+object code and/or source code for the Application, including any data
+and utility programs needed for reproducing the Combined Work from the
+Application, but excluding the System Libraries of the Combined Work.
+
+  1. Exception to Section 3 of the GNU GPL.
+
+  You may convey a covered work under sections 3 and 4 of this License
+without being bound by section 3 of the GNU GPL.
+
+  2. Conveying Modified Versions.
+
+  If you modify a copy of the Library, and, in your modifications, a
+facility refers to a function or data to be supplied by an Application
+that uses the facility (other than as an argument passed when the
+facility is invoked), then you may convey a copy of the modified
+version:
+
+   a) under this License, provided that you make a good faith effort to
+   ensure that, in the event an Application does not supply the
+   function or data, the facility still operates, and performs
+   whatever part of its purpose remains meaningful, or
+
+   b) under the GNU GPL, with none of the additional permissions of
+   this License applicable to that copy.
+
+  3. Object Code Incorporating Material from Library Header Files.
+
+  The object code form of an Application may incorporate material from
+a header file that is part of the Library.  You may convey such object
+code under terms of your choice, provided that, if the incorporated
+material is not limited to numerical parameters, data structure
+layouts and accessors, or small macros, inline functions and templates
+(ten or fewer lines in length), you do both of the following:
+
+   a) Give prominent notice with each copy of the object code that the
+   Library is used in it and that the Library and its use are
+   covered by this License.
+
+   b) Accompany the object code with a copy of the GNU GPL and this license
+   document.
+
+  4. Combined Works.
+
+  You may convey a Combined Work under terms of your choice that,
+taken together, effectively do not restrict modification of the
+portions of the Library contained in the Combined Work and reverse
+engineering for debugging such modifications, if you also do each of
+the following:
+
+   a) Give prominent notice with each copy of the Combined Work that
+   the Library is used in it and that the Library and its use are
+   covered by this License.
+
+   b) Accompany the Combined Work with a copy of the GNU GPL and this license
+   document.
+
+   c) For a Combined Work that displays copyright notices during
+   execution, include the copyright notice for the Library among
+   these notices, as well as a reference directing the user to the
+   copies of the GNU GPL and this license document.
+
+   d) Do one of the following:
+
+       0) Convey the Minimal Corresponding Source under the terms of this
+       License, and the Corresponding Application Code in a form
+       suitable for, and under terms that permit, the user to
+       recombine or relink the Application with a modified version of
+       the Linked Version to produce a modified Combined Work, in the
+       manner specified by section 6 of the GNU GPL for conveying
+       Corresponding Source.
+
+       1) Use a suitable shared library mechanism for linking with the
+       Library.  A suitable mechanism is one that (a) uses at run time
+       a copy of the Library already present on the user's computer
+       system, and (b) will operate properly with a modified version
+       of the Library that is interface-compatible with the Linked
+       Version.
+
+   e) Provide Installation Information, but only if you would otherwise
+   be required to provide such information under section 6 of the
+   GNU GPL, and only to the extent that such information is
+   necessary to install and execute a modified version of the
+   Combined Work produced by recombining or relinking the
+   Application with a modified version of the Linked Version. (If
+   you use option 4d0, the Installation Information must accompany
+   the Minimal Corresponding Source and Corresponding Application
+   Code. If you use option 4d1, you must provide the Installation
+   Information in the manner specified by section 6 of the GNU GPL
+   for conveying Corresponding Source.)
+
+  5. Combined Libraries.
+
+  You may place library facilities that are a work based on the
+Library side by side in a single library together with other library
+facilities that are not Applications and are not covered by this
+License, and convey such a combined library under terms of your
+choice, if you do both of the following:
+
+   a) Accompany the combined library with a copy of the same work based
+   on the Library, uncombined with any other library facilities,
+   conveyed under the terms of this License.
+
+   b) Give prominent notice with the combined library that part of it
+   is a work based on the Library, and explaining where to find the
+   accompanying uncombined form of the same work.
+
+  6. Revised Versions of the GNU Lesser General Public License.
+
+  The Free Software Foundation may publish revised and/or new versions
+of the GNU Lesser General Public License from time to time. Such new
+versions will be similar in spirit to the present version, but may
+differ in detail to address new problems or concerns.
+
+  Each version is given a distinguishing version number. If the
+Library as you received it specifies that a certain numbered version
+of the GNU Lesser General Public License "or any later version"
+applies to it, you have the option of following the terms and
+conditions either of that published version or of any later version
+published by the Free Software Foundation. If the Library as you
+received it does not specify a version number of the GNU Lesser
+General Public License, you may choose any version of the GNU Lesser
+General Public License ever published by the Free Software Foundation.
+
+  If the Library as you received it specifies that a proxy can decide
+whether future versions of the GNU Lesser General Public License shall
+apply, that proxy's public statement of acceptance of any version is
+permanent authorization for you to choose that version for the
+Library.
 </pre></details></dialog>
 <script>/* AMOS — Arianna Method Ontological Subjectivity. No runtime dependencies.
  * Same recurrent field and acquired readout as amos.c and ports/amos.py.
@@ -4099,6 +4267,217 @@ const VOICE = (() => {
 })();
 
 
+const JANUS = (() => {
+// Generated by tools/build_calendar_wasm.mjs. Source SHA-256: 65793043ec680a2f0570a038996ccf501600915bcd085daf90cc25b497acff9b
+// WASM SHA-256: e2ae9554bcaff56b2e58c1ed96219398d50392c71e8dd9ee4eb963418c046c29. LGPL-3.0-or-later.
+// Browser-safe client. The supplied transport calls the canonical AML C boundary.
+const API = 'janus.calendar/1';
+const counts = Object.freeze({ gregorian:3, hebrew:3, date:1, subject:2, local:4, add:5, anniversary:3 });
+function validateRequest(request) {
+  if (!request || !Object.hasOwn(counts, request.op) || !Array.isArray(request.args) ||
+      request.args.length !== counts[request.op] ||
+      !request.args.every(x => Number.isInteger(x) && Math.abs(x) <= 16777216))
+    throw new TypeError('invalid JANUS.CALENDAR request');
+  return request;
+}
+function createCalendar(transport) {
+  async function call(op, args) {
+    const response = await transport(validateRequest({ op, args }));
+    if (response?.api !== API || !Object.hasOwn(response, 'value'))
+      throw new TypeError('JANUS.CALENDAR transport version mismatch');
+    return response.value;
+  }
+  return Object.freeze(Object.fromEntries(Object.keys(counts).map(op => [op, (...args) => call(op, args)])));
+}
+function httpTransport(endpoint, fetcher = globalThis.fetch) {
+  return async request => {
+    validateRequest(request);
+    const response = await fetcher(endpoint, {
+      method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(request),
+    });
+    if (!response.ok) throw new Error(`JANUS.CALENDAR HTTP ${response.status}`);
+    return response.json();
+  };
+}
+// Exact transport conversion for LALO's integer Unix milliseconds; no calendar arithmetic.
+function splitUnixMilliseconds(ms) {
+  if (!Number.isSafeInteger(ms)) throw new TypeError('timestamp must be safe integer Unix milliseconds');
+  const unixDay = Math.floor(ms / 86400000);
+  const remainder = ms - unixDay * 86400000;
+  return { unixDay, second:Math.floor(remainder / 1000), millisecond:remainder % 1000 };
+}
+function joinUnixMilliseconds({ unixDay, second, millisecond }) {
+  if (!Number.isInteger(unixDay) || !Number.isInteger(second) || second < 0 || second >= 86400 ||
+      !Number.isInteger(millisecond) || millisecond < 0 || millisecond >= 1000)
+    throw new TypeError('invalid split timestamp');
+  const ms = unixDay * 86400000 + second * 1000 + millisecond;
+  if (!Number.isSafeInteger(ms)) throw new RangeError('timestamp outside safe integer range');
+  return ms;
+}
+
+// WASM transport for createCalendar. Each instance owns its request/result slot.
+const operations=Object.freeze({gregorian:0,hebrew:1,date:2,subject:3,local:4,add:5,anniversary:6});
+// Match native %.9g, including exact halfway cases (ties to even).
+// This converts transport numbers; calendar arithmetic remains in C.
+function wireNumber(x) {
+  if(Number.isInteger(x)) return x;
+  const absolute=Math.abs(x), unit=Math.floor(Math.log10(absolute))-8;
+  const view=new DataView(new ArrayBuffer(4));view.setFloat32(0,absolute);
+  const bits=view.getUint32(0), exponent=(bits>>>23)&255;
+  let numerator=BigInt((bits&0x7fffff)+(exponent?0x800000:0)), denominator=1n;
+  const binaryExponent=exponent?exponent-150:-149;
+  if(binaryExponent>=0) numerator<<=BigInt(binaryExponent);
+  else denominator<<=BigInt(-binaryExponent);
+  if(unit>=0) denominator*=10n**BigInt(unit);
+  else numerator*=10n**BigInt(-unit);
+  let digits=numerator/denominator;
+  const twiceRemainder=2n*(numerator%denominator);
+  if(twiceRemainder>denominator || (twiceRemainder===denominator && digits%2n)) digits++;
+  return Number(`${x<0?'-':''}${digits}e${unit}`);
+}
+async function wasmTransport(bytes) {
+  const module=bytes instanceof WebAssembly.Module ? bytes : await WebAssembly.compile(bytes);
+  if (WebAssembly.Module.imports(module).length) throw new TypeError('calendar WASM must be self-contained');
+  const instance=await WebAssembly.instantiate(module,{}), w=instance.exports;
+  if (w.janus_abi()!==1) throw new TypeError('JANUS.CALENDAR WASM ABI mismatch');
+  const decoder=new TextDecoder('utf-8',{fatal:true});
+  function text(pointer) {
+    const memory=new Uint8Array(w.memory.buffer);
+    let end=pointer;
+    while (end<memory.length && memory[end]!==0) end++;
+    if (!pointer || end===memory.length) throw new TypeError('invalid calendar WASM text');
+    return decoder.decode(memory.subarray(pointer,end));
+  }
+  return request=>{
+    validateRequest(request);
+    const args=[...request.args]; while(args.length<5) args.push(0);
+    if(w.janus_call(operations[request.op],...args))
+      throw new RangeError('calendar date or recurrence outside contract');
+    if(w.janus_kind()===1) return {api:API,value:w.janus_scalar()};
+    const value={};
+    for(let i=0;i<w.janus_count();i++) {
+      const key=text(w.janus_key(i)), pointer=w.janus_text(i);
+      const number=w.janus_number(i);
+      // Same float32 round-trip decimal precision as the native JSON transport.
+      value[key]=pointer ? text(pointer) : wireNumber(number);
+    }
+    return {api:API,value};
+  };
+}
+async function wasmCalendar(bytes) { return createCalendar(await wasmTransport(bytes)); }
+
+const CALENDAR_WASM_BASE64='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';
+function bundledBytes() { return Uint8Array.from(atob(CALENDAR_WASM_BASE64),c=>c.charCodeAt(0)); }
+async function bundledCalendar() { return wasmCalendar(bundledBytes()); }
+
+return {API, createCalendar, httpTransport, splitUnixMilliseconds, joinUnixMilliseconds, bundledBytes, bundledCalendar};
+})();
+
+/* JANUS.CALENDAR consumer: captured canonical values become sourced encounters.
+ * Arithmetic belongs to AML. This organ validates, projects and retains readings.
+ * Canonical module: ariannamethod.ai 5e893f9b36288c318254c3183e81fb78ecb097c0. */
+const CALENDAR = (() => {
+  'use strict';
+  const revision='5e893f9b36288c318254c3183e81fb78ecb097c0',source='aml:janus.calendar/1';
+  const binary='e2ae9554bcaff56b2e58c1ed96219398d50392c71e8dd9ee4eb963418c046c29';
+  const sourceHash='65793043ec680a2f0570a038996ccf501600915bcd085daf90cc25b497acff9b';
+  const clone=x=>JSON.parse(JSON.stringify(x)),integer=Number.isSafeInteger;
+  const day=x=>integer(x)&&x>=-739161&&x<=2912897;
+  const within=(x,a,b)=>typeof x==='number'&&Number.isFinite(x)&&x>=a&&x<=b;
+  const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+  const key=text=>{let n=14695981039346656037n;for(const c of text)n=BigInt.asUintN(64,(n^BigInt(c.codePointAt(0)))*1099511628211n);return n.toString(16);};
+  function record(r,local=false){
+    if(!r||r.schema!==JANUS.API||r.calendar_model!=='hebrew.dr/1'||r.drift_model!=='metonic.legacy-trunc/1'||
+      !['midnight','supplied-sunset'].includes(r.day_policy)||!day(r.day)||!integer(r.unix_day)||
+      !integer(r.gregorian_year)||!within(r.gregorian_year,1,9999)||!integer(r.gregorian_month)||!within(r.gregorian_month,1,12)||
+      !integer(r.gregorian_day)||!within(r.gregorian_day,1,31)||!integer(r.hebrew_year)||!within(r.hebrew_year,1,20000)||
+      !integer(r.hebrew_month)||!within(r.hebrew_month,1,13)||!integer(r.hebrew_day)||!within(r.hebrew_day,1,30)||
+      ![0,1].includes(r.gregorian_leap)||![0,1].includes(r.hebrew_leap)||!integer(r.metonic_year)||!within(r.metonic_year,1,19)||
+      !Object.values(r).every(v=>typeof v==='string'||typeof v==='number'&&Number.isFinite(v)))throw Error('Invalid canonical calendar record');
+    if(!local&&(r.unix_day!==r.day+19999||r.day_policy!=='midnight'))throw Error('Invalid calendar day convention');
+    return r;
+  }
+  function instant(r,at){
+    record(r,true);const split=JANUS.splitUnixMilliseconds(at);
+    if(r.unix_day!==split.unixDay||r.utc_second!==split.second||r.utc_civil_day!==split.unixDay-19999||
+      !day(r.utc_civil_day)||r.epoch_day!==r.utc_civil_day-(split.second<43200?1:0)||!integer(r.offset_minutes)||!within(r.offset_minutes,-1440,1440)||
+      !integer(r.sunset_second)||!within(r.sunset_second,-1,86399)||!integer(r.local_second)||!within(r.local_second,0,86399)||
+      !day(r.hebrew_civil_day)||(r.sunset_second===-1)!==(r.day_policy==='midnight'))throw Error('Calendar instant differs from its supplied timestamp');
+    return r;
+  }
+  function perspective(r,birth,atDay){
+    record(r);
+    if(r.day!==atDay||r.birth_day!==birth||r.age_days!==atDay-birth||!day(r.next_hebrew_day)||!day(r.next_gregorian_day)||
+      !integer(r.days_to_yahrzeit)||r.days_to_yahrzeit<0||!integer(r.days_to_gregorian)||r.days_to_gregorian<0||
+      r.days_to_yahrzeit!==r.next_hebrew_day-atDay||r.days_to_gregorian!==r.next_gregorian_day-atDay||
+      r.anniversary_gap_days!==r.next_hebrew_day-r.next_gregorian_day||!within(r.personal_dissonance,0,1)||
+      !within(r.janus_gap,-1,1)||!within(r.yahrzeit,0,1)||!within(r.janus_temporal_alpha,0,1)||![0,1].includes(r.birthquake)||
+      !['birth_drift','legacy_drift','legacy_step','drift_gap_days'].every(k=>within(r[k],-1e8,1e8)))throw Error('Invalid canonical personal perspective');
+    return r;
+  }
+  const assertion=f=>({id:f.id,source:f.source,validFrom:f.validFrom,validTo:f.validTo,recordedAt:f.recordedAt});
+  function origin(fact,coordinates,implementation=revision,wasm=binary){
+    instant(coordinates,fact.validFrom);
+    if(coordinates.offset_minutes!==0||coordinates.sunset_second!==-1)throw Error('Personal origin uses the canonical UTC midnight policy');
+    return {policy:'amos/calendar-origin-v1',assertion:assertion(fact),at:fact.validFrom,day:coordinates.utc_civil_day,implementation,binary:wasm,coordinates:clone(coordinates)};
+  }
+  function validateOrigin(value){
+    if(!value||value.policy!=='amos/calendar-origin-v1'||!value.assertion||typeof value.assertion.id!=='string'||
+      typeof value.assertion.source!=='string'||value.assertion.validFrom!==value.at||!day(value.day)||typeof value.receipt!=='string'||
+      !/^[a-f0-9]{40}$/.test(value.implementation)||!/^[a-f0-9]{64}$/.test(value.binary))throw Error('Invalid personal calendar origin');
+    const expected=origin(value.assertion,value.coordinates,value.implementation,value.binary);
+    if(!same({...value,receipt:undefined},{...expected,receipt:undefined}))throw Error('Personal origin differs from its canonical coordinates');
+    return value;
+  }
+  function resolveOrigin(ledger,receipt){
+    const all=ledger.entries(),original=all.find(f=>f.id===receipt&&f.predicate==='origin_header');
+    if(original)return validateOrigin({...JSON.parse(original.value),receipt});
+    const carried=all.find(f=>f.source==='amos:experience/v1'&&f.predicate==='calendar_origin_memory'&&JSON.parse(f.value).receipt===receipt);
+    return carried?validateOrigin(JSON.parse(carried.value)):null;
+  }
+  async function capture(calendar,fact,{role='event',at=fact.validFrom,requestedAt=fact.recordedAt,origin:birth=null,offset=0,sunset=-1,implementation=revision}={}){
+    if(!calendar||typeof calendar.local!=='function'||typeof calendar.subject!=='function')throw Error('Canonical calendar transport is unavailable');
+    const split=JANUS.splitUnixMilliseconds(at),view=await calendar.local(split.unixDay,split.second,offset,sunset);
+    instant(view,at);if(birth)validateOrigin(birth);
+    const subject=birth?await calendar.subject(birth.day,view.utc_civil_day):null;
+    if(subject)perspective(subject,birth.day,view.utc_civil_day);
+    return {format:'amos/janus-observation',version:1,api:JANUS.API,implementation,binary,sourceHash,
+      assertion:assertion(fact),role,at,requestedAt,origin:birth?{day:birth.day,receipt:birth.receipt}:null,instant:view,subject};
+  }
+  function validate(packet,ledger,birth){
+    if(!packet||packet.format!=='amos/janus-observation'||packet.version!==1||packet.api!==JANUS.API||
+      typeof packet.implementation!=='string'||!/^[a-f0-9]{40}$/.test(packet.implementation)||
+      typeof packet.binary!=='string'||!/^[a-f0-9]{64}$/.test(packet.binary)||typeof packet.sourceHash!=='string'||!/^[a-f0-9]{64}$/.test(packet.sourceHash)||
+      !['event','self'].includes(packet.role)||!integer(packet.at)||!integer(packet.requestedAt)||!packet.assertion)throw Error('Invalid temporal observation packet');
+    const target=ledger.entries().find(f=>f.id===packet.assertion.id);
+    if(!target||!same(packet.assertion,assertion(target))||packet.requestedAt<target.recordedAt||packet.role==='event'&&packet.at!==target.validFrom||
+      packet.role==='self'&&packet.at!==packet.requestedAt)throw Error('Calendar observation differs from its source assertion');
+    instant(packet.instant,packet.at);
+    if(packet.origin!==null){
+      if(!birth||!same(packet.origin,{day:birth.day,receipt:birth.receipt}))throw Error('Calendar reading would move the personal origin');
+      validateOrigin(birth);perspective(packet.subject,birth.day,packet.instant.utc_civil_day);
+    }else if(packet.subject!==null)throw Error('A personal perspective needs its declared origin');
+    const raw=JSON.stringify(packet);if(raw.length>4096)throw Error('Temporal packet exceeds the scalar receipt budget');
+    return {target,raw};
+  }
+  function frame(packet,ledger,birth){
+    const {target,raw}=validate(packet,ledger,birth),s=packet.subject,v=packet.instant,all=ledger.entries(),targetIndex=all.findIndex(f=>f.id===target.id);
+    const registration=all.find(f=>f.source==='amos:registration/v1'&&JSON.parse(f.value).premises.includes(targetIndex));
+    const content=registration?JSON.parse(registration.value).glyphs??[]:[];
+    const glyphs=[...new Set(['now','before','after','remember','me'].map(name=>VOICE.names.indexOf(name)).concat(content))];
+    const a=s?.age_days??v.utc_civil_day,b=s?(s.janus_gap+s.personal_dissonance)/2:(v.metonic_year-10)/9;
+    return {kind:'temporal',key:`${key(JSON.stringify([target.id,packet.role,packet.origin?.receipt??null,v.offset_minutes,v.sunset_second]))}:${packet.at}:${packet.requestedAt}`,source,
+      observedAt:packet.at,title:`${packet.role==='event'?'Event':'Self'} time · ${v.gregorian_year}-${String(v.gregorian_month).padStart(2,'0')}-${String(v.gregorian_day).padStart(2,'0')}`,
+      values:{packet:raw,assertion_id:target.id,role:packet.role,evaluated_at:packet.at,civil_day:v.utc_civil_day,epoch_day:v.epoch_day,
+        metonic_year:v.metonic_year,birth_day:s?.birth_day??null,age_days:s?.age_days??null,calendar_gap:s?.janus_gap??null,
+        personal_dissonance:s?.personal_dissonance??null,days_to_yahrzeit:s?.days_to_yahrzeit??null,days_to_gregorian:s?.days_to_gregorian??null},
+      sensory:[Math.tanh(a/1024),b],projection:'Canonical temporal distance and calendar difference, amos/temporal-input-v1',glyphs,
+      detail:{contentGlyphs:glyphs,calendar:{policy:'amos/temporal-input-v1',target:target.id,targetIndex,origin:packet.origin,implementation:packet.implementation}}};
+  }
+  return {revision,binary,sourceHash,source,origin,validateOrigin,resolveOrigin,capture,validate,frame,instant};
+})();
+
+
 /* Acquired relations, carried by the standalone heart. Geometry and clocks
  * are derived from source receipts; familiarity and transition expectation
  * are learned from encountered relations. No timers, I/O or presentation. */
@@ -4122,12 +4501,13 @@ const RELATIONS = (() => {
       anchor:event.factIds[0],geo,glyphs:[...new Set(event.detail.contentGlyphs??event.glyphs)],
       magnitude:typeof values.magnitude==='number'?values.magnitude:null,
       revised:!!event.detail.archivedVersion||facts.some(f=>f.supersedes!==null),part:Number.isSafeInteger(values.part)?values.part:null,
-      document:typeof values.name==='string'?`${values.name}:${values.modified_at??''}`:null};
+      document:typeof values.name==='string'?`${values.name}:${values.modified_at??''}`:null,
+      ...(event.kind==='temporal'?{temporal:{role:values.role,gap:values.calendar_gap,daysToHebrew:values.days_to_yahrzeit,daysToGregorian:values.days_to_gregorian}}:{})};
   }
   class RelationField {
     constructor(){this.patterns=[];this.transitions=rows();this.recent=[];this.lastPattern=null;this.seen=0;}
     observe(event,ledger) {
-      const c=context(event,ledger),previous=this.recent.at(-1),same=this.recent.findLast(x=>x.kind===c.kind);
+      const c=context(event,ledger),previous=this.recent.at(-1),same=this.recent.findLast(x=>x.kind===c.kind&&(!c.temporal||x.temporal?.role===c.temporal.role));
       const priorVersion=this.recent.findLast(x=>x.subject===c.subject&&x.source===c.source);
       const device=this.recent.findLast(x=>x.kind==='device'&&x.geo);
       const spatial=(c.geo&&same?.geo)?distance(same.geo,c.geo):null;
@@ -4141,6 +4521,8 @@ const RELATIONS = (() => {
         previous?(previous.kind===c.kind?1:-1):0,overlap,
         revisionDelta!==null?Math.tanh(revisionDelta):fragmentGap!==null?Math.tanh(fragmentGap/2):0,
         deviceDistance===null?0:Math.exp(-deviceDistance/500)];
+      if(c.temporal){features[4]=c.temporal.gap??0;features[5]=typeof c.temporal.daysToHebrew==='number'&&typeof c.temporal.daysToGregorian==='number'?
+        Math.exp(-Math.min(c.temporal.daysToHebrew,c.temporal.daysToGregorian)/32):-1;}
       const d=this.patterns.map(p=>p.center.reduce((s,v,i)=>s+(v-features[i])**2,0)/6);
       const nearest=d.length?d.indexOf(Math.min(...d)):-1;
       const familiarity=nearest<0?0:Math.exp(-d[nearest]/.08);
@@ -4166,7 +4548,7 @@ const RELATIONS = (() => {
       this.lastPattern=chosen;this.seen++;this.recent.push(c);if(this.recent.length>WINDOW)this.recent.shift();
       const anchors=[c.anchor,same?.anchor,device?.anchor,previous?.anchor,priorVersion?.anchor].filter(Boolean);
       const evidence=[...new Set(anchors)];
-      return {policy:'amos/relations-v1',pattern:chosen,priorSupport,familiarity,expectation,transitionSupport,transitionMass,
+      return {policy:c.temporal?'amos/relations-time-v1':'amos/relations-v1',pattern:chosen,priorSupport,familiarity,expectation,transitionSupport,transitionMass,
         gapMs:gap,spatialKm:spatial,deviceKm:deviceDistance,glyphOverlap:overlap,revisionDelta,fragmentGap,
         features,projection,rawSensory:event.sensory.slice(),
         sensory:event.sensory.map((v,i)=>clamp(v+.35*projection[i],-1,1)),
@@ -4207,6 +4589,10 @@ const PERCEPTION = (() => {
       const index=rows.findIndex(f=>f.id===fact.id);
       if(index<0||(knownThrough!==undefined&&index>=knownThrough)||fact.recordedAt>args.knownAt||JSON.stringify(rows[index])!==JSON.stringify(fact))throw Error('Tool reading differs from its source receipt');
       premises.push(index);
+      if(fact.source===CALENDAR.source&&fact.subject.startsWith('world:temporal:')&&fact.predicate==='packet'){
+        const packet=JSON.parse(fact.value),origin=packet.origin?CALENDAR.resolveOrigin(ledger,packet.origin.receipt):null,view=CALENDAR.frame(packet,ledger,origin);
+        sensory[0]+=view.sensory[0];sensory[1]+=view.sensory[1];glyphs.push(...view.glyphs.slice(0,Math.max(0,128-glyphs.length)));continue;
+      }
       if(fact.source==='amos:transition/v1'&&fact.predicate.startsWith('transition_')){
         const own=JSON.parse(fact.value);if(own.policy!=='amos/transition-v1'||!Number.isFinite(own.error)||!Array.isArray(own.observed)||own.observed.length!==3)throw Error('Invalid remembered transition');
         sensory[0]+=Math.tanh(own.error*4);sensory[1]+=Math.tanh((own.control?.effect??own.observed[2])*4);
@@ -4707,7 +5093,7 @@ const AMOS2 = (() => {
         (!legacy&&(!receipt||receipt.source!=='amos:links/v1'||receipt.value!==JSON.stringify(a)||r.associationPremise!==all.findIndex(f=>f.id===t.linkReceipt))))throw Error('Invalid encounter association');
     }
   }
-  function eventValid(e,ledger) {
+  function eventValid(e,ledger,calendarOrigin) {
     if(!e||typeof e.id!=='string'||!worldKind(e.kind)||
       !integer(e.observedAt)||!integer(e.receivedAt)||typeof e.title!=='string'||e.title.length>4096||
       typeof e.subject!=='string'||!e.subject||e.subject.length>512||typeof e.source!=='string'||
@@ -4735,6 +5121,16 @@ const AMOS2 = (() => {
     if(e.detail.contentGlyphs!==undefined&&(!Array.isArray(e.detail.contentGlyphs)||e.detail.contentGlyphs.length>128||
       !e.detail.contentGlyphs.every(id=>integer(id)&&id>=0&&id<88)))throw Error('Invalid content glyphs');
     if(e.detail.semanticPolicy!==undefined&&(![LANGUAGES.policy,LANGUAGES.previousPolicy].includes(e.detail.semanticPolicy)||!LANGUAGES.codes.includes(e.detail.language)))throw Error('Invalid lexical provenance');
+    if(e.kind==='temporal'){
+      const facts=e.factIds.map(id=>ledger.entries().find(f=>f.id===id)),raw=facts.find(f=>f.predicate==='packet');
+      if(!raw||e.source!==CALENDAR.source||typeof raw.value!=='string')throw Error('Missing canonical temporal receipt');
+      const packet=JSON.parse(raw.value),origin=packet.origin?CALENDAR.resolveOrigin(ledger,packet.origin.receipt):null,frame=CALENDAR.frame(packet,ledger,origin);
+      if(packet.requestedAt>e.receivedAt)throw Error('Calendar request follows its returned observation');
+      if(packet.origin!==null&&(!calendarOrigin||JSON.stringify(packet.origin)!==JSON.stringify({day:calendarOrigin.day,receipt:calendarOrigin.receipt})))throw Error('Temporal encounter differs from its immutable personal origin');
+      const values=Object.fromEntries(facts.map(f=>[f.predicate,f.value]));
+      if(e.observedAt!==frame.observedAt||JSON.stringify(values)!==JSON.stringify(frame.values)||!closeArray(e.sensory,frame.sensory)||
+        JSON.stringify(e.glyphs)!==JSON.stringify(frame.glyphs)||JSON.stringify(e.detail.calendar)!==JSON.stringify(frame.detail.calendar))throw Error('Temporal projection differs from its canonical receipt');
+    }
     if(e.kind==='quake'&&(!integer(e.detail.sourceUpdatedAt)||!Number.isFinite(e.detail.depth)||
       !(e.detail.magnitude===null||Number.isFinite(e.detail.magnitude))))throw Error('Invalid earthquake encounter');
     if(e.kind==='weather'&&![e.detail.temperature_c,e.detail.wind_kmh,e.detail.precipitation_mm].every(Number.isFinite))throw Error('Invalid weather encounter');
@@ -4765,6 +5161,7 @@ const AMOS2 = (() => {
       this.transitions=new TRANSITIONS.TransitionMind(BODY.H);this.transitionBirth=0;
       this.chapter={number:1,fromCount:0,at:null,archive:null,closedReceipts:0};
       this.sourceMemory=[];
+      this.calendarOrigin=null;
     }
     _stage(at) {
       if(!integer(at)||at<latestReceipt(this.ledger))throw Error('Receipt time precedes the accepted world');
@@ -4773,7 +5170,7 @@ const AMOS2 = (() => {
     _commit(ledger,events) {
       if(this.queue.length+events.length>MAX_QUEUE)throw Error('Encounter queue full (128); let the pending world reach AMOS first');
       for(const event of events){
-        eventValid(event,ledger);event.acceptedAtCount=this.count;
+        eventValid(event,ledger,this.calendarOrigin);event.acceptedAtCount=this.count;
         const id=`amos:registered:${event.id}`;
         ledger.add({id,subject:'agent:amos:registrations',predicate:'registered_event',value:JSON.stringify(COGNITION.registration(event,ledger)),
           source:'amos:registration/v1',validFrom:event.receivedAt,validTo:event.receivedAt+1,recordedAt:event.receivedAt,supersedes:null});
@@ -4781,7 +5178,7 @@ const AMOS2 = (() => {
       }
       if(ledger.size+ENCOUNTER_RECEIPTS*(this.queue.length+events.length)>CAPACITY)
         throw Error('Journal budget must reserve nine completion receipts for every pending encounter');
-      for(const event of events)eventValid(event,ledger);
+      for(const event of events)eventValid(event,ledger,this.calendarOrigin);
       const encoded=encode(ledger);
       if(bytes(encoded)+RESERVE_BYTES*(this.queue.length+events.length)>MAX_JOURNAL)throw Error('Journal byte budget must reserve pending encounter receipts');
       this.ledger=ledger;this.queue.push(...events);return events.length;
@@ -4904,6 +5301,17 @@ const AMOS2 = (() => {
     ingestInteraction(packet,receivedAt) {
       const frame=interactionFrame(packet);return this.ingestWorld([frame],receivedAt);
     }
+    bindCalendarOrigin(factId,coordinates,at){
+      if(this.calendarOrigin)throw Error('The personal calendar origin is already fixed');
+      const fact=this.ledger.entries().find(f=>f.id===factId);if(!fact)throw Error('Choose an existing historical receipt for the origin');
+      const origin=CALENDAR.origin(fact,coordinates),frame={kind:'calendar-origin',key:'amos',source:'local:calendar-origin',observedAt:at,
+        title:'A personal calendar origin is declared',values:{origin_header:JSON.stringify(origin),origin_day:origin.day,origin_assertion:fact.id,origin_at:fact.validFrom},
+        sensory:[Math.tanh(origin.day/1024),0],projection:'Declared personal temporal origin',glyphs:ids(['me','before','now']),detail:{contentGlyphs:ids(['me','before','now'])}};
+      this.ingestWorld([frame],at);
+      const receipt=currentVersion(this.ledger,'world:calendar-origin:amos','local:calendar-origin').find(f=>f.predicate==='origin_header');
+      this.calendarOrigin={...origin,receipt:receipt.id};return clone(this.calendarOrigin);
+    }
+    ingestCalendar(packet,at){return this.ingestWorld([CALENDAR.frame(packet,this.ledger,this.calendarOrigin)],at);}
     readingQuery(event) {
       if(event.kind==='inference'){
         const query={...event.detail.derivation.query};
@@ -5076,6 +5484,8 @@ const AMOS2 = (() => {
           archive:chapter.archive,error:previous.error,observed:previous.observed}),source:'amos:experience/v1',validFrom:at,validTo:null,recordedAt:at,supersedes:null});
         next.mind.lastSelf=id;
       }
+      if(this.calendarOrigin)ledger.add({id:`agent:amos:chapter:${chapter.number}:calendar-origin`,subject:'agent:amos:experience',predicate:'calendar_origin_memory',
+        value:JSON.stringify(this.calendarOrigin),source:'amos:experience/v1',validFrom:at,validTo:null,recordedAt:at,supersedes:null});
       next.ledger=ledger;next.chapter=chapter;next.history=[];next.historyOmitted=this.count;next.lastWeather=null;
       next.sourceMemory=sourceMemories(this,chapter.archive);
       next.relations.recent=[];next.relations.recentBirth=next.relations.seen;
@@ -5084,7 +5494,7 @@ const AMOS2 = (() => {
       return {archive,life:WorldLab.load(next.dump())};
     }
     dump() {
-      const text=JSON.stringify({format:'amos-2/world',version:7,semanticPolicy:LANGUAGES.policy,chapter:this.chapter,sourceMemory:this.sourceMemory,model:this.model.dumps(),journal:encode(this.ledger),voice:this.voice.dump(),
+      const text=JSON.stringify({format:'amos-2/world',version:8,semanticPolicy:LANGUAGES.policy,chapter:this.chapter,sourceMemory:this.sourceMemory,calendarOrigin:this.calendarOrigin,model:this.model.dumps(),journal:encode(this.ledger),voice:this.voice.dump(),
         queue:this.queue,history:this.history,pending:this.pending,count:this.count,serial:this.serial,historyOmitted:this.historyOmitted,
         attention:this.attention,station:this.station,lastWeather:this.lastWeather,relations:this.relations.dump(),mind:this.mind.dump(),sonar:this.sonar.dump(),cognitionBirth:this.cognitionBirth,
         transitions:this.transitions.dump(),transitionBirth:this.transitionBirth,reservedReceiptSlots:ENCOUNTER_RECEIPTS});
@@ -5093,7 +5503,7 @@ const AMOS2 = (() => {
     static load(text) {
       if(typeof text!=='string'||bytes(text)>MAX_SNAPSHOT)throw Error('Snapshot exceeds 24 MB');
       const d=JSON.parse(text);
-      if(d?.format!=='amos-2/world'||![1,2,3,4,5,6,7].includes(d.version))throw Error('Unsupported AMOS 2 life');
+      if(d?.format!=='amos-2/world'||![1,2,3,4,5,6,7,8].includes(d.version))throw Error('Unsupported AMOS 2 life');
       if(d.version>=5&&d.semanticPolicy!==(d.version>=7?LANGUAGES.policy:LANGUAGES.previousPolicy))throw Error('Unsupported semantic membrane');
       if(d.version>=2&&(!d.relations||![2,3,5,6,9].includes(d.reservedReceiptSlots)))throw Error('Missing acquired relation organ or completion reserve');
       if(d.version>=4&&![5,6,9].includes(d.reservedReceiptSlots))throw Error('Missing tool-read completion reserve');
@@ -5102,7 +5512,7 @@ const AMOS2 = (() => {
       if(d.version>=4&&width!==BODY.H)throw Error('Invalid current neural width');
       if(d.voice?.neural?.[0]?.length!==width)throw Error('Voice and body neural widths disagree');
       const life=new WorldLab();life.model=growModel(d.model);life.ledger=decode(d.journal);
-      if(d.version===7){
+      if(d.version>=7){
         const c=d.chapter;
         if(!c||!integer(c.number)||c.number<1||!integer(c.fromCount)||c.fromCount<0||c.fromCount>d.count||c.fromCount>d.historyOmitted||
           !integer(c.closedReceipts)||c.closedReceipts<0||
@@ -5117,6 +5527,15 @@ const AMOS2 = (() => {
             typeof m.archive==='string'&&/^[0-9a-f]{1,16}$/.test(m.archive)&&(m.revision===null||integer(m.revision))&&
             (!m.subject.startsWith('usgs:')||integer(m.revision))))throw Error('Invalid remembered source versions');
         life.sourceMemory=clone(memory);
+      }
+      if(d.version===8){
+        if(d.calendarOrigin!==null){
+          CALENDAR.validateOrigin(d.calendarOrigin);const actual=CALENDAR.resolveOrigin(life.ledger,d.calendarOrigin.receipt);
+          if(JSON.stringify(actual)!==JSON.stringify(d.calendarOrigin))throw Error('Personal calendar origin differs from its historical witness');
+          life.calendarOrigin=clone(d.calendarOrigin);
+        }
+        else if(life.ledger.entries().some(f=>f.source==='local:calendar-origin'&&f.predicate==='origin_header'||f.source==='amos:experience/v1'&&f.predicate==='calendar_origin_memory'))
+          throw Error('A declared personal origin cannot be removed from its life');
       }
       life.voice=VOICE.GlyphVoice.load(d.voice).grow(BODY.H);
       for(const f of life.ledger.entries()){
@@ -5139,7 +5558,7 @@ const AMOS2 = (() => {
         !Array.isArray(d.queue)||d.queue.length>MAX_QUEUE||new Set(d.queue.map(e=>e.id)).size!==d.queue.length||
         !Array.isArray(d.history)||d.history.length>MAX_HISTORY||d.history.length+d.historyOmitted!==d.count||
         !d.station||!Number.isFinite(d.station.latitude)||Math.abs(d.station.latitude)>90||!Number.isFinite(d.station.longitude)||Math.abs(d.station.longitude)>180)throw Error('Invalid life history');
-      for(const event of d.queue)eventValid(event,life.ledger);
+      for(const event of d.queue)eventValid(event,life.ledger,life.calendarOrigin);
       let tick=d.historyOmitted;
       if(d.reservedReceiptSlots!==undefined&&![2,3,5,6,9].includes(d.reservedReceiptSlots))throw Error('Unsupported encounter reserve');
       const needsLegacyCompletion=d.reservedReceiptSlots!==ENCOUNTER_RECEIPTS&&
@@ -5147,7 +5566,7 @@ const AMOS2 = (() => {
       if(needsLegacyCompletion)for(const event of d.queue)event.legacyCompletion=true;
       if(d.queue.some(e=>!e.legacyCompletion)&&(life.ledger.size+ENCOUNTER_RECEIPTS*d.queue.length>CAPACITY||bytes(d.journal)+RESERVE_BYTES*d.queue.length>MAX_JOURNAL))throw Error('Pending encounters have no completion reserve');
       for(const t of d.history) {
-        eventValid(t.event,life.ledger);
+        eventValid(t.event,life.ledger,life.calendarOrigin);
         if(JSON.stringify(t.tool?.result?.data?.scope??null)!==JSON.stringify(scope(life.chapter)))throw Error('Reading differs from its chapter scope');
         if(t.relations){const receipt=life.ledger.entries().find(f=>f.id===t.relationReceipt);
           const legacy=t.receiptState==='legacy-full-journal'&&t.event.legacyCompletion===true&&t.relationReceipt===null;
@@ -5244,6 +5663,8 @@ const AMOS2 = (() => {
   let database=null,storageBlocked=false,saving=Promise.resolve(),noticeTimer,networkTimers=[];
   const controllers=new Set(),busy=new Set(),sourceErrors={};
   let glyphLanguage='en';
+  let calendarInstance=null,calendarBusy=false;
+  const calendar=()=>calendarInstance??=JANUS.bundledCalendar().catch(error=>{calendarInstance=null;throw error;});
   try{const saved=localStorage.getItem('amos2:glyph-captions');if(LANGUAGES.codes.includes(saved))glyphLanguage=saved;}catch{}
   const caption=id=>LANGUAGES.caption(id,glyphLanguage,life.voice.symbols);
   for(const code of LANGUAGES.codes){const option=el('option',LANGUAGES.labels[code]);option.value=code;$('glyphLanguage').append(option);}
@@ -5360,6 +5781,11 @@ const AMOS2 = (() => {
     $('carryExperience').title=life.queue.length?'Encounter the waiting facts before closing this chapter':'Archive these facts and carry acquired experience forward';
     $('exportPrevious').disabled=!ready||!database||life.chapter.number===1;
     $('chapterStatus').textContent=`Chapter ${life.chapter.number} · ${life.count} lifetime encounters · ${life.ledger.size} current receipts. Weights, symbols and pending expectation continue; earlier detailed facts belong to their archived chapter.`;
+    const temporalTarget=current(),hasTimeTarget=!!temporalTarget&&ready&&!calendarBusy;
+    for(const id of ['readTime','calendarEvent','calendarSelf'])$(id).disabled=!hasTimeTarget;
+    $('calendarOrigin').disabled=!hasTimeTarget||!!life.calendarOrigin;
+    $('calendarStatus').textContent=life.calendarOrigin?`Personal origin: Janus civil day ${life.calendarOrigin.day} · fixed from ${life.calendarOrigin.assertion.id}. Local canonical C/WASM.`:
+      'Personal origin not declared · global dates can be read. Local canonical C/WASM · UTC, Hebrew midnight convention.';
     document.querySelector('.world-storage').title=`${life.queue.length*AMOS2.ENCOUNTER_RECEIPTS} receipt slots reserved for each encounter and its state transitions`;
     $('queue').replaceChildren();
     if(!life.queue.length)$('queue').append(el('p',life.count?'The world can arrive again.':'Facts arrive here. Your words can arrive, too.','quiet'));
@@ -5410,6 +5836,16 @@ const AMOS2 = (() => {
     $('sonarChambers').replaceChildren(...SONAR.names.map((name,i)=>{const value=own?.after[i]??life.sonar.act[i],row=el('div',name),bar=el('i');bar.style.width=(100*value)+'%';row.title=fmt(value);row.append(bar);return row;}));
     $('selfForecast').textContent=own?`Expected own shift ${fmt(own.forecast.expected[2])} · observed ${fmt(own.observed[2])} · self prediction gap ${fmt(own.error)}`:life.count?`Acquired somatic state retained · last self prediction gap ${fmt(life.mind.lastError)}`:'The next encounter can meet its own response.';
     $('deriveReading').hidden=!trace||!claimFor(trace);
+    $('calendarReading').hidden=trace?.event.kind!=='temporal';$('calendarValues').replaceChildren();
+    if(trace?.event.kind==='temporal'){
+      const raw=trace.event.factIds.map(id=>life.ledger.entries().find(f=>f.id===id)).find(f=>f.predicate==='packet'),packet=JSON.parse(raw.value),v=packet.instant,s=packet.subject;
+      $('calendarModel').textContent=packet.role==='self'?'SELF':'EVENT';
+      for(const [label,value] of [['Gregorian',`${v.gregorian_year}-${v.gregorian_month}-${v.gregorian_day}`],['Hebrew',`${v.hebrew_year}/${v.hebrew_month}/${v.hebrew_day}`],
+        ['UTC civil day',v.utc_civil_day],['Janus epoch day',v.epoch_day],['Personal age',s?`${s.age_days} days`:'origin unknown'],['Calendar gap',s?`${s.anniversary_gap_days} days`:'—'],
+        ['Hebrew boundary',v.day_policy==='midnight'?'midnight':`supplied sunset · ${v.sunset_second}s`]]){
+        const row=el('div');row.append(el('span',label),el('b',String(value)));$('calendarValues').append(row);
+      }
+    }
     const expressed=trace?.utterance.ids??life.voice.last;
     $('utterance').classList.toggle('empty',!expressed.length);
     $('voiceMeta').textContent=`88 glyphs · ${trace?.symbolCount??life.voice.symbols.length} grown signs`;
@@ -5605,6 +6041,31 @@ const AMOS2 = (() => {
   $('replayPath').onclick=()=>{const trace=current();if(pathFor(trace).length<2)return;phaseTick=trace.tick;phaseIndex=0;replayStart=performance.now();update();};
   $('fetchQuakes').onclick=readQuakes;$('fetchWeather').onclick=readWeather;$('connect').onclick=connect;
   $('messageSource').onchange=()=>{$('messageActor').hidden=$('messageSource').value==='human';};
+  async function readCalendar({factId,role='event',at,offset=0,sunset=-1}){
+    if(!ready)throw Error('The saved life is still opening');
+    const token=generation,fact=life.ledger.entries().find(f=>f.id===factId);if(!fact)throw Error('Select an existing source receipt');
+    const api=await calendar(),requestedAt=receiptNow(),packet=await CALENDAR.capture(api,fact,{role,at:at??(role==='event'?fact.validFrom:requestedAt),requestedAt,origin:life.calendarOrigin,offset,sunset});
+    if(token!==generation)throw Error('The life changed before the calendar reading returned');
+    const accepted=life.ingestCalendar(packet,receiptNow());update();persist();return {accepted,packet};
+  }
+  async function temporalAction(role){
+    if(!ready||calendarBusy)return;const selected=current();if(!selected)return;const token=generation;
+    calendarBusy=true;update();
+    try{
+      if(role==='origin'){
+        const id=`agent:amos:attention:${selected.tick}`,fact=life.ledger.entries().find(f=>f.id===id);if(!fact)throw Error('This encounter has no retained origin witness');
+        const api=await calendar(),split=JANUS.splitUnixMilliseconds(fact.validFrom),view=await api.local(split.unixDay,split.second,0,-1);
+        if(token!==generation)return;life.bindCalendarOrigin(id,view,receiptNow());update();persist();notice('The personal origin is fixed to this historical encounter.');
+      }else{const result=await readCalendar({factId:selected.event.factIds[0],role});notice(result.accepted?'Canonical time reading registered as a fact.':'This canonical reading is already in the world.');}
+    }catch(error){if(token===generation)notice('Calendar reading was not applied: '+error.message,true);}
+    finally{calendarBusy=false;update();}
+  }
+  $('readTime').onclick=$('calendarEvent').onclick=()=>temporalAction('event');$('calendarSelf').onclick=()=>temporalAction('self');
+  $('calendarOrigin').onclick=()=>temporalAction('origin');$('calendarImport').onclick=()=>$('calendarFile').click();
+  $('calendarFile').onchange=async()=>{const file=$('calendarFile').files[0];if(!file||!ready)return;const token=generation;
+    try{if(file.size>16384)throw Error('A captured temporal reading is at most 16 kB');const packet=JSON.parse(await file.text());
+      if(token!==generation)return;const accepted=life.ingestCalendar(packet,receiptNow());update();persist();notice(accepted?'Captured temporal observation registered.':'This captured observation is already present.');
+    }catch(error){if(token===generation)notice('Captured calendar reading was not applied: '+error.message,true);}finally{$('calendarFile').value='';}};
   $('messageForm').addEventListener('submit',e=>{
     e.preventDefault();if(!ready)return;const text=$('message').value,at=receiptNow();
     try{
@@ -5736,7 +6197,7 @@ const AMOS2 = (() => {
   }
   // Classic scripts also load beside a file:// HTML. The folder is optional;
   // absence leaves the built-in world untouched and adds no interface warning.
-  Object.defineProperty(window,'AMOS2Worlds',{value:Object.freeze({version:1,register:registerWorld,recordInteraction:packet=>{if(!ready)throw Error('The saved life is still opening');const added=life.ingestInteraction(packet,receiptNow());update();persist();return {accepted:added,registration:added?life.queue.at(-1).registrationReceipt:null};}})});
+  Object.defineProperty(window,'AMOS2Worlds',{value:Object.freeze({version:1,register:registerWorld,readCalendar,recordInteraction:packet=>{if(!ready)throw Error('The saved life is still opening');const added=life.ingestInteraction(packet,receiptNow());update();persist();return {accepted:added,registration:added?life.queue.at(-1).registrationReceipt:null};}})});
   const optional=document.createElement('script');optional.src=new URL('worlds/worlds.js',document.baseURI).href;optional.async=true;
   optional.onerror=()=>optional.remove();document.head.append(optional);
   // Read-only QA surface: no alternate model, hidden training or rendered scores.
