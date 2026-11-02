@@ -219,6 +219,7 @@ const AMOS2 = (() => {
       this.chapter={number:1,fromCount:0,at:null,archive:null,closedReceipts:0};
       this.sourceMemory=[];
       this.calendarOrigin=null;
+      this.readMind=new COGNITION.ReadMind();this.readBirth=0;
     }
     _stage(at) {
       if(!integer(at)||at<latestReceipt(this.ledger))throw Error('Receipt time precedes the accepted world');
@@ -416,6 +417,7 @@ const AMOS2 = (() => {
       const receiptAt=Math.max(at,latestReceipt(this.ledger)),ledger=this._stage(receiptAt),knownAt=receiptAt;
       const model=this.model.clone(),s=model.subject,voice=VOICE.GlyphVoice.load(clone(this.voice.dump()));
       const mind=COGNITION.FactMind.load(this.mind.dump(),BODY.H),sonar=SONAR.SomaticSonar.load(this.sonar.dump());
+      const readMind=COGNITION.ReadMind.load(this.readMind.dump());
       const transitionMind=TRANSITIONS.TransitionMind.load(this.transitions.dump(),BODY.H),investigation=transitionMind.plan(ledger,knownAt),transitionRecords=[];
       selection.investigation=investigation?clone(investigation):null;
       const sourceIndices=event.factIds.map(id=>ledger.entries().findIndex(f=>f.id===id));
@@ -447,10 +449,16 @@ const AMOS2 = (() => {
       trajectory.push({name:'world',h:worldAfter.slice()});
       transitionRecords.push(transitionMind.learn(worldTransition,worldAfter,[...new Set(sourceIndices.concat(associations.evidence.map(e=>e[1])))]));
       const scope=mind.readScope(action),selfFact=scope==='self'?ledger.entries().find(f=>f.id===mind.lastSelf):null;
-      const tool=investigation?.tool??(action<0?'lalo_history':action>0?'lalo_lineage':'lalo_facts');
-      const args=investigation?.arguments??(selfFact?{subject:selfFact.subject,knownAt,limit:32}:
-        action<0?{subject:event.subject,knownAt,limit:32}:action>0?{id:event.factIds[0],knownAt,limit:32}
-        :{subject:event.subject,validAt:event.observedAt,knownAt,limit:32});
+      const preferred=investigation?.tool??(action<0?'lalo_history':action>0?'lalo_lineage':'lalo_facts');
+      const proposals=[{tool:'lalo_history',scope:selfFact?'self':'world',arguments:{subject:selfFact?.subject??event.subject,knownAt,limit:32}},
+        {tool:'lalo_lineage',scope:'world',arguments:{id:event.factIds[0],knownAt,limit:32}},
+        {tool:'lalo_facts',scope:'world',arguments:{subject:event.subject,validAt:event.observedAt,knownAt,limit:32}}];
+      if(investigation)Object.assign(proposals.find(p=>p.tool===investigation.tool),{scope:investigation.scope,arguments:investigation.arguments});
+      const readDecision=readMind.plan(proposals,COGNITION.readFeatures(worldAfter,load,resonance,relations.familiarity,errorBefore,
+        event.detail.archivedVersion||event.factIds.some(id=>ledger.entries().find(f=>f.id===id).supersedes!==null)),preferred,!!investigation);
+      const chosen=proposals.find(p=>p.tool===(readDecision?.selected.tool??preferred)),tool=chosen.tool;
+      // The disabled path retains the historical self-read argument convention.
+      const args=readDecision?chosen.arguments:investigation?.arguments??(selfFact?{subject:selfFact.subject,knownAt,limit:32}:chosen.arguments);
       const selfForecast=mind.forecast(worldAfter,action,load,resonance,relations.familiarity,errorBefore);
       const toolResult=toolHost.call(tool,args);
       if(!toolResult.ok)throw Error(toolResult.error.message);
@@ -461,6 +469,7 @@ const AMOS2 = (() => {
       const readAfter=s.h.slice(),passes=[],evidenceGlyphs=tool==='lalo_history'?ids(['before','remember']):tool==='lalo_lineage'?ids(['cause','change']):ids(['see','now']);
       trajectory.push({name:'read',h:readAfter.slice()});
       transitionRecords.push(transitionMind.learn(readTransition,readAfter,reading.premises,{observation:o,after:readTwin.h,steps:1}));
+      if(readDecision)selection.read=readMind.learn(readDecision,reading,ledger,transitionRecords[1].control.effect);
       const returnTransition=transitionMind.forecast('return',readAfter,readObservation,action,sonar.gate()),returnTwin=copySubject(s);
       let finalObservation=readObservation.slice(),previousGate=sonar.gate();
       for(let depth=1;depth<=4;depth++){
@@ -488,7 +497,7 @@ const AMOS2 = (() => {
       const encounterSubject=`agent:amos:encounter:${tick}`,all=ledger.entries(),rawPremises=event.factIds.map(id=>all.findIndex(f=>f.id===id));
       const selfReflection={policy:'amos/self-sonar-v1',forecast:selfForecast,observed:selfObserved,error:selfError,
         returnPolicy:'amos/glyph-return-v1',
-        before:sonarBefore,after:sonar.act.slice(),controls,passes,scope:investigation?.scope??(selfFact?'self':'world'),registrationPremise:all.findIndex(f=>f.id===event.registrationReceipt),sourcePremises:rawPremises,associationPremise:all.length+4};
+        before:sonarBefore,after:sonar.act.slice(),controls,passes,scope:readDecision?.selected.scope??investigation?.scope??(selfFact?'self':'world'),registrationPremise:all.findIndex(f=>f.id===event.registrationReceipt),sourcePremises:rawPremises,associationPremise:all.length+4};
       const additions=[{id:`agent:amos:attention:${tick}`,subject:encounterSubject,predicate:'attention_subject',value:event.subject,
         source:'amos:encounter',validFrom:receiptAt,validTo:receiptAt+1,recordedAt:receiptAt,supersedes:null},
       {id:`agent:amos:relations:${tick}`,subject:encounterSubject,predicate:'encounter_relations',value:JSON.stringify(relations),
@@ -522,6 +531,7 @@ const AMOS2 = (() => {
         previousForecast:completed?.predicted??null,observed:o,prediction:expected,resolvedFromTick:completed?tick-1:null};
       this.queue.splice(index,1);this.ledger=completedLedger;this.relations=relationField;this.model=model;this.voice=voice;this.mind=mind;this.sonar=sonar;
       this.transitions=transitionMind;
+      this.readMind=readMind;
       this.pending=pending;this.attention=attention;this.count=tick;this.history.push(trace);
       if(this.history.length>MAX_HISTORY){this.history.shift();this.historyOmitted++;}
       return trace;
@@ -551,7 +561,7 @@ const AMOS2 = (() => {
       return {archive,life:WorldLab.load(next.dump())};
     }
     dump() {
-      const text=JSON.stringify({format:'amos-2/world',version:8,semanticPolicy:LANGUAGES.policy,chapter:this.chapter,sourceMemory:this.sourceMemory,calendarOrigin:this.calendarOrigin,model:this.model.dumps(),journal:encode(this.ledger),voice:this.voice.dump(),
+      const text=JSON.stringify({format:'amos-2/world',version:9,semanticPolicy:LANGUAGES.policy,chapter:this.chapter,sourceMemory:this.sourceMemory,calendarOrigin:this.calendarOrigin,readMind:this.readMind.dump(),readBirth:this.readBirth,model:this.model.dumps(),journal:encode(this.ledger),voice:this.voice.dump(),
         queue:this.queue,history:this.history,pending:this.pending,count:this.count,serial:this.serial,historyOmitted:this.historyOmitted,
         attention:this.attention,station:this.station,lastWeather:this.lastWeather,relations:this.relations.dump(),mind:this.mind.dump(),sonar:this.sonar.dump(),cognitionBirth:this.cognitionBirth,
         transitions:this.transitions.dump(),transitionBirth:this.transitionBirth,reservedReceiptSlots:ENCOUNTER_RECEIPTS});
@@ -560,7 +570,7 @@ const AMOS2 = (() => {
     static load(text) {
       if(typeof text!=='string'||bytes(text)>MAX_SNAPSHOT)throw Error('Snapshot exceeds 24 MB');
       const d=JSON.parse(text);
-      if(d?.format!=='amos-2/world'||![1,2,3,4,5,6,7,8].includes(d.version))throw Error('Unsupported AMOS 2 life');
+      if(d?.format!=='amos-2/world'||![1,2,3,4,5,6,7,8,9].includes(d.version))throw Error('Unsupported AMOS 2 life');
       if(d.version>=5&&d.semanticPolicy!==(d.version>=7?LANGUAGES.policy:LANGUAGES.previousPolicy))throw Error('Unsupported semantic membrane');
       if(d.version>=2&&(!d.relations||![2,3,5,6,9].includes(d.reservedReceiptSlots)))throw Error('Missing acquired relation organ or completion reserve');
       if(d.version>=4&&![5,6,9].includes(d.reservedReceiptSlots))throw Error('Missing tool-read completion reserve');
@@ -585,7 +595,7 @@ const AMOS2 = (() => {
             (!m.subject.startsWith('usgs:')||integer(m.revision))))throw Error('Invalid remembered source versions');
         life.sourceMemory=clone(memory);
       }
-      if(d.version===8){
+      if(d.version>=8){
         if(d.calendarOrigin!==null){
           CALENDAR.validateOrigin(d.calendarOrigin);const actual=CALENDAR.resolveOrigin(life.ledger,d.calendarOrigin.receipt);
           if(JSON.stringify(actual)!==JSON.stringify(d.calendarOrigin))throw Error('Personal calendar origin differs from its historical witness');
@@ -665,6 +675,17 @@ const AMOS2 = (() => {
           d.history.some(t=>t.tick>life.transitionBirth&&!t.transitions)||
           !life.transitions.last.every(r=>{const f=life.ledger.entries()[r.premise],record=f&&JSON.parse(f.value);return f&&r.tick===d.count&&f.id===r.id&&f.subject===`agent:amos:encounter:${r.tick}`&&f.source==='amos:transition/v1'&&record.phase===r.phase&&record.error===r.error&&(record.premises[0]??null)===r.sourcePremise;}))throw Error('Transition learning disagrees with this life');
       }else life.transitionBirth=d.count;
+      if(d.version>=9){
+        life.readMind=COGNITION.ReadMind.load(d.readMind);life.readBirth=d.readBirth;
+        if(!integer(life.readBirth)||life.readBirth<0||life.readBirth>d.count||life.readMind.updates>d.count-life.readBirth||
+          d.history.some(t=>t.selection?.read&&t.tick<=life.readBirth))throw Error('Read consequences disagree with this life');
+        for(const t of d.history)COGNITION.validateRead(t,life.ledger);
+        for(const [tool,head] of Object.entries(life.readMind.heads)){
+          const choices=d.history.map(t=>t.selection?.read?.selected).filter(c=>c?.tool===tool);
+          if(choices.some((c,i)=>i&&c.updatesBefore!==choices[i-1].updatesBefore+1)||choices.length&&head.updates!==choices.at(-1).updatesBefore+1)
+            throw Error('Read execution counters differ from their receipts');
+        }
+      }else life.readBirth=d.count;
       if(d.pending&&(!finiteArray(d.pending.observation,3)||!finiteArray(d.pending.predicted,3)||!finiteArray(d.pending.features,BODY.F)||
         !finiteArray(d.pending.sequence,32)||!finiteArray(d.pending.influence,2)||![-1,0,1].includes(d.pending.action)||
         !d.pending.recognition||!Object.values(d.pending.recognition).every(v=>Number.isFinite(v)&&v>=0)))throw Error('Invalid pending forecast');

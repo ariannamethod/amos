@@ -74,6 +74,23 @@ individual Return to see that actual neural state. **Replay path** moves through
 the recorded sequence while the acquired life stays intact. This trace-driven
 kinetic view takes inspiration from [NETTA.SONAR](https://github.com/ariannamethod/netta.sonar).
 
+**It learns which read to choose.** Three small outcome predictors acquire **54**
+coefficients from the actual instrument it executes. Before reading, AMOS predicts
+the content's influence and the fraction of returned assertions absent from its
+bounded reading memory. A matched neural continuation measures the contribution
+of that content; the executed instrument receives the acquired update. Future
+choices combine those expectations with uncertainty. Directed investigations
+retain their actual target and instrument. This takes inspiration from the
+execution-bound learning in both bodies of [netta.code](https://github.com/ariannamethod/netta.code).
+The imprint shows expected versus encountered influence and newly read receipts.
+
+![AMOS 2 — learned read choice, inherited calendar origin and native expression at encounter 57](assets/amos2-read-consequences-20261102.jpg)
+
+*The same chapter-2 life continues from 53 to 57 encounters. Its personal origin
+stays at encounter 50; the current calendar perspective is two civil days later.
+The executed lineage read had one prior acquired outcome. Its expression is
+`change · remember · earth · stone · now`.*
+
 **Self-reflection is a fact too.** Registration, source assertions, attention,
 chosen reads and measured changes have distinct receipts in the same heart.
 Named LALO rules can retain agreement, disagreement and later correction, with
@@ -153,7 +170,7 @@ Each state on the path can be inspected and replayed.*
 [Two histories, one shared observation](assets/amos-2-histories-20261031.jpg) ·
 [Acquired relations](AMOSLOG.md#acquired-relations) ·
 [Organs and projections](AMOSLOG.md#runtime-organs-and-provenance) ·
-[Verification and project log](AMOSLOG.md): 95 behavioral gates and 1,600
+[Verification and project log](AMOSLOG.md): 102 behavioral gates and 1,600
 reference-body decisions pass through `make check`. Historical screenshots record
 the earlier lives; acquired state and complete continuation are preserved.
 

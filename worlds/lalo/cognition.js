@@ -94,5 +94,60 @@ const COGNITION = (() => {
       return Object.assign(new FactMind(width),copy(d));
     }
   }
-  return {FactMind,category,registration,link,measure,rms};
+  const readTools=['lalo_history','lalo_lineage','lalo_facts'],readPolicy='amos/read-consequence-v1';
+  const readFeatures=(h,load,resonance,familiarity,surprise,revision)=>[1,mean(h),rms(h),load,resonance,familiarity,Math.tanh(surprise),revision?1:0];
+  const scoreRead=(expected,updates)=>.5*(expected[0]+expected[1])+.5/Math.sqrt(1+updates);
+  class ReadMind {
+    constructor(){
+      this.policy=readPolicy;this.enabled=true;this.updates=0;this.seen=[];
+      this.heads=Object.fromEntries(readTools.map(tool=>[tool,{weights:Array.from({length:2},()=>Array(9).fill(0)),updates:0}]));
+    }
+    plan(proposals,features,preferred,forced=false){
+      if(!this.enabled)return null;
+      const candidates=proposals.map(p=>{
+        const head=this.heads[p.tool],f=features.concat(p.scope==='self'?1:0);
+        const expected=head.weights.map(row=>clamp(row.reduce((s,v,i)=>s+v*f[i],0),0,1));
+        return {tool:p.tool,scope:p.scope,expected,updatesBefore:head.updates,score:scoreRead(expected,head.updates)};
+      });
+      const selected=forced?candidates.find(c=>c.tool===preferred):candidates.slice().sort((a,b)=>b.score-a.score||(a.tool===preferred?-1:b.tool===preferred?1:readTools.indexOf(a.tool)-readTools.indexOf(b.tool)))[0];
+      return {policy:readPolicy,mode:forced?'investigation':'acquired',features:features.slice(),preferred,selected:copy(selected),alternatives:candidates.filter(c=>c.tool!==selected.tool)};
+    }
+    learn(decision,reading,ledger,effect){
+      const head=this.heads[decision.selected.tool],rows=ledger.entries(),premises=[...new Set(reading.premises)];
+      const novel=premises.filter(i=>!this.seen.includes(rows[i].id)),observed=[Math.tanh(4*effect),premises.length?novel.length/premises.length:0];
+      const delta=observed.map((v,i)=>v-decision.selected.expected[i]),f=decision.features.concat(decision.selected.scope==='self'?1:0),rate=.3/(1+f.reduce((s,v)=>s+v*v,0));
+      head.weights=head.weights.map((row,k)=>row.map((v,i)=>v+rate*delta[k]*f[i]));head.updates++;this.updates++;
+      for(const i of premises){const id=rows[i].id;this.seen=this.seen.filter(x=>x!==id);this.seen.push(id);}this.seen=this.seen.slice(-512);
+      decision.outcome={effect,novelPremises:novel,total:premises.length,observed,error:rms(delta)};
+      return decision;
+    }
+    dump(){return copy(this);}
+    static load(d){
+      if(!d||d.policy!==readPolicy||typeof d.enabled!=='boolean'||!Number.isSafeInteger(d.updates)||d.updates<0||
+        !d.heads||Object.keys(d.heads).length!==3||!readTools.every(tool=>{const h=d.heads[tool];return h&&Number.isSafeInteger(h.updates)&&h.updates>=0&&
+          Array.isArray(h.weights)&&h.weights.length===2&&h.weights.every(row=>finite(row)&&row.length===9);})||
+        readTools.reduce((n,tool)=>n+d.heads[tool].updates,0)!==d.updates||!Array.isArray(d.seen)||d.seen.length>512||
+        new Set(d.seen).size!==d.seen.length||!d.seen.every(id=>typeof id==='string'&&id.length>0&&id.length<=512))throw Error('Invalid acquired read consequences');
+      return Object.assign(new ReadMind(),copy(d));
+    }
+  }
+  function validateRead(trace,ledger){
+    const d=trace.selection?.read;if(!d)return;
+    const r=d.outcome,all=ledger.entries(),revision=trace.event.detail.archivedVersion||trace.event.factIds.some(id=>all.find(f=>f.id===id)?.supersedes!==null);
+    const features=readFeatures(trace.worldAfter,trace.load,trace.resonance,trace.relations.familiarity,trace.surprise,revision),candidates=[d.selected,...d.alternatives??[]];
+    const close=(a,b)=>Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(a-b)<=1e-12*Math.max(1,Math.abs(a),Math.abs(b));
+    if(d.policy!==readPolicy||!['acquired','investigation'].includes(d.mode)||!readTools.includes(d.preferred)||!finite(d.features)||d.features.length!==8||
+      !features.every((v,i)=>close(v,d.features[i]))||candidates.length!==3||new Set(candidates.map(c=>c.tool)).size!==3||
+      !candidates.every(c=>readTools.includes(c.tool)&&['world','self'].includes(c.scope)&&finite(c.expected)&&c.expected.length===2&&c.expected.every(v=>v>=0&&v<=1)&&
+        Number.isSafeInteger(c.updatesBefore)&&c.updatesBefore>=0&&close(c.score,scoreRead(c.expected,c.updatesBefore)))||
+      d.selected.tool!==trace.tool.name||d.selected.scope!==trace.selfReflection.scope||
+      d.mode!==(trace.investigation?'investigation':'acquired')||d.mode==='investigation'&&d.selected.tool!==d.preferred||
+      d.mode==='acquired'&&candidates.some(c=>c.score>d.selected.score+1e-12)||
+      !r||!close(r.effect,trace.transitions[1].control.effect)||!finite(r.observed)||r.observed.length!==2||
+      !Array.isArray(r.novelPremises)||new Set(r.novelPremises).size!==r.novelPremises.length||
+      !r.novelPremises.every(i=>trace.reading.premises.includes(i))||r.total!==new Set(trace.reading.premises).size||
+      !close(r.observed[0],Math.tanh(4*r.effect))||!close(r.observed[1],r.total?r.novelPremises.length/r.total:0)||
+      !close(r.error,rms(r.observed.map((v,i)=>v-d.selected.expected[i]))))throw Error('Read consequence differs from its executed decision');
+  }
+  return {FactMind,ReadMind,readFeatures,validateRead,category,registration,link,measure,rms};
 })();
