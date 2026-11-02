@@ -168,7 +168,7 @@
     const poly=document.createElementNS('http://www.w3.org/2000/svg','polyline');poly.setAttribute('points',points);poly.setAttribute('fill','none');poly.setAttribute('stroke','#d4ae6c');poly.setAttribute('stroke-width','1');$('spark').replaceChildren(poly);
     if(trace)updateImprint(trace);
     else{$('receiptKind').textContent=life.count?'ACQUIRED EXPERIENCE CONTINUES':'FIRST ENCOUNTER AHEAD';$('receiptTitle').textContent=life.count?'The next encounter meets a lived history.':'What reaches it will remain in it.';
-      for(const id of ['shift','resonance','load','toolName'])$(id).textContent='—';$('toolDetail').textContent='A read keeps its source.';
+      for(const id of ['shift','resonance','load','toolName'])$(id).textContent='—';$('toolDetail').textContent='A read keeps its source.';$('readConsequence').hidden=true;
       $('investigation').hidden=true;$('investigation').textContent='';
       $('neuronChanges').replaceChildren();$('evidence').replaceChildren(el('p','Select an encounter on the tape.','quiet'));}
     $('relationPattern').textContent=trace?.relations?`R${trace.relations.pattern+1} · ${trace.relations.priorSupport} prior`:'—';
@@ -222,6 +222,8 @@
     $('neuronChanges').replaceChildren(...trace.changed.slice(0,3).map(n=>el('span',`h${String(n.i+1).padStart(2,'0')} ${n.delta>=0?'+':''}${fmt(n.delta)}`)));
     $('toolName').textContent=trace.tool.name;
     $('toolDetail').textContent=`${trace.tool.result.data.items?.length??0} receipts read · next attention: ${{quake:'earth',weather:'sky',message:'your presence'}[trace.nextAttention]}`;
+    const read=trace.selection?.read;$('readConsequence').hidden=!read;
+    if(read)$('readConsequence').textContent=`Influence: expected ${fmt(read.selected.expected[0])} → met ${fmt(read.outcome.observed[0])}. Newly read: ${read.outcome.novelPremises.length}/${read.outcome.total}. ${read.selected.updatesBefore} prior reads with this instrument.`;
     $('investigation').hidden=!trace.investigation;
     if(trace.investigation)$('investigation').textContent=`Investigating its ${trace.investigation.phase} transition from encounter ${trace.investigation.fromTick} · prior gap ${fmt(trace.investigation.error)}`;
     const dl=el('dl');pair(dl,'When it happened',time(event.observedAt));pair(dl,'When it became known',time(event.receivedAt));
@@ -241,6 +243,7 @@
       const record=el('details');record.append(el('summary','Relation reading and source anchors'),el('pre',JSON.stringify(r,null,2)));dl.append(record);
     }
     if(trace.reading){
+      if(trace.selection?.read){const decision=el('details');decision.append(el('summary','Expected and encountered read consequences'),el('pre',JSON.stringify(trace.selection.read,null,2)));dl.append(decision);}
       pair(dl,'Prior resonance gain',fmt(trace.resonanceGain,6));
       pair(dl,'Chosen read premises',trace.reading.premises.map(i=>life.ledger.entries()[i]?.id??'?').join(' · '));
       pair(dl,'Read perception','clamp(world perception + 0.15 × returned-content projection × somatic recall)');

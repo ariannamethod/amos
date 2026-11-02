@@ -74,7 +74,7 @@
       <div class="relation-reading"><div class="section-label"><span>Acquired relations</span><b id="relationPattern">—</b></div><div id="relationRead" class="relation-values">The next encounter can meet a history.</div></div>
       <div id="calendarReading" class="relation-reading" hidden><div class="section-label"><span>Temporal perspective</span><b id="calendarModel">JANUS</b></div><div id="calendarValues" class="relation-values"></div></div><div class="encounter-links"><div class="section-label"><span>A shared past</span><b id="linkCount">—</b></div><div id="encounterLinks">The next encounter can meet a history.</div></div>
       <div class="self-reading"><div class="section-label"><span>Somatic self-reflection</span><b id="selfDepth">—</b></div><div id="sonarChambers" class="sonar-chambers"></div><p id="selfForecast">The next encounter can meet its own response.</p></div>
-      <div class="source-reading"><span class="eyebrow">THE INSTRUMENT IT CHOSE</span><p id="toolName">—</p><span id="toolDetail">A read keeps its source.</span><p id="investigation" class="investigation" hidden></p><button id="readTime" class="text-button" disabled>Read event time ↗</button><button id="deriveReading" class="text-button" hidden>Reconsider claims ↗</button></div>
+      <div class="source-reading"><span class="eyebrow">THE INSTRUMENT IT CHOSE</span><p id="toolName">—</p><span id="toolDetail">A read keeps its source.</span><p id="readConsequence" class="investigation" hidden></p><p id="investigation" class="investigation" hidden></p><button id="readTime" class="text-button" disabled>Read event time ↗</button><button id="deriveReading" class="text-button" hidden>Reconsider claims ↗</button></div>
       <details id="evidenceDetails"><summary>Read the evidence <span>↗</span></summary><div id="evidence" class="evidence"><p class="quiet">Select an encounter on the tape.</p></div></details>
     </aside>
   </section>
@@ -4609,6 +4609,9 @@ const PERCEPTION = (() => {
       if(fact.source==='amos:attention/v1'&&fact.predicate==='fact_selection'){
         const own=JSON.parse(fact.value);if(own.policy!=='amos/acquired-attention-v1'||!Number.isFinite(own.selected?.score))throw Error('Invalid remembered choice');
         sensory[0]+=Math.tanh(own.selected.score);sensory[1]+=own.selected.novelty;
+        if(own.read){const observed=own.read.outcome?.observed;
+          if(own.read.policy!=='amos/read-consequence-v1'||!Array.isArray(observed)||observed.length!==2||!observed.every(v=>Number.isFinite(v)&&v>=0&&v<=1))throw Error('Invalid remembered read consequence');
+          sensory[0]+=observed[0];sensory[1]+=observed[1];}
         glyphs.push(...tokenize('me choose remember').ids.slice(0,Math.max(0,128-glyphs.length)));continue;
       }
       if(fact.source==='amos:experience/v1'&&fact.predicate==='self_memory'){
@@ -4740,7 +4743,62 @@ const COGNITION = (() => {
       return Object.assign(new FactMind(width),copy(d));
     }
   }
-  return {FactMind,category,registration,link,measure,rms};
+  const readTools=['lalo_history','lalo_lineage','lalo_facts'],readPolicy='amos/read-consequence-v1';
+  const readFeatures=(h,load,resonance,familiarity,surprise,revision)=>[1,mean(h),rms(h),load,resonance,familiarity,Math.tanh(surprise),revision?1:0];
+  const scoreRead=(expected,updates)=>.5*(expected[0]+expected[1])+.5/Math.sqrt(1+updates);
+  class ReadMind {
+    constructor(){
+      this.policy=readPolicy;this.enabled=true;this.updates=0;this.seen=[];
+      this.heads=Object.fromEntries(readTools.map(tool=>[tool,{weights:Array.from({length:2},()=>Array(9).fill(0)),updates:0}]));
+    }
+    plan(proposals,features,preferred,forced=false){
+      if(!this.enabled)return null;
+      const candidates=proposals.map(p=>{
+        const head=this.heads[p.tool],f=features.concat(p.scope==='self'?1:0);
+        const expected=head.weights.map(row=>clamp(row.reduce((s,v,i)=>s+v*f[i],0),0,1));
+        return {tool:p.tool,scope:p.scope,expected,updatesBefore:head.updates,score:scoreRead(expected,head.updates)};
+      });
+      const selected=forced?candidates.find(c=>c.tool===preferred):candidates.slice().sort((a,b)=>b.score-a.score||(a.tool===preferred?-1:b.tool===preferred?1:readTools.indexOf(a.tool)-readTools.indexOf(b.tool)))[0];
+      return {policy:readPolicy,mode:forced?'investigation':'acquired',features:features.slice(),preferred,selected:copy(selected),alternatives:candidates.filter(c=>c.tool!==selected.tool)};
+    }
+    learn(decision,reading,ledger,effect){
+      const head=this.heads[decision.selected.tool],rows=ledger.entries(),premises=[...new Set(reading.premises)];
+      const novel=premises.filter(i=>!this.seen.includes(rows[i].id)),observed=[Math.tanh(4*effect),premises.length?novel.length/premises.length:0];
+      const delta=observed.map((v,i)=>v-decision.selected.expected[i]),f=decision.features.concat(decision.selected.scope==='self'?1:0),rate=.3/(1+f.reduce((s,v)=>s+v*v,0));
+      head.weights=head.weights.map((row,k)=>row.map((v,i)=>v+rate*delta[k]*f[i]));head.updates++;this.updates++;
+      for(const i of premises){const id=rows[i].id;this.seen=this.seen.filter(x=>x!==id);this.seen.push(id);}this.seen=this.seen.slice(-512);
+      decision.outcome={effect,novelPremises:novel,total:premises.length,observed,error:rms(delta)};
+      return decision;
+    }
+    dump(){return copy(this);}
+    static load(d){
+      if(!d||d.policy!==readPolicy||typeof d.enabled!=='boolean'||!Number.isSafeInteger(d.updates)||d.updates<0||
+        !d.heads||Object.keys(d.heads).length!==3||!readTools.every(tool=>{const h=d.heads[tool];return h&&Number.isSafeInteger(h.updates)&&h.updates>=0&&
+          Array.isArray(h.weights)&&h.weights.length===2&&h.weights.every(row=>finite(row)&&row.length===9);})||
+        readTools.reduce((n,tool)=>n+d.heads[tool].updates,0)!==d.updates||!Array.isArray(d.seen)||d.seen.length>512||
+        new Set(d.seen).size!==d.seen.length||!d.seen.every(id=>typeof id==='string'&&id.length>0&&id.length<=512))throw Error('Invalid acquired read consequences');
+      return Object.assign(new ReadMind(),copy(d));
+    }
+  }
+  function validateRead(trace,ledger){
+    const d=trace.selection?.read;if(!d)return;
+    const r=d.outcome,all=ledger.entries(),revision=trace.event.detail.archivedVersion||trace.event.factIds.some(id=>all.find(f=>f.id===id)?.supersedes!==null);
+    const features=readFeatures(trace.worldAfter,trace.load,trace.resonance,trace.relations.familiarity,trace.surprise,revision),candidates=[d.selected,...d.alternatives??[]];
+    const close=(a,b)=>Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(a-b)<=1e-12*Math.max(1,Math.abs(a),Math.abs(b));
+    if(d.policy!==readPolicy||!['acquired','investigation'].includes(d.mode)||!readTools.includes(d.preferred)||!finite(d.features)||d.features.length!==8||
+      !features.every((v,i)=>close(v,d.features[i]))||candidates.length!==3||new Set(candidates.map(c=>c.tool)).size!==3||
+      !candidates.every(c=>readTools.includes(c.tool)&&['world','self'].includes(c.scope)&&finite(c.expected)&&c.expected.length===2&&c.expected.every(v=>v>=0&&v<=1)&&
+        Number.isSafeInteger(c.updatesBefore)&&c.updatesBefore>=0&&close(c.score,scoreRead(c.expected,c.updatesBefore)))||
+      d.selected.tool!==trace.tool.name||d.selected.scope!==trace.selfReflection.scope||
+      d.mode!==(trace.investigation?'investigation':'acquired')||d.mode==='investigation'&&d.selected.tool!==d.preferred||
+      d.mode==='acquired'&&candidates.some(c=>c.score>d.selected.score+1e-12)||
+      !r||!close(r.effect,trace.transitions[1].control.effect)||!finite(r.observed)||r.observed.length!==2||
+      !Array.isArray(r.novelPremises)||new Set(r.novelPremises).size!==r.novelPremises.length||
+      !r.novelPremises.every(i=>trace.reading.premises.includes(i))||r.total!==new Set(trace.reading.premises).size||
+      !close(r.observed[0],Math.tanh(4*r.effect))||!close(r.observed[1],r.total?r.novelPremises.length/r.total:0)||
+      !close(r.error,rms(r.observed.map((v,i)=>v-d.selected.expected[i]))))throw Error('Read consequence differs from its executed decision');
+  }
+  return {FactMind,ReadMind,readFeatures,validateRead,category,registration,link,measure,rms};
 })();
 
 
@@ -5162,6 +5220,7 @@ const AMOS2 = (() => {
       this.chapter={number:1,fromCount:0,at:null,archive:null,closedReceipts:0};
       this.sourceMemory=[];
       this.calendarOrigin=null;
+      this.readMind=new COGNITION.ReadMind();this.readBirth=0;
     }
     _stage(at) {
       if(!integer(at)||at<latestReceipt(this.ledger))throw Error('Receipt time precedes the accepted world');
@@ -5359,6 +5418,7 @@ const AMOS2 = (() => {
       const receiptAt=Math.max(at,latestReceipt(this.ledger)),ledger=this._stage(receiptAt),knownAt=receiptAt;
       const model=this.model.clone(),s=model.subject,voice=VOICE.GlyphVoice.load(clone(this.voice.dump()));
       const mind=COGNITION.FactMind.load(this.mind.dump(),BODY.H),sonar=SONAR.SomaticSonar.load(this.sonar.dump());
+      const readMind=COGNITION.ReadMind.load(this.readMind.dump());
       const transitionMind=TRANSITIONS.TransitionMind.load(this.transitions.dump(),BODY.H),investigation=transitionMind.plan(ledger,knownAt),transitionRecords=[];
       selection.investigation=investigation?clone(investigation):null;
       const sourceIndices=event.factIds.map(id=>ledger.entries().findIndex(f=>f.id===id));
@@ -5390,10 +5450,16 @@ const AMOS2 = (() => {
       trajectory.push({name:'world',h:worldAfter.slice()});
       transitionRecords.push(transitionMind.learn(worldTransition,worldAfter,[...new Set(sourceIndices.concat(associations.evidence.map(e=>e[1])))]));
       const scope=mind.readScope(action),selfFact=scope==='self'?ledger.entries().find(f=>f.id===mind.lastSelf):null;
-      const tool=investigation?.tool??(action<0?'lalo_history':action>0?'lalo_lineage':'lalo_facts');
-      const args=investigation?.arguments??(selfFact?{subject:selfFact.subject,knownAt,limit:32}:
-        action<0?{subject:event.subject,knownAt,limit:32}:action>0?{id:event.factIds[0],knownAt,limit:32}
-        :{subject:event.subject,validAt:event.observedAt,knownAt,limit:32});
+      const preferred=investigation?.tool??(action<0?'lalo_history':action>0?'lalo_lineage':'lalo_facts');
+      const proposals=[{tool:'lalo_history',scope:selfFact?'self':'world',arguments:{subject:selfFact?.subject??event.subject,knownAt,limit:32}},
+        {tool:'lalo_lineage',scope:'world',arguments:{id:event.factIds[0],knownAt,limit:32}},
+        {tool:'lalo_facts',scope:'world',arguments:{subject:event.subject,validAt:event.observedAt,knownAt,limit:32}}];
+      if(investigation)Object.assign(proposals.find(p=>p.tool===investigation.tool),{scope:investigation.scope,arguments:investigation.arguments});
+      const readDecision=readMind.plan(proposals,COGNITION.readFeatures(worldAfter,load,resonance,relations.familiarity,errorBefore,
+        event.detail.archivedVersion||event.factIds.some(id=>ledger.entries().find(f=>f.id===id).supersedes!==null)),preferred,!!investigation);
+      const chosen=proposals.find(p=>p.tool===(readDecision?.selected.tool??preferred)),tool=chosen.tool;
+      // The disabled path retains the historical self-read argument convention.
+      const args=readDecision?chosen.arguments:investigation?.arguments??(selfFact?{subject:selfFact.subject,knownAt,limit:32}:chosen.arguments);
       const selfForecast=mind.forecast(worldAfter,action,load,resonance,relations.familiarity,errorBefore);
       const toolResult=toolHost.call(tool,args);
       if(!toolResult.ok)throw Error(toolResult.error.message);
@@ -5404,6 +5470,7 @@ const AMOS2 = (() => {
       const readAfter=s.h.slice(),passes=[],evidenceGlyphs=tool==='lalo_history'?ids(['before','remember']):tool==='lalo_lineage'?ids(['cause','change']):ids(['see','now']);
       trajectory.push({name:'read',h:readAfter.slice()});
       transitionRecords.push(transitionMind.learn(readTransition,readAfter,reading.premises,{observation:o,after:readTwin.h,steps:1}));
+      if(readDecision)selection.read=readMind.learn(readDecision,reading,ledger,transitionRecords[1].control.effect);
       const returnTransition=transitionMind.forecast('return',readAfter,readObservation,action,sonar.gate()),returnTwin=copySubject(s);
       let finalObservation=readObservation.slice(),previousGate=sonar.gate();
       for(let depth=1;depth<=4;depth++){
@@ -5431,7 +5498,7 @@ const AMOS2 = (() => {
       const encounterSubject=`agent:amos:encounter:${tick}`,all=ledger.entries(),rawPremises=event.factIds.map(id=>all.findIndex(f=>f.id===id));
       const selfReflection={policy:'amos/self-sonar-v1',forecast:selfForecast,observed:selfObserved,error:selfError,
         returnPolicy:'amos/glyph-return-v1',
-        before:sonarBefore,after:sonar.act.slice(),controls,passes,scope:investigation?.scope??(selfFact?'self':'world'),registrationPremise:all.findIndex(f=>f.id===event.registrationReceipt),sourcePremises:rawPremises,associationPremise:all.length+4};
+        before:sonarBefore,after:sonar.act.slice(),controls,passes,scope:readDecision?.selected.scope??investigation?.scope??(selfFact?'self':'world'),registrationPremise:all.findIndex(f=>f.id===event.registrationReceipt),sourcePremises:rawPremises,associationPremise:all.length+4};
       const additions=[{id:`agent:amos:attention:${tick}`,subject:encounterSubject,predicate:'attention_subject',value:event.subject,
         source:'amos:encounter',validFrom:receiptAt,validTo:receiptAt+1,recordedAt:receiptAt,supersedes:null},
       {id:`agent:amos:relations:${tick}`,subject:encounterSubject,predicate:'encounter_relations',value:JSON.stringify(relations),
@@ -5465,6 +5532,7 @@ const AMOS2 = (() => {
         previousForecast:completed?.predicted??null,observed:o,prediction:expected,resolvedFromTick:completed?tick-1:null};
       this.queue.splice(index,1);this.ledger=completedLedger;this.relations=relationField;this.model=model;this.voice=voice;this.mind=mind;this.sonar=sonar;
       this.transitions=transitionMind;
+      this.readMind=readMind;
       this.pending=pending;this.attention=attention;this.count=tick;this.history.push(trace);
       if(this.history.length>MAX_HISTORY){this.history.shift();this.historyOmitted++;}
       return trace;
@@ -5494,7 +5562,7 @@ const AMOS2 = (() => {
       return {archive,life:WorldLab.load(next.dump())};
     }
     dump() {
-      const text=JSON.stringify({format:'amos-2/world',version:8,semanticPolicy:LANGUAGES.policy,chapter:this.chapter,sourceMemory:this.sourceMemory,calendarOrigin:this.calendarOrigin,model:this.model.dumps(),journal:encode(this.ledger),voice:this.voice.dump(),
+      const text=JSON.stringify({format:'amos-2/world',version:9,semanticPolicy:LANGUAGES.policy,chapter:this.chapter,sourceMemory:this.sourceMemory,calendarOrigin:this.calendarOrigin,readMind:this.readMind.dump(),readBirth:this.readBirth,model:this.model.dumps(),journal:encode(this.ledger),voice:this.voice.dump(),
         queue:this.queue,history:this.history,pending:this.pending,count:this.count,serial:this.serial,historyOmitted:this.historyOmitted,
         attention:this.attention,station:this.station,lastWeather:this.lastWeather,relations:this.relations.dump(),mind:this.mind.dump(),sonar:this.sonar.dump(),cognitionBirth:this.cognitionBirth,
         transitions:this.transitions.dump(),transitionBirth:this.transitionBirth,reservedReceiptSlots:ENCOUNTER_RECEIPTS});
@@ -5503,7 +5571,7 @@ const AMOS2 = (() => {
     static load(text) {
       if(typeof text!=='string'||bytes(text)>MAX_SNAPSHOT)throw Error('Snapshot exceeds 24 MB');
       const d=JSON.parse(text);
-      if(d?.format!=='amos-2/world'||![1,2,3,4,5,6,7,8].includes(d.version))throw Error('Unsupported AMOS 2 life');
+      if(d?.format!=='amos-2/world'||![1,2,3,4,5,6,7,8,9].includes(d.version))throw Error('Unsupported AMOS 2 life');
       if(d.version>=5&&d.semanticPolicy!==(d.version>=7?LANGUAGES.policy:LANGUAGES.previousPolicy))throw Error('Unsupported semantic membrane');
       if(d.version>=2&&(!d.relations||![2,3,5,6,9].includes(d.reservedReceiptSlots)))throw Error('Missing acquired relation organ or completion reserve');
       if(d.version>=4&&![5,6,9].includes(d.reservedReceiptSlots))throw Error('Missing tool-read completion reserve');
@@ -5528,7 +5596,7 @@ const AMOS2 = (() => {
             (!m.subject.startsWith('usgs:')||integer(m.revision))))throw Error('Invalid remembered source versions');
         life.sourceMemory=clone(memory);
       }
-      if(d.version===8){
+      if(d.version>=8){
         if(d.calendarOrigin!==null){
           CALENDAR.validateOrigin(d.calendarOrigin);const actual=CALENDAR.resolveOrigin(life.ledger,d.calendarOrigin.receipt);
           if(JSON.stringify(actual)!==JSON.stringify(d.calendarOrigin))throw Error('Personal calendar origin differs from its historical witness');
@@ -5608,6 +5676,17 @@ const AMOS2 = (() => {
           d.history.some(t=>t.tick>life.transitionBirth&&!t.transitions)||
           !life.transitions.last.every(r=>{const f=life.ledger.entries()[r.premise],record=f&&JSON.parse(f.value);return f&&r.tick===d.count&&f.id===r.id&&f.subject===`agent:amos:encounter:${r.tick}`&&f.source==='amos:transition/v1'&&record.phase===r.phase&&record.error===r.error&&(record.premises[0]??null)===r.sourcePremise;}))throw Error('Transition learning disagrees with this life');
       }else life.transitionBirth=d.count;
+      if(d.version>=9){
+        life.readMind=COGNITION.ReadMind.load(d.readMind);life.readBirth=d.readBirth;
+        if(!integer(life.readBirth)||life.readBirth<0||life.readBirth>d.count||life.readMind.updates>d.count-life.readBirth||
+          d.history.some(t=>t.selection?.read&&t.tick<=life.readBirth))throw Error('Read consequences disagree with this life');
+        for(const t of d.history)COGNITION.validateRead(t,life.ledger);
+        for(const [tool,head] of Object.entries(life.readMind.heads)){
+          const choices=d.history.map(t=>t.selection?.read?.selected).filter(c=>c?.tool===tool);
+          if(choices.some((c,i)=>i&&c.updatesBefore!==choices[i-1].updatesBefore+1)||choices.length&&head.updates!==choices.at(-1).updatesBefore+1)
+            throw Error('Read execution counters differ from their receipts');
+        }
+      }else life.readBirth=d.count;
       if(d.pending&&(!finiteArray(d.pending.observation,3)||!finiteArray(d.pending.predicted,3)||!finiteArray(d.pending.features,BODY.F)||
         !finiteArray(d.pending.sequence,32)||!finiteArray(d.pending.influence,2)||![-1,0,1].includes(d.pending.action)||
         !d.pending.recognition||!Object.values(d.pending.recognition).every(v=>Number.isFinite(v)&&v>=0)))throw Error('Invalid pending forecast');
@@ -5815,7 +5894,7 @@ const AMOS2 = (() => {
     const poly=document.createElementNS('http://www.w3.org/2000/svg','polyline');poly.setAttribute('points',points);poly.setAttribute('fill','none');poly.setAttribute('stroke','#d4ae6c');poly.setAttribute('stroke-width','1');$('spark').replaceChildren(poly);
     if(trace)updateImprint(trace);
     else{$('receiptKind').textContent=life.count?'ACQUIRED EXPERIENCE CONTINUES':'FIRST ENCOUNTER AHEAD';$('receiptTitle').textContent=life.count?'The next encounter meets a lived history.':'What reaches it will remain in it.';
-      for(const id of ['shift','resonance','load','toolName'])$(id).textContent='—';$('toolDetail').textContent='A read keeps its source.';
+      for(const id of ['shift','resonance','load','toolName'])$(id).textContent='—';$('toolDetail').textContent='A read keeps its source.';$('readConsequence').hidden=true;
       $('investigation').hidden=true;$('investigation').textContent='';
       $('neuronChanges').replaceChildren();$('evidence').replaceChildren(el('p','Select an encounter on the tape.','quiet'));}
     $('relationPattern').textContent=trace?.relations?`R${trace.relations.pattern+1} · ${trace.relations.priorSupport} prior`:'—';
@@ -5869,6 +5948,8 @@ const AMOS2 = (() => {
     $('neuronChanges').replaceChildren(...trace.changed.slice(0,3).map(n=>el('span',`h${String(n.i+1).padStart(2,'0')} ${n.delta>=0?'+':''}${fmt(n.delta)}`)));
     $('toolName').textContent=trace.tool.name;
     $('toolDetail').textContent=`${trace.tool.result.data.items?.length??0} receipts read · next attention: ${{quake:'earth',weather:'sky',message:'your presence'}[trace.nextAttention]}`;
+    const read=trace.selection?.read;$('readConsequence').hidden=!read;
+    if(read)$('readConsequence').textContent=`Influence: expected ${fmt(read.selected.expected[0])} → met ${fmt(read.outcome.observed[0])}. Newly read: ${read.outcome.novelPremises.length}/${read.outcome.total}. ${read.selected.updatesBefore} prior reads with this instrument.`;
     $('investigation').hidden=!trace.investigation;
     if(trace.investigation)$('investigation').textContent=`Investigating its ${trace.investigation.phase} transition from encounter ${trace.investigation.fromTick} · prior gap ${fmt(trace.investigation.error)}`;
     const dl=el('dl');pair(dl,'When it happened',time(event.observedAt));pair(dl,'When it became known',time(event.receivedAt));
@@ -5888,6 +5969,7 @@ const AMOS2 = (() => {
       const record=el('details');record.append(el('summary','Relation reading and source anchors'),el('pre',JSON.stringify(r,null,2)));dl.append(record);
     }
     if(trace.reading){
+      if(trace.selection?.read){const decision=el('details');decision.append(el('summary','Expected and encountered read consequences'),el('pre',JSON.stringify(trace.selection.read,null,2)));dl.append(decision);}
       pair(dl,'Prior resonance gain',fmt(trace.resonanceGain,6));
       pair(dl,'Chosen read premises',trace.reading.premises.map(i=>life.ledger.entries()[i]?.id??'?').join(' · '));
       pair(dl,'Read perception','clamp(world perception + 0.15 × returned-content projection × somatic recall)');

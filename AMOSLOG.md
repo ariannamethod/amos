@@ -3,6 +3,115 @@
 Project changes and working notes. Milestones belong in README.md; implementation
 history and verification belong here. The Arianna Method Manifesto governs both.
 
+## 2026-11-02 — acquired consequences guide the next read
+
+Started from merged `f876a96`. Rechecked both bodies of
+[netta.code at `3dbb938`](https://github.com/ariannamethod/netta.code/tree/3dbb938662791efe1f5cc58cf97f9ed59a2b9aa5),
+particularly `configure_control_learning`, `configure_decision_credit`,
+`_decision_targets`, `observe`, saved counters/heads and the Doom runner's actual
+environment receipts. Code and Lee both separate whole-episode outcomes from
+execution-bound credit. Control learning can retain acquired parameters while
+disabled; an active decision contract needs observed execution evidence. The
+current Doom runner uses Lee. AMOS adopts those two principles through its own
+read loop and measured neural interventions.
+
+### Audit and the missing learning connection
+
+AMOS already forecasts world/read/return transitions, acquires temporal and
+semantic relations, and measures read content against a matched continuation
+without that content. Before this change, that measured read contribution did
+not train the instrument selector. The nominal numeric action chose history,
+lineage or current facts; a phase investigation could override the instrument.
+Fact attention had acquired kind-impact statistics, while instrument selection
+had no tool-specific acquired outcome model.
+
+`COGNITION.ReadMind` connects this existing measurement to the next choice. Three
+two-output linear heads, each with nine inputs, acquire **54 coefficients**. The
+inputs are an intercept, mean/RMS of the actual world-stage recurrent state,
+load, prior resonance, relation familiarity, bounded surprise, revision status
+and world/self scope. Each candidate predicts normalized controlled influence
+and the fraction of returned assertion identities absent from reading memory.
+The heads start at zero. Selection combines the mean of those two expectations
+with an uncertainty term `0.5/sqrt(1+executions)`; the existing action breaks ties.
+Directed investigations retain their specified instrument, scope and arguments.
+
+Planning neither executes alternatives nor changes state. Only after the real
+tool succeeds does its head receive the observed update. The influence target
+is `tanh(4 * controlled_RMS_effect)` from the existing matched read twin. Novelty
+uses exact returned fact identities, with original premise indices retained in
+the outcome. Reading memory is an LRU of 512 identities. A repeat still has its
+own act and effect; whether its assertions were previously read is a separate
+measured property. New source revisions retain their distinct identities.
+The novelty coordinate describes reading memory, not a verdict on a claim.
+
+The numeric recurrent action remains its own recorded signal. If an investigation
+executes lineage while that action is negative, the lineage head receives the
+update. The other two heads retain their previous coefficients and counts.
+The existing nine completion receipts remain sufficient: `selection.read` keeps
+all three candidate forecasts, the executed choice and measured outcome in the
+existing sourced attention receipt. Later self-reading can perceive that actual
+outcome. No Netta rewards, model weights or source generator enter AMOS.
+
+### Continuity and the instrument view
+
+World format 9 stores `readMind` and `readBirth`. Versions 1–8 load with all
+existing acquired fields retained and the new learner beginning at the current
+lifetime encounter. Its heads, execution counters and reading memory continue
+across chapters, reloads and disabled intervals. Disabling read acquisition
+preserves that organ exactly and uses the historical instrument convention.
+Calendar origin, factual clocks, pending predictions and all existing RNGs stay
+in their previous contracts. The optional worlds contract and canonical calendar
+module require no change.
+
+Import validates the learning contract, finite coefficients, per-tool and total
+execution counts, bounded unique reading memory, decision features, actual tool
+and scope, score ordering, measured outcome and premise membership. Retained
+per-tool execution receipts must have consecutive counts ending at the acquired
+head's count. Recomputed transcendental quantities use the existing small
+cross-engine tolerance; captured values are retained. The first broad check
+exposed a validator assuming every old trace had an attention record. Optional
+access fixes that migration path; legacy v1 and genuine v2/v3 continuations are checked too.
+
+The existing instrument section now shows expected versus encountered influence,
+newly read assertions and the number of prior reads with that instrument.
+Detailed candidate/outcome evidence is available under Read the evidence. The
+standalone HTML contains the complete organ, with no new dependency or sensor
+requirement. Its size is 367,841 bytes.
+
+### Verification and actual continuation
+
+`make check`: **102 behavioral gates** and **1,600 C/Python/JavaScript reference
+decisions**. Seven new gates cover pure frozen planning, admission without
+execution credit, exact repeated assertion identities, learning only the executed
+instrument, forced-investigation attribution, acquired-choice ablation,
+restart/chapter/frozen-interval continuity, malformed saved evidence and a genuine
+calendar-aware v8 migration. The older-runtime comparison explicitly freezes the
+new learner and preserves the original v7 trajectory byte-for-byte.
+
+The causal ablation trains twelve actual encounters, then compares two copies
+with the same recurrent body, pending expectation, source observation and phase
+models. Both omit the same pending phase probe to isolate instrument choice.
+Only one copy's 54 read-choice coefficients are cleared. The world-stage state
+stays identical; the trained copy chooses current facts and the ablated copy
+chooses history. Returned premises and the actual post-read neural state differ.
+
+Browser QA imports the real chapter-2 v8 life at encounter 53 with the worlds
+folder absent. Every pre-existing acquired field is identical on migration.
+Three human addresses reach 54–56, followed by a canonical self-time observation
+at 57. Its immutable origin remains the attention receipt from encounter 50;
+the current Gregorian date is 2026-11-02, Hebrew date 5787/8/22, UTC civil day
+760 and noon-relative epoch day 759. Its personal civil age is two days. The
+lineage read predicts influence 0.009 and meets 0.048 on the normalized scale,
+with one prior execution and one newly read assertion. Complete exported JSON
+matches exactly before and after reload. The screenshot is
+`assets/amos2-read-consequences-20261102.jpg`.
+
+The next connection to develop is an investigation's retained question and its
+later resolution: which discrepancy motivated the read, which source revision
+or own transition answered it, and whether a later encounter still carries that
+discrepancy. That can then inform acquired fact attention alongside instrument
+choice. Each step belongs to the existing fact heart and saved acquired life.
+
 ## 2026-11-01 — canonical browser time becomes acquired experience
 
 Continued from merged `b293be0`. Read AML's calendar contracts, browser adapter,

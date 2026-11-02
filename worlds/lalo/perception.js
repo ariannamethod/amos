@@ -33,6 +33,9 @@ const PERCEPTION = (() => {
       if(fact.source==='amos:attention/v1'&&fact.predicate==='fact_selection'){
         const own=JSON.parse(fact.value);if(own.policy!=='amos/acquired-attention-v1'||!Number.isFinite(own.selected?.score))throw Error('Invalid remembered choice');
         sensory[0]+=Math.tanh(own.selected.score);sensory[1]+=own.selected.novelty;
+        if(own.read){const observed=own.read.outcome?.observed;
+          if(own.read.policy!=='amos/read-consequence-v1'||!Array.isArray(observed)||observed.length!==2||!observed.every(v=>Number.isFinite(v)&&v>=0&&v<=1))throw Error('Invalid remembered read consequence');
+          sensory[0]+=observed[0];sensory[1]+=observed[1];}
         glyphs.push(...tokenize('me choose remember').ids.slice(0,Math.max(0,128-glyphs.length)));continue;
       }
       if(fact.source==='amos:experience/v1'&&fact.predicate==='self_memory'){
